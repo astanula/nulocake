@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pl"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700;800;900&amp;family=Manrope:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#353534",
+                    "on-primary-fixed": "#37003a",
+                    "secondary-fixed-dim": "#faadf3",
+                    "surface-bright": "#3a3939",
+                    "on-error-container": "#ffdad6",
+                    "background": "#131313",
+                    "inverse-primary": "#a21ba7",
+                    "inverse-on-surface": "#313030",
+                    "outline-variant": "#52424f",
+                    "surface-container-lowest": "#0e0e0e",
+                    "tertiary-container": "#91a500",
+                    "secondary-fixed": "#ffd6f7",
+                    "on-tertiary": "#2d3400",
+                    "surface": "#131313",
+                    "on-primary": "#5a005e",
+                    "primary-fixed": "#ffd6f7",
+                    "inverse-surface": "#e5e2e1",
+                    "on-primary-container": "#5f0063",
+                    "secondary-container": "#6e316e",
+                    "primary-fixed-dim": "#ffaaf8",
+                    "on-secondary": "#521653",
+                    "on-secondary-container": "#eb9fe4",
+                    "on-secondary-fixed": "#37003a",
+                    "surface-container-highest": "#353534",
+                    "on-tertiary-container": "#2f3700",
+                    "on-tertiary-fixed-variant": "#414b00",
+                    "surface-tint": "#ffaaf8",
+                    "error": "#ffb4ab",
+                    "surface-container": "#201f1f",
+                    "secondary": "#faadf3",
+                    "tertiary": "#bcd13b",
+                    "on-error": "#690005",
+                    "on-background": "#e5e2e1",
+                    "primary-container": "#eb65eb",
+                    "error-container": "#93000a",
+                    "tertiary-fixed": "#d7ee55",
+                    "on-tertiary-fixed": "#191e00",
+                    "tertiary-fixed-dim": "#bcd13b",
+                    "surface-container-low": "#1c1b1b",
+                    "on-surface-variant": "#d7c0d1",
+                    "surface-container-high": "#2a2a2a",
+                    "on-surface": "#e5e2e1",
+                    "surface-dim": "#131313",
+                    "outline": "#9f8b9b",
+                    "on-secondary-fixed-variant": "#6c2f6b",
+                    "primary": "#ffaaf8",
+                    "on-primary-fixed-variant": "#7f0085"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": [
+                            "Epilogue"
+                    ],
+                    "body": [
+                            "Manrope"
+                    ],
+                    "label": [
+                            "Manrope"
+                    ]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #000000;
+            color: #e5e2e1;
+            font-family: 'Manrope', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .text-sheen {
+            background: linear-gradient(to right, #ffaaf8, #eb65eb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .section-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            min-height: 100vh;
+            align-items: center;
+            background: linear-gradient(35deg, rgba(235, 101, 235, 0.08) 0%, rgba(0, 0, 0, 1) 40%);
+            background-color: #000000;
+        }
+        @media (min-width: 1024px) {
+            .section-layout {
+                grid-template-columns: 1.2fr 0.8fr;
+            }
+        }
+    </style>
+</head>
+<body class="selection:bg-primary-container selection:text-on-primary-container">
+<!-- Header Section -->
+<header class="fixed top-0 w-full z-50 bg-[#000000]/80 backdrop-blur-md flex justify-between items-center px-12 lg:pl-32 py-6">
+<div class="flex items-center gap-2">
+<img alt="Nulo Cake Logo" class="w-auto h-12 object-contain" src="https://lh3.googleusercontent.com/aida/ADBb0ugLFdV98i8OEfluFQHhKSIwOWAosxZVAK0bVFgyOTateoVvgw-rVXPAyTqW5WCGTF_oFV5MgWf1BshZgSr-njLEuGnZrbT1lOreMaTAX-6mfECLZ6Wv5nmuVx56yVIaZ2EK1NxVzoFxSinoDpjmikIdy4s3_R5dxazqsEGbxd7irZNGYW2abtxYuJSR9tP03Igx5YaxLvejxsG1bSILk5J9GgZxCFHQU1rAUYKJbrcbWD9oEW4CNi-ENiiZDb-reusJs_s4sphB"/>
+</div>
+<nav class="hidden md:flex items-center gap-10 font-epilogue tracking-tight uppercase">
+<a class="text-[#eb65eb] border-b-2 border-[#eb65eb] pb-1 transition-all duration-300 ease-in-out" href="#">Oferta</a>
+<a class="text-[#e5e2e1] hover:text-[#ffaaf8] transition-all duration-300 ease-in-out" href="#">Galeria</a>
+<a class="text-[#e5e2e1] hover:text-[#ffaaf8] transition-all duration-300 ease-in-out" href="#">O mnie</a>
+<a class="text-[#e5e2e1] hover:text-[#ffaaf8] transition-all duration-300 ease-in-out" href="#">Kontakt</a>
+</nav>
+<button class="bg-primary-container text-on-primary-container px-6 py-2.5 rounded-sm font-label text-sm font-bold uppercase tracking-widest hover:scale-105 transition-transform mr-4 lg:mr-24">
+            Order Now
+        </button>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="section-layout px-6 md:px-12 lg:pl-32 lg:pr-24">
+<div class="space-y-8 max-w-2xl py-20 lg:py-0">
+<h1 class="text-5xl md:text-6xl lg:text-7xl font-black font-headline tracking-tighter leading-none">
+                    Wymarzony tort na Twoją <span class="text-sheen">wyjątkową</span> okazję.
+                </h1>
+<p class="text-lg md:text-xl text-on-surface/80 leading-relaxed">
+                    Artystyczne torty na zamówienie tworzone z pasją. Jesteś w odpowiednim miejscu, aby to słodkie marzenie spełnić!
+                </p>
+<div class="flex flex-wrap gap-4 pt-4">
+<button class="px-8 py-4 bg-primary-container text-on-primary-container font-bold rounded-sm hover:scale-105 transition-transform duration-300">
+                        [Sprawdź ofertę]
+                    </button>
+<button class="px-8 py-4 border border-outline-variant text-on-surface font-bold rounded-sm hover:bg-surface-variant transition-colors duration-300">
+                        [Zobacz galerię]
+                    </button>
+</div>
+</div>
+<div class="flex items-center justify-center p-8 lg:p-0 h-full">
+<img alt="Rose Cake Anchor" class="w-full max-w-[500px] aspect-[4/5] object-contain" src="https://lh3.googleusercontent.com/aida/ADBb0uiFqJP84CG5kI5eFcIJO1uXdIk2BhPuuxWxRUVpDNMey6h0Cyuly-Qwhth9eYDw2DNl7yUhKi6CO6_mIfH_1XAn4FrQetGHrGn_D6ywZKj0BbOqfD-QXB911B_IHjSme04J8cFNqbkdBmZ_eoSZ_vf_2hPJmvHjhFgC6cVlV5wcusQqwBLQ6zlqLVgx7RY-q21qqpSuN7q5J3CEqULEhVU33a-AQgaDwYFUxsXGI1o3sRFjolnvDjigto8eGSu7yDjK4Y6BnGMIUw"/>
+</div>
+</section>
+<!-- About Section -->
+<section class="section-layout px-6 md:px-12 lg:pl-32 lg:pr-24">
+<div class="space-y-10 max-w-2xl py-20 lg:py-0">
+<h2 class="text-5xl md:text-6xl lg:text-7xl font-bold font-headline tracking-tight">Sztuka, która <span class="text-primary italic">zachwyca</span> smakiem.</h2>
+<div class="space-y-6 text-on-surface/70 text-lg md:text-xl leading-relaxed">
+<p>W Nulo Cake wierzę, że tort to coś więcej niż deser – to centralny punkt Twojej uroczystości, rzeźba, która opowiada historię. Każdy projekt traktuję jak białe płótno, na którym maluję smakiem i teksturą.</p>
+<p>Moja pasja do cukiernictwa artystycznego łączy się z dbałością o najwyższą jakość składników. Od puszystych biszkoptów po aksamitne kremy, każdy kęs jest dopracowany do perfekcji.</p>
+</div>
+<button class="group flex items-center gap-4 text-primary font-bold tracking-widest uppercase py-2">
+<span class="border-b border-primary">[Poznaj moją historię]</span>
+<span class="material-symbols-outlined group-hover:translate-x-2 transition-transform">arrow_forward</span>
+</button>
+</div>
+<div class="flex items-center justify-center p-8 lg:p-0 h-full">
+<img alt="Rose Cake Anchor" class="w-full max-w-[500px] aspect-[4/5] object-contain" src="https://lh3.googleusercontent.com/aida/ADBb0uiFqJP84CG5kI5eFcIJO1uXdIk2BhPuuxWxRUVpDNMey6h0Cyuly-Qwhth9eYDw2DNl7yUhKi6CO6_mIfH_1XAn4FrQetGHrGn_D6ywZKj0BbOqfD-QXB911B_IHjSme04J8cFNqbkdBmZ_eoSZ_vf_2hPJmvHjhFgC6cVlV5wcusQqwBLQ6zlqLVgx7RY-q21qqpSuN7q5J3CEqULEhVU33a-AQgaDwYFUxsXGI1o3sRFjolnvDjigto8eGSu7yDjK4Y6BnGMIUw"/>
+</div>
+</section>
+<!-- Gallery Section -->
+<section class="section-layout px-6 md:px-12 lg:pl-32 lg:pr-24">
+<div class="space-y-12 max-w-3xl py-20 lg:py-0">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+<h2 class="text-5xl md:text-6xl font-black font-headline tracking-tighter leading-none">Moje słodkie <br/>dzieła sztuki</h2>
+<button class="px-8 py-4 bg-surface-container-high text-primary font-bold border border-primary/20 rounded-sm hover:bg-primary/10 transition-colors">
+                        [Pełna Galeria]
+                    </button>
+</div>
+<div class="relative overflow-hidden">
+<div class="flex gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-4">
+<div class="min-w-[85%] md:min-w-[45%] snap-center relative aspect-[3/4] group overflow-hidden bg-surface-container-low rounded-sm">
+<img alt="Chrzest Święty Emilii" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida/ADBb0uhSwXeiDoO58ZXSYbfeELtMRV7fBkSfaEtulievo7uVGmw8Hkbn6PbQ4Wik3FSyVv_W6tuE2MFzUACYhvHh15KIYsjHNSNL_h9Ze-0shBXA94881jpKPsfWFJDvi9wkhD0pCg0xth67EWpOymLR1VO0Ak7b1l16gXyHwumZQf666zDKEfR4xCxvkjvPx--A9ThJYFqCzzZN1s9AFQBfEj6m0xMtC1G3l1v6uSlOqm94K-esTbN5LzjBI0bpT0yEcbz38PB5wnVr_g"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-8 flex flex-col justify-end">
+<span class="text-primary font-bold uppercase tracking-widest text-sm">Design 01</span>
+<h3 class="text-2xl font-bold font-headline">Chrzest Święty Emilii</h3>
+</div>
+</div>
+<div class="min-w-[85%] md:min-w-[45%] snap-center relative aspect-[3/4] group overflow-hidden bg-surface-container-low rounded-sm">
+<img alt="Urodzinowy Słonik" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida/ADBb0ugNRqYOLDr4wS6JCyoqw0cvdVEED-jKFvlXvQvs3pfqLNkjSnS5J-tkWUWZbbUk6optUVNFQW0f7XBK84kliTrnVsiFVj19mu7oaVEV50Mu2uphc30rczg6dWN3vE_tNF-M0vA0mmsHdZzf-0qqTLaV0MKAlpZSTZZrHGn7HOdkED0jGdTSEmjurgh3qPyeUM9F1xojgrGqFnvvN_0aNW3o-IU4QNf6lb0SNJHefTLQzQyW6pP72sH0EEXxkz68tYcTqnBFlF_gTg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-8 flex flex-col justify-end">
+<span class="text-primary font-bold uppercase tracking-widest text-sm">Design 02</span>
+<h3 class="text-2xl font-bold font-headline">Urodzinowy Słonik</h3>
+</div>
+</div>
+<div class="min-w-[85%] md:min-w-[45%] snap-center relative aspect-[3/4] group overflow-hidden bg-surface-container-low rounded-sm">
+<img alt="Artystyczna Kompozycja" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida/ADBb0ugEB2T2eCDXLY6ndAo-9SspmoMoF5sW0g4whh6xcfeSBumbcU8yY5TQf6Ulze6L12pxJ-qjtgqXil0SlEKSVilEaBCyYn7EbPmzr89UCa6RNEXGtrfMQHLiYdkq6uPrtik0iJQY1kxteBwKugI5bCaeR3hfAyNxPeaD6M8fQmbos6gY87P0tm9nVnfUyCOLtvH2LkjYUA8lQmOTJ_-KI0sK-LpVlQZi35a6oqyYZeTP2EYlpqMAAEIXNYX8AOw8BewSenou2voWQw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-8 flex flex-col justify-end">
+<span class="text-primary font-bold uppercase tracking-widest text-sm">Design 03</span>
+<h3 class="text-2xl font-bold font-headline">Artystyczna Kompozycja</h3>
+</div>
+</div>
+</div>
+<div class="flex gap-4 mt-8 justify-start">
+<button class="w-12 h-12 rounded-full border border-primary/20 flex items-center justify-center hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-primary">chevron_left</span>
+</button>
+<button class="w-12 h-12 rounded-full border border-primary/20 flex items-center justify-center hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-primary">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-center p-8 lg:p-0 h-full">
+<img alt="Rose Cake Anchor" class="w-full max-w-[500px] aspect-[4/5] object-contain" src="https://lh3.googleusercontent.com/aida/ADBb0uiFqJP84CG5kI5eFcIJO1uXdIk2BhPuuxWxRUVpDNMey6h0Cyuly-Qwhth9eYDw2DNl7yUhKi6CO6_mIfH_1XAn4FrQetGHrGn_D6ywZKj0BbOqfD-QXB911B_IHjSme04J8cFNqbkdBmZ_eoSZ_vf_2hPJmvHjhFgC6cVlV5wcusQqwBLQ6zlqLVgx7RY-q21qqpSuN7q5J3CEqULEhVU33a-AQgaDwYFUxsXGI1o3sRFjolnvDjigto8eGSu7yDjK4Y6BnGMIUw"/>
+</div>
+</section>
+<!-- Testimonials Section -->
+<section class="section-layout px-6 md:px-12 lg:pl-32 lg:pr-24">
+<div class="space-y-12 max-w-3xl py-20 lg:py-0">
+<h2 class="text-5xl md:text-6xl lg:text-7xl font-headline font-bold text-left">Co mówią moi klienci?</h2>
+<div class="grid grid-cols-1 gap-6">
+<!-- Quote 1 -->
+<div class="bg-surface-container-lowest p-8 rounded-sm space-y-4 shadow-sm border border-outline-variant/10">
+<div class="flex gap-1 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="text-on-surface/80 leading-relaxed italic text-lg">"Tort był absolutnym dziełem sztuki. Nikt nie chciał go kroić, dopóki nie spróbowaliśmy pierwszego kawałka!"</p>
+<div>
+<p class="font-bold font-headline uppercase text-sm tracking-widest">Anna Kowalska</p>
+<p class="text-xs text-primary/60">Wesele w Warszawie</p>
+</div>
+</div>
+<!-- Quote 2 -->
+<div class="bg-surface-container-lowest p-8 rounded-sm space-y-4 shadow-sm border border-primary/30">
+<div class="flex gap-1 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="text-on-surface/80 leading-relaxed italic text-lg">"Szukałem czegoś unikalnego na 30-stkę żony i Nulo Cake przerosło moje oczekiwania."</p>
+<div>
+<p class="font-bold font-headline uppercase text-sm tracking-widest">Marek Wiśniewski</p>
+<p class="text-xs text-primary/60">Przyjęcie Urodzinowe</p>
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-center p-8 lg:p-0 h-full">
+<img alt="Rose Cake Anchor" class="w-full max-w-[500px] aspect-[4/5] object-contain" src="https://lh3.googleusercontent.com/aida/ADBb0uiFqJP84CG5kI5eFcIJO1uXdIk2BhPuuxWxRUVpDNMey6h0Cyuly-Qwhth9eYDw2DNl7yUhKi6CO6_mIfH_1XAn4FrQetGHrGn_D6ywZKj0BbOqfD-QXB911B_IHjSme04J8cFNqbkdBmZ_eoSZ_vf_2hPJmvHjhFgC6cVlV5wcusQqwBLQ6zlqLVgx7RY-q21qqpSuN7q5J3CEqULEhVU33a-AQgaDwYFUxsXGI1o3sRFjolnvDjigto8eGSu7yDjK4Y6BnGMIUw"/>
+</div>
+</section>
+<!-- Final CTA Section -->
+<section class="section-layout px-6 md:px-12 lg:pl-32 lg:pr-24 overflow-hidden">
+<div class="space-y-10 max-w-2xl py-20 lg:py-0 relative z-10">
+<h2 class="text-5xl md:text-6xl lg:text-7xl font-black font-headline tracking-tighter leading-tight">Gotowy na swój <br/><span class="text-sheen">wymarzony</span> tort?</h2>
+<p class="text-xl text-on-surface/80 max-w-xl">Napisz do mnie – opowiedz o swojej okazji, a ja zajmę się resztą.</p>
+<div class="pt-6">
+<button class="px-12 py-5 bg-primary-container text-on-primary-container text-lg font-bold rounded-sm hover:scale-110 transition-transform duration-300 shadow-2xl shadow-primary-container/20">
+                        [Skontaktuj się i zarezerwuj termin]
+                    </button>
+</div>
+</div>
+<div class="flex items-center justify-center p-8 lg:p-0 h-full relative z-10">
+<img alt="Rose Cake Anchor" class="w-full max-w-[500px] aspect-[4/5] object-contain" src="https://lh3.googleusercontent.com/aida/ADBb0uiFqJP84CG5kI5eFcIJO1uXdIk2BhPuuxWxRUVpDNMey6h0Cyuly-Qwhth9eYDw2DNl7yUhKi6CO6_mIfH_1XAn4FrQetGHrGn_D6ywZKj0BbOqfD-QXB911B_IHjSme04J8cFNqbkdBmZ_eoSZ_vf_2hPJmvHjhFgC6cVlV5wcusQqwBLQ6zlqLVgx7RY-q21qqpSuN7q5J3CEqULEhVU33a-AQgaDwYFUxsXGI1o3sRFjolnvDjigto8eGSu7yDjK4Y6BnGMIUw"/>
+</div>
+</section>
+</main>
+<!-- Footer Section -->
+<footer class="bg-[#000000] w-full py-16 px-12 lg:pl-32 lg:pr-24 flex flex-col md:flex-row justify-between items-center md:items-start gap-8 border-t border-[#353534]/15">
+<div class="flex flex-col items-center md:items-start gap-4">
+<div class="text-lg font-black text-[#eb65eb] font-epilogue uppercase tracking-tighter">Nulo Cake</div>
+<p class="font-manrope text-sm tracking-widest uppercase text-[#e5e2e1]/60">© 2024 Nulo Cake. The Digital Gallery of Edible Art.</p>
+</div>
+<div class="flex gap-8 font-manrope text-sm tracking-widest uppercase">
+<a class="text-[#e5e2e1]/60 hover:text-[#eb65eb] transition-colors opacity-80 hover:opacity-100" href="#">Instagram</a>
+<a class="text-[#e5e2e1]/60 hover:text-[#eb65eb] transition-colors opacity-80 hover:opacity-100" href="#">Facebook</a>
+<a class="text-[#e5e2e1]/60 hover:text-[#eb65eb] transition-colors opacity-80 hover:opacity-100" href="#">Pinterest</a>
+<a class="text-[#e5e2e1]/60 hover:text-[#eb65eb] transition-colors opacity-80 hover:opacity-100" href="#">Email</a>
+</div>
+</footer>
+</body></html>
