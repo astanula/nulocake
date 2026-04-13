@@ -1,0 +1,235 @@
+---
+import logo from '../assets/nulocake logo.png';
+import { Image } from 'astro:assets';
+---
+
+<nav id="main-nav" class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo" aria-label="Nulo Cake - strona główna">
+      <Image src={logo} alt="Nulo Cake" width={40} height={40} class="nav-logo-img" />
+    </a>
+
+    <button id="nav-toggle" class="nav-hamburger" aria-label="Menu" aria-expanded="false">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+
+    <ul id="nav-links" class="nav-links">
+      <li><a href="/oferta" class="nav-link">Oferta</a></li>
+      <li><a href="/galeria" class="nav-link">Galeria</a></li>
+      <li><a href="/o-mnie" class="nav-link">O mnie</a></li>
+      <li><a href="/kontakt" class="nav-link nav-link--cta">Kontakt</a></li>
+    </ul>
+  </div>
+</nav>
+
+<style>
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    padding: 1rem 0;
+    transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nav.scrolled {
+    background: rgba(19, 19, 19, 0.6);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(68, 66, 65, 0.15);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    transition: opacity 0.3s;
+  }
+
+  .nav-logo:hover {
+    opacity: 0.8;
+  }
+
+  .nav-logo-img {
+    width: 40px;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .nav-hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 50;
+  }
+
+  .hamburger-line {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--color-on-surface);
+    border-radius: 1px;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nav-hamburger.active .hamburger-line:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .nav-hamburger.active .hamburger-line:nth-child(2) {
+    opacity: 0;
+  }
+
+  .nav-hamburger.active .hamburger-line:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    list-style: none;
+  }
+
+  .nav-link {
+    font-family: var(--font-family-body);
+    font-weight: 500;
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-on-surface-variant);
+    text-decoration: none;
+    position: relative;
+    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--color-primary);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nav-link:hover {
+    color: var(--color-on-surface);
+  }
+
+  .nav-link:hover::after {
+    width: 100%;
+  }
+
+  .nav-link--cta {
+    padding: 0.5rem 1.25rem;
+    background: linear-gradient(135deg, var(--color-primary-container), #eb9fe4);
+    color: var(--color-on-primary);
+    border-radius: 0.125rem;
+    font-weight: 600;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nav-link--cta::after {
+    display: none;
+  }
+
+  .nav-link--cta:hover {
+    color: var(--color-on-primary);
+    transform: scale(1.02);
+    filter: brightness(1.1);
+  }
+
+  @media (max-width: 768px) {
+    .nav-hamburger {
+      display: flex;
+    }
+
+    .nav-links {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 75%;
+      max-width: 320px;
+      height: 100dvh;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2rem;
+      background: rgba(14, 14, 14, 0.95);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      padding: 2rem;
+      transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .nav-links.open {
+      right: 0;
+    }
+
+    .nav-link {
+      font-size: 1rem;
+    }
+  }
+</style>
+
+<script>
+  const nav = document.getElementById('main-nav');
+  const toggle = document.getElementById('nav-toggle');
+  const links = document.getElementById('nav-links');
+
+  /* Scroll detection for glassmorphism navbar */
+  let ticking = false;
+  const onScroll = () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        if (window.scrollY > 60) {
+          nav?.classList.add('scrolled');
+        } else {
+          nav?.classList.remove('scrolled');
+        }
+        ticking = false;
+      });
+      ticking = true;
+    }
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* Mobile hamburger */
+  toggle?.addEventListener('click', () => {
+    const expanded = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!expanded));
+    toggle.classList.toggle('active');
+    links?.classList.toggle('open');
+  });
+
+  /* Close mobile menu on link click */
+  links?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => {
+      toggle?.classList.remove('active');
+      toggle?.setAttribute('aria-expanded', 'false');
+      links?.classList.remove('open');
+    });
+  });
+</script>

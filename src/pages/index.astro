@@ -1,17 +1,542 @@
 ---
-
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="Nulo Cake — Artystyczne Torty Na Zamówienie" description="Wymarzony tort na Twoją wyjątkową okazję. Artystyczne torty na zamówienie tworzone z pasją. Jadalne dzieła sztuki, które dopełnią Twoją uroczystość.">
+  <Navigation />
+
+  <!-- ═══════════════════════════════════════════
+       HERO SCROLL CONTAINER
+       Split-screen: Left = text sections, Right = pinned video
+       ═══════════════════════════════════════════ -->
+  <main id="hero-scroll-container" class="hero-container">
+
+    <!-- ── LEFT: Scrolling Text Sections ──────── -->
+    <div class="hero-text-col">
+
+      <!-- Section 1: Hero / Above the Fold -->
+      <section id="section-hero" class="hero-section hero-section--active" aria-label="Strona główna">
+        <div class="hero-section-inner">
+          <p class="label-md section-label">Nulo Cake</p>
+          <h1 class="display-lg section-heading">
+            Wymarzony tort<br />na Twoją <span class="accent-italic">wyjątkową</span> okazję.
+          </h1>
+          <p class="body-lg section-body">
+            Artystyczne torty na zamówienie tworzone z pasją. Jesteś w odpowiednim miejscu, aby to słodkie marzenie spełnić!
+          </p>
+          <div class="section-cta-group">
+            <a href="/oferta" class="btn-primary" id="cta-oferta">Sprawdź ofertę</a>
+            <a href="/galeria" class="btn-secondary" id="cta-galeria">Zobacz galerię</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: About / Story -->
+      <section id="section-story" class="hero-section" aria-label="O nas">
+        <div class="hero-section-inner">
+          <h2 class="display-lg section-heading">
+            Sztuka, która<br /><span class="accent-italic">zachwyca</span> smakiem.
+          </h2>
+          <p class="body-lg section-body">
+            Wierzę, że każdy tort to osobna historia. W moją pracę wkładam całe serce, traktując każde zamówienie jako w 100% indywidualny projekt. Zależy mi na tym, aby efekt końcowy nie tylko zapierał dech w piersiach unikalną dekoracją dopracowaną w każdym detalu, ale również zniewalał smakiem od pierwszego kęsa.
+          </p>
+          <p class="body-lg section-body">
+            Nie ma tu miejsca na kompromisy — tworzę jadalne dzieła sztuki, które dopełnią Twoją uroczystość.
+          </p>
+          <div class="section-cta-group">
+            <a href="/o-mnie" class="btn-secondary section-link" id="cta-historia">
+              Poznaj moją historię
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 8h10M9 4l4 4-4 4"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Gallery Preview -->
+      <section id="section-gallery" class="hero-section" aria-label="Galeria">
+        <div class="hero-section-inner">
+          <h2 class="display-lg section-heading">
+            Moje słodkie<br /><span class="accent-italic">dzieła</span> sztuki
+          </h2>
+          <div class="gallery-grid">
+            <div class="gallery-item">
+              <img src="/gallery-1.png" alt="Artystyczny tort weselny z różowymi różami" loading="lazy" />
+            </div>
+            <div class="gallery-item">
+              <img src="/gallery-2.png" alt="Kolorowy tort urodzinowy z akwarelowym wzorem" loading="lazy" />
+            </div>
+            <div class="gallery-item">
+              <img src="/gallery-3.png" alt="Elegancki minimalistyczny tort ze złotymi detalami" loading="lazy" />
+            </div>
+            <div class="gallery-item">
+              <img src="/gallery-4.png" alt="Fantazyjny tort dziecięcy z figurkami" loading="lazy" />
+            </div>
+          </div>
+          <div class="section-cta-group">
+            <a href="/galeria" class="btn-secondary" id="cta-full-galeria">Pełna Galeria</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 4: Testimonials -->
+      <section id="section-testimonials" class="hero-section" aria-label="Opinie klientów">
+        <div class="hero-section-inner">
+          <h2 class="display-lg section-heading">
+            Co mówią moi<br /><span class="accent-italic">klienci</span>?
+          </h2>
+          <div class="testimonials-stack">
+            <blockquote class="testimonial-card">
+              <div class="testimonial-stars" aria-label="5 z 5 gwiazdek">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <p class="testimonial-text">"Tort był absolutnym dziełem sztuki. Nikt nie chciał go kroić, dopóki nie spróbowaliśmy pierwszego kawałka!"</p>
+              <footer class="testimonial-author">
+                <span class="testimonial-name">Anna Kowalska</span>
+                <span class="testimonial-role">Wesele, czerwiec 2025</span>
+              </footer>
+            </blockquote>
+
+            <blockquote class="testimonial-card">
+              <div class="testimonial-stars" aria-label="5 z 5 gwiazdek">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <p class="testimonial-text">"Szukałem czegoś unikalnego na 30-ste urodziny żony. Nulo Cake przerosiło moje oczekiwania."</p>
+              <footer class="testimonial-author">
+                <span class="testimonial-name">Marek Wiśniewski</span>
+                <span class="testimonial-role">Urodziny, marzec 2025</span>
+              </footer>
+            </blockquote>
+
+            <blockquote class="testimonial-card">
+              <div class="testimonial-stars" aria-label="5 z 5 gwiazdek">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <p class="testimonial-text">"Perfekcyjne wykonanie i niesamowity smak. Goście do dziś pytają, skąd mieliśmy ten tort!"</p>
+              <footer class="testimonial-author">
+                <span class="testimonial-name">Katarzyna Nowicka</span>
+                <span class="testimonial-role">Komunia, maj 2025</span>
+              </footer>
+            </blockquote>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 5: CTA / Contact -->
+      <section id="section-contact" class="hero-section" aria-label="Kontakt">
+        <div class="hero-section-inner">
+          <h2 class="display-lg section-heading">
+            Gotowy na swój<br /><span class="accent-italic">wymarzony</span> tort?
+          </h2>
+          <p class="body-lg section-body">
+            Napisz do mnie — opowiedz o swojej okazji, a ja zajmę się resztą.
+          </p>
+          <div class="section-cta-group">
+            <a href="/kontakt" class="btn-primary" id="cta-kontakt">Skontaktuj się i zarezerwuj termin</a>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ── RIGHT: Pinned Video ────────────────── -->
+    <div class="hero-video-col" id="hero-video-col">
+      <div class="hero-video-wrapper">
+        <video
+          id="hero-video"
+          src="/hero-video.mp4"
+          muted
+          playsinline
+          preload="auto"
+          class="hero-video"
+        ></video>
+        <!-- Subtle ambient glow behind the video -->
+        <div class="hero-video-glow" aria-hidden="true"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <Footer />
+</Layout>
+
+<style>
+  /* ═══════════════════════════════════════════
+     HERO SCROLL LAYOUT — Split Screen
+     ═══════════════════════════════════════════ */
+  .hero-container {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100dvh;
+  }
+
+  /* ── Left Column: scrolling text ─────────── */
+  .hero-text-col {
+    position: relative;
+    z-index: 2;
+    padding-top: 6rem;
+  }
+
+  .hero-section {
+    display: flex;
+    align-items: center;
+    min-height: 100dvh;
+    padding: 4rem 2rem 4rem 4rem;
+  }
+
+  .hero-section-inner {
+    max-width: 560px;
+    opacity: 0;
+    transform: translateY(60px);
+    will-change: transform, opacity;
+  }
+
+  /* First section starts visible */
+  .hero-section--active .hero-section-inner {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .section-label {
+    margin-bottom: 1.25rem;
+    color: var(--color-primary);
+  }
+
+  .section-heading {
+    margin-bottom: 1.5rem;
+  }
+
+  .section-body {
+    margin-bottom: 1rem;
+  }
+
+  .section-body:last-of-type {
+    margin-bottom: 2rem;
+  }
+
+  .section-cta-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .section-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .section-link svg {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .section-link:hover svg {
+    transform: translateX(4px);
+  }
+
+  /* ── Right Column: pinned video ──────────── */
+  .hero-video-col {
+    position: relative;
+  }
+
+  .hero-video-wrapper {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .hero-video {
+    width: 85%;
+    max-width: 560px;
+    height: auto;
+    object-fit: contain;
+    border-radius: 0.5rem;
+  }
+
+  .hero-video-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70%;
+    height: 70%;
+    background: radial-gradient(ellipse, rgba(235, 101, 235, 0.08) 0%, transparent 70%);
+    filter: blur(60px);
+    pointer-events: none;
+  }
+
+  /* ── Gallery Grid ────────────────────────── */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+
+  .gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.25rem;
+    aspect-ratio: 1;
+    background: var(--color-surface-container-lowest);
+  }
+
+  .gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .gallery-item:hover img {
+    transform: scale(1.06);
+  }
+
+  /* ── Testimonials ────────────────────────── */
+  .testimonials-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .testimonial-card {
+    padding: 1.5rem;
+    background: var(--color-surface-container-low);
+    border-radius: 0.25rem;
+    border: none;
+    margin: 0;
+  }
+
+  .testimonial-stars {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .testimonial-text {
+    font-family: var(--font-family-body);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--color-on-surface);
+    font-style: italic;
+    margin-bottom: 1rem;
+  }
+
+  .testimonial-author {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .testimonial-name {
+    font-family: var(--font-family-body);
+    font-weight: 700;
+    font-size: 0.8125rem;
+    color: var(--color-on-surface);
+  }
+
+  .testimonial-role {
+    font-family: var(--font-family-body);
+    font-size: 0.6875rem;
+    color: var(--color-outline);
+  }
+
+  /* ═══════════════════════════════════════════
+     RESPONSIVE — MOBILE COLLAPSE
+     ═══════════════════════════════════════════ */
+  @media (max-width: 768px) {
+    .hero-container {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hero-video-col {
+      position: relative;
+      height: 50dvh;
+      order: -1;
+    }
+
+    .hero-video-wrapper {
+      position: relative;
+      height: 50dvh;
+    }
+
+    .hero-text-col {
+      padding-top: 0;
+    }
+
+    .hero-section {
+      min-height: auto;
+      padding: 3rem 1.5rem;
+    }
+
+    .hero-section:first-child {
+      min-height: 50dvh;
+    }
+
+    .gallery-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .section-heading {
+      font-size: clamp(1.75rem, 6vw, 2.5rem);
+    }
+  }
+</style>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ──────────────────────────────────────────────
+     SCROLL-DRIVEN VIDEO PLAYBACK
+     ────────────────────────────────────────────── */
+  const video = document.getElementById('hero-video') as HTMLVideoElement | null;
+  const heroContainer = document.getElementById('hero-scroll-container');
+
+  if (video && heroContainer) {
+    /* Wait for video metadata to resolve duration */
+    const initVideo = () => {
+      const duration = video.duration;
+      if (!duration || isNaN(duration)) return;
+
+      /* Pin the right column so the video stays in viewport */
+      ScrollTrigger.create({
+        trigger: heroContainer,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: true,
+        onUpdate: (self) => {
+          /* Map scroll progress (0→1) to video time (0→duration) */
+          const targetTime = self.progress * duration;
+          /* Only seek if difference is noticeable to avoid unnecessary seeks */
+          if (Math.abs(video.currentTime - targetTime) > 0.05) {
+            video.currentTime = targetTime;
+          }
+        }
+      });
+    };
+
+    if (video.readyState >= 1) {
+      initVideo();
+    } else {
+      video.addEventListener('loadedmetadata', initVideo, { once: true });
+    }
+  }
+
+  /* ──────────────────────────────────────────────
+     SECTION TEXT REVEAL ANIMATIONS
+     ────────────────────────────────────────────── */
+  const sections = document.querySelectorAll('.hero-section');
+
+  sections.forEach((section, index) => {
+    const inner = section.querySelector('.hero-section-inner') as HTMLElement;
+    if (!inner) return;
+
+    /* First section is already visible — skip its entrance animation */
+    if (index === 0) return;
+
+    gsap.fromTo(
+      inner,
+      { opacity: 0, y: 60 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 75%',
+          end: 'top 30%',
+          toggleActions: 'play none none reverse',
+        },
+      }
+    );
+  });
+
+  /* ──────────────────────────────────────────────
+     GALLERY ITEM STAGGER REVEAL
+     ────────────────────────────────────────────── */
+  const galleryItems = document.querySelectorAll('.gallery-item');
+  if (galleryItems.length) {
+    gsap.fromTo(
+      galleryItems,
+      { opacity: 0, y: 30, scale: 0.95 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.6,
+        ease: 'power2.out',
+        stagger: 0.1,
+        scrollTrigger: {
+          trigger: '#section-gallery',
+          start: 'top 70%',
+          toggleActions: 'play none none reverse',
+        },
+      }
+    );
+  }
+
+  /* ──────────────────────────────────────────────
+     TESTIMONIAL CARD STAGGER
+     ────────────────────────────────────────────── */
+  const testimonialCards = document.querySelectorAll('.testimonial-card');
+  if (testimonialCards.length) {
+    gsap.fromTo(
+      testimonialCards,
+      { opacity: 0, y: 25 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        ease: 'power2.out',
+        stagger: 0.12,
+        scrollTrigger: {
+          trigger: '#section-testimonials',
+          start: 'top 70%',
+          toggleActions: 'play none none reverse',
+        },
+      }
+    );
+  }
+
+  /* ──────────────────────────────────────────────
+     PREFERS REDUCED MOTION
+     ────────────────────────────────────────────── */
+  const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (motionQuery.matches) {
+    /* Kill all scroll-driven animations for reduced motion users */
+    ScrollTrigger.getAll().forEach((t) => t.kill());
+    /* Make all sections visible */
+    document.querySelectorAll('.hero-section-inner').forEach((el) => {
+      (el as HTMLElement).style.opacity = '1';
+      (el as HTMLElement).style.transform = 'none';
+    });
+  }
+</script>
