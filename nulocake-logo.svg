@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+    <g transform="translate(100, 60)" fill="none" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+        
+        <!-- Bottom Tier -->
+        <path d="M 50 200 C 50 215, 150 215, 150 200" stroke="#1A1A1A" />
+        <path d="M 50 200 L 50 140 C 50 155, 150 155, 150 140 L 150 200" stroke="#1A1A1A" />
+        <path d="M 50 140 C 50 125, 150 125, 150 140" stroke="#1A1A1A" />
+
+        <!-- Top Tier -->
+        <path d="M 70 140 L 70 90 C 70 105, 130 105, 130 90 L 130 140" stroke="#F472B6" />
+        <path d="M 70 90 C 70 75, 130 75, 130 90" stroke="#F472B6" />
+
+        <!-- Top Decoration (Cherry with highlight) -->
+        <circle cx="100" cy="65" r="10" fill="#1A1A1A" stroke="none" />
+        <circle cx="97" cy="62" r="2.5" fill="#FFFFFF" stroke="none" />
+    </g>
+
+    <!-- Branding Text -->
+    <text x="200" y="320" font-family="'Didot', 'Bodoni MT', 'Times New Roman', serif" font-size="38" font-weight="600" fill="#1A1A1A" text-anchor="middle" letter-spacing="0.12em">NULO CAKE</text>
+    <text x="200" y="355" font-family="'Montserrat', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="300" fill="#F472B6" text-anchor="middle" letter-spacing="0.35em">ARTISTIC CAKES</text>
+</svg>
