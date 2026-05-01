@@ -19,7 +19,6 @@ import Footer from '../components/Footer.astro';
       <!-- Section 1: Hero / Above the Fold -->
       <section id="section-hero" class="hero-section hero-section--active" aria-label="Strona główna">
         <div class="hero-section-inner">
-          <p class="label-md section-label">Nulo Cake</p>
           <h1 class="display-lg section-heading">
             Wymarzony tort<br />na Twoją <span class="accent-italic">wyjątkową</span> okazję.
           </h1>
@@ -62,7 +61,7 @@ import Footer from '../components/Footer.astro';
           <h2 class="display-lg section-heading">
             Moje słodkie<br /><span class="accent-italic">dzieła</span> sztuki
           </h2>
-          <div class="gallery-grid">
+          <div class="gallery-carousel">
             <div class="gallery-item">
               <img src="/gallery-1.webp" alt="Artystyczny tort weselny z różowymi różami" width="400" height="400" loading="lazy" />
             </div>
@@ -74,6 +73,12 @@ import Footer from '../components/Footer.astro';
             </div>
             <div class="gallery-item">
               <img src="/gallery-4.webp" alt="Fantazyjny tort dziecięcy z figurkami" width="400" height="400" loading="lazy" />
+            </div>
+            <div class="gallery-item">
+              <img src="/gallery-1.webp" alt="Artystyczny tort weselny z różowymi różami" width="400" height="400" loading="lazy" />
+            </div>
+            <div class="gallery-item">
+              <img src="/gallery-2.webp" alt="Kolorowy tort urodzinowy z akwarelowym wzorem" width="400" height="400" loading="lazy" />
             </div>
           </div>
           <div class="section-cta-group">
@@ -196,7 +201,6 @@ import Footer from '../components/Footer.astro';
   .hero-text-col {
     position: relative;
     z-index: 2;
-    padding-top: 6rem;
   }
 
   .hero-section {
@@ -294,15 +298,26 @@ import Footer from '../components/Footer.astro';
     pointer-events: none;
   }
 
-  /* ── Gallery Grid ────────────────────────── */
-  .gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+  /* ── Gallery Carousel ──────────────────────── */
+  .gallery-carousel {
+    display: flex;
     gap: 0.75rem;
     margin-top: 1.5rem;
+    padding-bottom: 0.5rem; /* Room for focus/hover rings */
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+
+  .gallery-carousel::-webkit-scrollbar {
+    display: none;
   }
 
   .gallery-item {
+    flex: 0 0 140px; /* Fixed width to allow 3-4 to be visible */
+    scroll-snap-align: start;
     position: relative;
     overflow: hidden;
     border-radius: 0.25rem;
@@ -432,7 +447,6 @@ import Footer from '../components/Footer.astro';
       grid-row: 1;
       position: relative;
       z-index: 2;
-      padding-top: 4rem;
     }
 
     .hero-section {
