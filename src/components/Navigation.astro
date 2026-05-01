@@ -1,6 +1,7 @@
 ---
 import logo from '../assets/nulocake logo.svg';
 import { Image } from 'astro:assets';
+const path = Astro.url.pathname;
 ---
 
 <nav id="main-nav" class="nav">
@@ -9,20 +10,28 @@ import { Image } from 'astro:assets';
       <Image src={logo} alt="Nulo Cake" width={40} height={40} class="nav-logo-img" />
     </a>
 
-    <button id="nav-toggle" class="nav-hamburger" aria-label="Menu" aria-expanded="false">
+    <button id="nav-toggle" class="nav-hamburger" aria-label="Otwórz menu" aria-expanded="false">
       <span class="hamburger-line"></span>
       <span class="hamburger-line"></span>
       <span class="hamburger-line"></span>
     </button>
 
     <ul id="nav-links" class="nav-links">
-      <li><a href="/oferta" class="nav-link">Oferta</a></li>
-      <li><a href="/galeria" class="nav-link">Galeria</a></li>
-      <li><a href="/o-mnie" class="nav-link">O mnie</a></li>
-      <li><a href="/kontakt" class="nav-link nav-link--cta">Kontakt</a></li>
+      <li>
+        <button id="nav-close" class="nav-close" aria-label="Zamknij menu">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+            <path d="M4 4l12 12M16 4L4 16"/>
+          </svg>
+        </button>
+      </li>
+      <li><a href="/oferta" class:list={['nav-link', { 'nav-link--active': path === '/oferta' || path === '/oferta/' }]} aria-current={path === '/oferta' || path === '/oferta/' ? 'page' : undefined}>Oferta</a></li>
+      <li><a href="/galeria" class:list={['nav-link', { 'nav-link--active': path === '/galeria' || path === '/galeria/' }]} aria-current={path === '/galeria' || path === '/galeria/' ? 'page' : undefined}>Galeria</a></li>
+      <li><a href="/o-mnie" class:list={['nav-link', { 'nav-link--active': path === '/o-mnie' || path === '/o-mnie/' }]} aria-current={path === '/o-mnie' || path === '/o-mnie/' ? 'page' : undefined}>O mnie</a></li>
+      <li><a href="/kontakt" class:list={['nav-link', 'nav-link--cta', { 'nav-link--active': path === '/kontakt' || path === '/kontakt/' }]} aria-current={path === '/kontakt' || path === '/kontakt/' ? 'page' : undefined}>Kontakt</a></li>
     </ul>
   </div>
 </nav>
+<div id="nav-backdrop" class="nav-backdrop" aria-hidden="true"></div>
 
 <style>
   .nav {
@@ -141,14 +150,25 @@ import { Image } from 'astro:assets';
     width: 100%;
   }
 
+  /* Active / current-page state */
+  .nav-link--active {
+    color: var(--color-on-surface);
+  }
+  .nav-link--active::after {
+    width: 100%;
+  }
+
+  /* Nav CTA — outlined ghost style (secondary to hero CTA) */
   .nav-link--cta {
     padding: 0.5rem 1.25rem;
-    background: linear-gradient(135deg, var(--color-primary-container), #eb9fe4);
-    color: var(--color-on-primary);
+    background: transparent;
+    color: var(--color-primary);
+    border: 1px solid var(--color-outline-variant);
     border-radius: 0.125rem;
     font-weight: 600;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .nav-link--cta::after {
@@ -156,14 +176,52 @@ import { Image } from 'astro:assets';
   }
 
   .nav-link--cta:hover {
-    color: var(--color-on-primary);
-    transform: scale(1.02);
-    filter: brightness(1.1);
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    background: rgba(255, 170, 248, 0.06);
+  }
+
+  /* Active CTA keeps primary color */
+  .nav-link--cta.nav-link--active {
+    border-color: var(--color-primary);
+    background: rgba(255, 170, 248, 0.06);
+  }
+
+  /* Close button inside mobile drawer */
+  .nav-close {
+    display: none;
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-on-surface-variant);
+    padding: 0.5rem;
+  }
+
+  /* Backdrop overlay */
+  .nav-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 30;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .nav-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
   }
 
   @media (max-width: 768px) {
     .nav-hamburger {
       display: flex;
+    }
+
+    .nav-close {
+      display: block;
     }
 
     .nav-links {
@@ -197,6 +255,8 @@ import { Image } from 'astro:assets';
   const nav = document.getElementById('main-nav');
   const toggle = document.getElementById('nav-toggle');
   const links = document.getElementById('nav-links');
+  const backdrop = document.getElementById('nav-backdrop');
+  const closeBtn = document.getElementById('nav-close');
 
   /* Scroll detection for glassmorphism navbar */
   let ticking = false;
@@ -216,20 +276,60 @@ import { Image } from 'astro:assets';
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
-  /* Mobile hamburger */
+  /* Open / close helpers */
+  function openMenu() {
+    toggle?.setAttribute('aria-expanded', 'true');
+    toggle?.setAttribute('aria-label', 'Zamknij menu');
+    toggle?.classList.add('active');
+    links?.classList.add('open');
+    backdrop?.classList.add('open');
+    closeBtn?.focus();
+  }
+
+  function closeMenu() {
+    toggle?.setAttribute('aria-expanded', 'false');
+    toggle?.setAttribute('aria-label', 'Otwórz menu');
+    toggle?.classList.remove('active');
+    links?.classList.remove('open');
+    backdrop?.classList.remove('open');
+    toggle?.focus();
+  }
+
+  /* Mobile hamburger toggle */
   toggle?.addEventListener('click', () => {
     const expanded = toggle.getAttribute('aria-expanded') === 'true';
-    toggle.setAttribute('aria-expanded', String(!expanded));
-    toggle.classList.toggle('active');
-    links?.classList.toggle('open');
+    if (expanded) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
   });
+
+  /* Close button inside drawer */
+  closeBtn?.addEventListener('click', closeMenu);
+
+  /* Backdrop tap-to-close */
+  backdrop?.addEventListener('click', closeMenu);
 
   /* Close mobile menu on link click */
   links?.querySelectorAll('a').forEach((link) => {
-    link.addEventListener('click', () => {
-      toggle?.classList.remove('active');
-      toggle?.setAttribute('aria-expanded', 'false');
-      links?.classList.remove('open');
-    });
+    link.addEventListener('click', closeMenu);
   });
+
+  /* Focus trap inside open drawer */
+  function trapFocus(e: KeyboardEvent) {
+    if (!links?.classList.contains('open')) return;
+    const focusable = links.querySelectorAll<HTMLElement>('a, button');
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.key === 'Tab') {
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault(); last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault(); first.focus();
+      }
+    }
+    if (e.key === 'Escape') closeMenu();
+  }
+  document.addEventListener('keydown', trapFocus);
 </script>
