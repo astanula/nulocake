@@ -27,8 +27,15 @@ const path = Astro.url.pathname;
       <li><a href="/oferta" class:list={['nav-link', { 'nav-link--active': path === '/oferta' || path === '/oferta/' }]} aria-current={path === '/oferta' || path === '/oferta/' ? 'page' : undefined}>Oferta</a></li>
       <li><a href="/galeria" class:list={['nav-link', { 'nav-link--active': path === '/galeria' || path === '/galeria/' }]} aria-current={path === '/galeria' || path === '/galeria/' ? 'page' : undefined}>Galeria</a></li>
       <li><a href="/o-mnie" class:list={['nav-link', { 'nav-link--active': path === '/o-mnie' || path === '/o-mnie/' }]} aria-current={path === '/o-mnie' || path === '/o-mnie/' ? 'page' : undefined}>O mnie</a></li>
-      <li><a href="/kontakt" class:list={['nav-link', 'nav-link--cta', { 'nav-link--active': path === '/kontakt' || path === '/kontakt/' }]} aria-current={path === '/kontakt' || path === '/kontakt/' ? 'page' : undefined}>Kontakt</a></li>
+      <li><a href="/kontakt" class:list={['nav-link', { 'nav-link--active': path === '/kontakt' || path === '/kontakt/' }]} aria-current={path === '/kontakt' || path === '/kontakt/' ? 'page' : undefined}>Kontakt</a></li>
     </ul>
+
+    <a
+      id="nav-cta"
+      href="/kontakt"
+      class="nav-cta"
+      aria-label="Zamów tort"
+    >Zamów</a>
   </div>
 </nav>
 <div id="nav-backdrop" class="nav-backdrop" aria-hidden="true"></div>
@@ -60,6 +67,7 @@ const path = Astro.url.pathname;
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 2rem;
+    gap: 1rem;
   }
 
   .nav-logo {
@@ -117,14 +125,16 @@ const path = Astro.url.pathname;
     align-items: center;
     gap: 2.5rem;
     list-style: none;
+    /* Center the links in the remaining space */
+    flex: 1;
+    justify-content: center;
   }
 
   .nav-link {
     font-family: var(--font-family-body);
     font-weight: 500;
     font-size: 0.8125rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.04em;
     color: var(--color-on-surface-variant);
     text-decoration: none;
     position: relative;
@@ -158,31 +168,24 @@ const path = Astro.url.pathname;
     width: 100%;
   }
 
-  /* Nav CTA — outlined ghost style (secondary to hero CTA) */
-  .nav-link--cta {
+  /* Right-side CTA button */
+  .nav-cta {
+    flex-shrink: 0;
     padding: 0.5rem 1.25rem;
     background: transparent;
     color: var(--color-primary);
     border: 1px solid var(--color-outline-variant);
     border-radius: 0.125rem;
+    font-family: var(--font-family-body);
+    font-size: 0.8125rem;
     font-weight: 600;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    transition: border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
                 background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .nav-link--cta::after {
-    display: none;
-  }
-
-  .nav-link--cta:hover {
-    color: var(--color-primary);
-    border-color: var(--color-primary);
-    background: rgba(255, 170, 248, 0.06);
-  }
-
-  /* Active CTA keeps primary color */
-  .nav-link--cta.nav-link--active {
+  .nav-cta:hover {
     border-color: var(--color-primary);
     background: rgba(255, 170, 248, 0.06);
   }
@@ -222,6 +225,11 @@ const path = Astro.url.pathname;
 
     .nav-close {
       display: block;
+    }
+
+    /* Hide the CTA button on mobile — it's accessible via the drawer */
+    .nav-cta {
+      display: none;
     }
 
     .nav-links {
