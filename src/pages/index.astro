@@ -164,6 +164,7 @@ import Footer from '../components/Footer.astro';
       <!-- ── RIGHT: Pinned Video ────────────────── -->
       <div class="hero-video-col" id="hero-video-col">
         <div class="hero-video-wrapper">
+          <!-- TEMPORARILY DISABLED VIDEO FOR PERFORMANCE
           <video
             id="hero-video"
             src="/hero-video.mp4"
@@ -175,6 +176,8 @@ import Footer from '../components/Footer.astro';
             aria-hidden="true"
             tabindex="-1"
           ></video>
+          -->
+          <img src="/hero-poster.webp" alt="" class="hero-video" id="hero-video-fallback" />
           <!-- Subtle ambient glow behind the video -->
           <div class="hero-video-glow" aria-hidden="true"></div>
         </div>
@@ -525,7 +528,8 @@ import Footer from '../components/Footer.astro';
                 }
               });
 
-              // Video scrub
+              // TEMPORARILY DISABLED VIDEO SCRUB FOR PERFORMANCE
+              /*
               if (video && !seeking) {
                 const duration = video.duration;
                 if (duration && !isNaN(duration)) {
@@ -537,6 +541,7 @@ import Footer from '../components/Footer.astro';
                   }
                 }
               }
+              */
             }
           }
         });
