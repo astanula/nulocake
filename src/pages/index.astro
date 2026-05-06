@@ -666,23 +666,44 @@ import Footer from '../components/Footer.astro';
           if (i < sections.length - 1) {
             const outStartTime = (i * 20) + 10;
             
-            tl.to(elements, {
-              opacity: 0,
-              filter: 'blur(12px)',
-              y: -30,
-              duration: 2.5,
-              stagger: 0.2,
-              ease: 'power2.inOut'
-            }, outStartTime);
+            words.forEach((word, wIdx) => {
+              const progress = wIdx / words.length;
+              const delay = Math.pow(progress, 0.8) * 8.0;
+              
+              tl.to(word, {
+                opacity: 0,
+                y: -30,
+                scale: 1.1,
+                rotateX: 15,
+                duration: 6.0,
+                ease: 'power2.in'
+              }, outStartTime + delay);
+              
+              tl.to(word, {
+                filter: 'blur(16px) brightness(0.6)',
+                duration: 3.0,
+                ease: 'power2.in'
+              }, outStartTime + delay);
+            });
 
-            tl.to(words, {
-              opacity: 0,
-              filter: 'blur(12px) brightness(0.6)',
-              y: -30,
-              duration: 2.5,
-              stagger: 0.05,
-              ease: 'power2.inOut'
-            }, outStartTime + 0.5);
+            elements.forEach((el, eIdx) => {
+              const pseudoIdx = words.length + eIdx;
+              const progress = pseudoIdx / words.length;
+              const delay = Math.pow(progress, 0.8) * 8.0;
+              
+              tl.to(el, {
+                opacity: 0,
+                y: -30,
+                duration: 6.0,
+                ease: 'power2.in'
+              }, outStartTime + delay);
+              
+              tl.to(el, {
+                filter: 'blur(16px)',
+                duration: 3.0,
+                ease: 'power2.in'
+              }, outStartTime + delay);
+            });
           }
         });
       };
