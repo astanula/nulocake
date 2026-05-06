@@ -514,7 +514,7 @@ import Footer from '../components/Footer.astro';
           scrollTrigger: {
             trigger: heroContainer,
             start: 'top top',
-            end: '+=400%', // 4 transitions for 5 sections
+            end: '+=600%', // Extra scroll room for hold phases
             pin: '.hero-sticky-wrapper',
             scrub: 1, // Smooth scrub
             onUpdate: (self) => {
@@ -551,9 +551,12 @@ import Footer from '../components/Footer.astro';
           const words = section.querySelectorAll('.word');
           const elements = section.querySelectorAll('.blur-in');
 
-          // SECTION 0: Plays on load (independent of scroll timeline)
+          // SECTION 0: Load animation plays independently, but the scroll
+          // timeline also owns its visible state so reverse-scrub works.
           if (i === 0) {
             section.classList.add('is-active');
+
+            // ── Standalone load entrance (plays once on page load) ──
             gsap.set(words, {
               opacity: 0,
               filter: 'blur(16px) brightness(0.6)',
@@ -609,10 +612,41 @@ import Footer from '../components/Footer.astro';
                 delay: delay + 0.2
               });
             });
+
+            // ── Anchor the "fully visible" state in the timeline ──
+            // Placed at time 1 (not 0) so it does NOT fire on initial
+            // page load (playhead starts at 0), letting the standalone
+            // entrance animation play. When scrubbing backward from the
+            // outro, GSAP renders the fromTo "from" values (fully visible)
+            // all the way back to time 0.
+            words.forEach((word) => {
+              tl.fromTo(word,
+                { opacity: 1, y: 0, scale: 1, rotateX: 0 },
+                { opacity: 1, y: 0, scale: 1, rotateX: 0, duration: 0.01, immediateRender: false },
+                1
+              );
+              tl.fromTo(word,
+                { filter: 'blur(0px) brightness(1)' },
+                { filter: 'blur(0px) brightness(1)', duration: 0.01, immediateRender: false },
+                1
+              );
+            });
+            elements.forEach((el) => {
+              tl.fromTo(el,
+                { opacity: 1, y: 0 },
+                { opacity: 1, y: 0, duration: 0.01, immediateRender: false },
+                1
+              );
+              tl.fromTo(el,
+                { filter: 'blur(0px)' },
+                { filter: 'blur(0px)', duration: 0.01, immediateRender: false },
+                1
+              );
+            });
           } 
           // OTHER SECTIONS: Scrubbed IN
           else {
-            const inStartTime = (i * 20) - 5;
+            const inStartTime = i * 30;
             
             gsap.set(words, {
               opacity: 0,
@@ -669,7 +703,7 @@ import Footer from '../components/Footer.astro';
 
           // ALL SECTIONS EXCEPT LAST: Scrubbed OUT
           if (i < sections.length - 1) {
-            const outStartTime = (i * 20) + 10;
+            const outStartTime = (i * 30) + 20;
             
             words.forEach((word, wIdx) => {
               const progress = wIdx / words.length;
@@ -711,6 +745,10 @@ import Footer from '../components/Footer.astro';
             });
           }
         });
+
+        // Pin total timeline duration to exactly sections.length * 30
+        // so that each section gets an equal share of scroll progress.
+        tl.addLabel('end', sections.length * 30);
       };
 
       if (video && video.readyState >= 1) {
