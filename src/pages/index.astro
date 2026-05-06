@@ -12,172 +12,174 @@ import Footer from '../components/Footer.astro';
        Split-screen: Left = text sections, Right = pinned video
        ═══════════════════════════════════════════ -->
   <main id="hero-scroll-container" class="hero-container" tabindex="-1">
+    <div class="hero-sticky-wrapper">
+      <!-- ── LEFT: Scrolling Text Sections ──────── -->
+      <div class="hero-text-col">
 
-    <!-- ── LEFT: Scrolling Text Sections ──────── -->
-    <div class="hero-text-col">
-
-      <!-- Section 1: Hero / Above the Fold -->
-      <section id="section-hero" class="hero-section hero-section--active" aria-label="Strona główna">
-        <div class="hero-section-inner">
-          <h1 class="display-lg section-heading">
-            Wymarzony tort<br />na Twoją <span class="accent-italic">wyjątkową</span> okazję.
-          </h1>
-          <p class="body-lg section-body">
-            Artystyczne torty na zamówienie tworzone z pasją. Jesteś w odpowiednim miejscu, aby to słodkie marzenie spełnić!
-          </p>
-          <div class="section-cta-group">
-            <a href="/oferta" class="btn-primary" id="cta-oferta">Sprawdź ofertę</a>
-            <a href="/galeria" class="btn-secondary" id="cta-galeria">Zobacz galerię</a>
-          </div>
-        </div>
-      </section>
-
-      <!-- Section 2: About / Story -->
-      <section id="section-story" class="hero-section" aria-label="O nas">
-        <div class="hero-section-inner">
-          <h2 class="display-lg section-heading">
-            Sztuka, która<br /><span class="accent-italic">zachwyca</span> smakiem.
-          </h2>
-          <p class="body-lg section-body">
-            Wierzę, że każdy tort to osobna historia. W moją pracę wkładam całe serce, traktując każde zamówienie jako w 100% indywidualny projekt. Zależy mi na tym, aby efekt końcowy nie tylko zapierał dech w piersiach unikalną dekoracją dopracowaną w każdym detalu, ale również zniewalał smakiem od pierwszego kęsa.
-          </p>
-          <p class="body-lg section-body">
-            Nie ma tu miejsca na kompromisy — tworzę jadalne dzieła sztuki, które dopełnią Twoją uroczystość.
-          </p>
-          <div class="section-cta-group">
-            <a href="/o-mnie" class="btn-secondary section-link" id="cta-historia">
-              Poznaj moją historię
-              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 8h10M9 4l4 4-4 4"/>
-              </svg>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <!-- Section 3: Gallery Preview -->
-      <section id="section-gallery" class="hero-section" aria-label="Galeria">
-        <div class="hero-section-inner">
-          <h2 class="display-lg section-heading">
-            Moje słodkie<br /><span class="accent-italic">dzieła</span> sztuki
-          </h2>
-          <div class="gallery-carousel">
-            <div class="gallery-item">
-              <img src="/gallery-1.webp" alt="Artystyczny tort weselny z różowymi różami" width="400" height="400" loading="lazy" />
-            </div>
-            <div class="gallery-item">
-              <img src="/gallery-2.webp" alt="Kolorowy tort urodzinowy z akwarelowym wzorem" width="400" height="400" loading="lazy" />
-            </div>
-            <div class="gallery-item">
-              <img src="/gallery-3.webp" alt="Elegancki minimalistyczny tort ze złotymi detalami" width="400" height="400" loading="lazy" />
-            </div>
-            <div class="gallery-item">
-              <img src="/gallery-4.webp" alt="Fantazyjny tort dziecięcy z figurkami" width="400" height="400" loading="lazy" />
-            </div>
-            <div class="gallery-item">
-              <img src="/gallery-1.webp" alt="Artystyczny tort weselny z różowymi różami" width="400" height="400" loading="lazy" />
-            </div>
-            <div class="gallery-item">
-              <img src="/gallery-2.webp" alt="Kolorowy tort urodzinowy z akwarelowym wzorem" width="400" height="400" loading="lazy" />
+        <!-- Section 1: Hero / Above the Fold -->
+        <section id="section-hero" class="hero-section" aria-label="Strona główna">
+          <div class="hero-section-inner">
+            <h1 class="display-lg section-heading">
+              <span class="word">Wymarzony</span> <span class="word">tort</span><br />
+              <span class="word">na</span> <span class="word">Twoją</span> <span class="word accent-italic">wyjątkową</span> <span class="word">okazję.</span>
+            </h1>
+            <p class="body-lg section-body blur-in">
+              Artystyczne torty na zamówienie tworzone z pasją. Jesteś w odpowiednim miejscu, aby to słodkie marzenie spełnić!
+            </p>
+            <div class="section-cta-group blur-in">
+              <a href="/oferta" class="btn-primary" id="cta-oferta">Sprawdź ofertę</a>
+              <a href="/galeria" class="btn-secondary" id="cta-galeria">Zobacz galerię</a>
             </div>
           </div>
-          <div class="section-cta-group">
-            <a href="/galeria" class="btn-secondary" id="cta-full-galeria">Pełna Galeria</a>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- Section 4: Testimonials -->
-      <section id="section-testimonials" class="hero-section" aria-label="Opinie klientów">
-        <div class="hero-section-inner">
-          <h2 class="display-lg section-heading">
-            Co mówią moi<br /><span class="accent-italic">klienci</span>?
-          </h2>
-          <div class="testimonials-stack">
-            <blockquote class="testimonial-card">
-              <div class="testimonial-stars" role="img" aria-label="5 z 5 gwiazdek">
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <!-- Section 2: About / Story -->
+        <section id="section-story" class="hero-section" aria-label="O nas">
+          <div class="hero-section-inner">
+            <h2 class="display-lg section-heading">
+              <span class="word">Sztuka,</span> <span class="word">która</span><br />
+              <span class="word accent-italic">zachwyca</span> <span class="word">smakiem.</span>
+            </h2>
+            <p class="body-lg section-body blur-in">
+              Wierzę, że każdy tort to osobna historia. W moją pracę wkładam całe serce, traktując każde zamówienie jako w 100% indywidualny projekt. Zależy mi na tym, aby efekt końcowy nie tylko zapierał dech w piersiach unikalną dekoracją dopracowaną w każdym detalu, ale również zniewalał smakiem od pierwszego kęsa.
+            </p>
+            <div class="section-cta-group blur-in">
+              <a href="/o-mnie" class="btn-secondary section-link" id="cta-historia">
+                Poznaj moją historię
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 8h10M9 4l4 4-4 4"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 3: Gallery Preview -->
+        <section id="section-gallery" class="hero-section" aria-label="Galeria">
+          <div class="hero-section-inner">
+            <h2 class="display-lg section-heading">
+              <span class="word">Moje</span> <span class="word">słodkie</span><br />
+              <span class="word accent-italic">dzieła</span> <span class="word">sztuki</span>
+            </h2>
+            <div class="gallery-carousel blur-in">
+              <div class="gallery-item">
+                <img src="/gallery-1.webp" alt="Artystyczny tort weselny z różowymi różami" width="400" height="400" loading="lazy" />
               </div>
-              <p class="testimonial-text">"Tort był absolutnym dziełem sztuki. Nikt nie chciał go kroić, dopóki nie spróbowaliśmy pierwszego kawałka!"</p>
-              <footer class="testimonial-author">
-                <span class="testimonial-name">Anna Kowalska</span>
-                <span class="testimonial-role">Wesele, czerwiec 2025</span>
-              </footer>
-            </blockquote>
-
-            <blockquote class="testimonial-card">
-              <div class="testimonial-stars" role="img" aria-label="5 z 5 gwiazdek">
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <div class="gallery-item">
+                <img src="/gallery-2.webp" alt="Kolorowy tort urodzinowy z akwarelowym wzorem" width="400" height="400" loading="lazy" />
               </div>
-              <p class="testimonial-text">"Szukałem czegoś unikalnego na 30-ste urodziny żony. Nulo Cake przerosiło moje oczekiwania."</p>
-              <footer class="testimonial-author">
-                <span class="testimonial-name">Marek Wiśniewski</span>
-                <span class="testimonial-role">Urodziny, marzec 2025</span>
-              </footer>
-            </blockquote>
-
-            <blockquote class="testimonial-card">
-              <div class="testimonial-stars" role="img" aria-label="5 z 5 gwiazdek">
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <div class="gallery-item">
+                <img src="/gallery-3.webp" alt="Elegancki minimalistyczny tort ze złotymi detalami" width="400" height="400" loading="lazy" />
               </div>
-              <p class="testimonial-text">"Perfekcyjne wykonanie i niesamowity smak. Goście do dziś pytają, skąd mieliśmy ten tort!"</p>
-              <footer class="testimonial-author">
-                <span class="testimonial-name">Katarzyna Nowicka</span>
-                <span class="testimonial-role">Komunia, maj 2025</span>
-              </footer>
-            </blockquote>
+              <div class="gallery-item">
+                <img src="/gallery-4.webp" alt="Fantazyjny tort dziecięcy z figurkami" width="400" height="400" loading="lazy" />
+              </div>
+              <div class="gallery-item">
+                <img src="/gallery-1.webp" alt="Artystyczny tort weselny z różowymi różami" width="400" height="400" loading="lazy" />
+              </div>
+              <div class="gallery-item">
+                <img src="/gallery-2.webp" alt="Kolorowy tort urodzinowy z akwarelowym wzorem" width="400" height="400" loading="lazy" />
+              </div>
+            </div>
+            <div class="section-cta-group blur-in">
+              <a href="/galeria" class="btn-secondary" id="cta-full-galeria">Pełna Galeria</a>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- Section 5: CTA / Contact -->
-      <section id="section-contact" class="hero-section" aria-label="Kontakt">
-        <div class="hero-section-inner">
-          <h2 class="display-lg section-heading">
-            Gotowy na swój<br /><span class="accent-italic">wymarzony</span> tort?
-          </h2>
-          <p class="body-lg section-body">
-            Napisz do mnie — opowiedz o swojej okazji, a ja zajmę się resztą.
-          </p>
-          <div class="section-cta-group">
-            <a href="/kontakt" class="btn-primary" id="cta-kontakt">Skontaktuj się i zarezerwuj termin</a>
+        <!-- Section 4: Testimonials -->
+        <section id="section-testimonials" class="hero-section" aria-label="Opinie klientów">
+          <div class="hero-section-inner">
+            <h2 class="display-lg section-heading">
+              <span class="word">Co</span> <span class="word">mówią</span> <span class="word">moi</span><br />
+              <span class="word accent-italic">klienci?</span>
+            </h2>
+            <div class="testimonials-stack blur-in">
+              <blockquote class="testimonial-card">
+                <div class="testimonial-stars" role="img" aria-label="5 z 5 gwiazdek">
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+                <p class="testimonial-text">"Tort był absolutnym dziełem sztuki. Nikt nie chciał go kroić, dopóki nie spróbowaliśmy pierwszego kawałka!"</p>
+                <footer class="testimonial-author">
+                  <span class="testimonial-name">Anna Kowalska</span>
+                  <span class="testimonial-role">Wesele, czerwiec 2025</span>
+                </footer>
+              </blockquote>
+
+              <blockquote class="testimonial-card">
+                <div class="testimonial-stars" role="img" aria-label="5 z 5 gwiazdek">
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+                <p class="testimonial-text">"Szukałem czegoś unikalnego na 30-ste urodziny żony. Nulo Cake przerosiło moje oczekiwania."</p>
+                <footer class="testimonial-author">
+                  <span class="testimonial-name">Marek Wiśniewski</span>
+                  <span class="testimonial-role">Urodziny, marzec 2025</span>
+                </footer>
+              </blockquote>
+
+              <blockquote class="testimonial-card">
+                <div class="testimonial-stars" role="img" aria-label="5 z 5 gwiazdek">
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+                <p class="testimonial-text">"Perfekcyjne wykonanie i niesamowity smak. Goście do dziś pytają, skąd mieliśmy ten tort!"</p>
+                <footer class="testimonial-author">
+                  <span class="testimonial-name">Katarzyna Nowicka</span>
+                  <span class="testimonial-role">Komunia, maj 2025</span>
+                </footer>
+              </blockquote>
+            </div>
           </div>
+        </section>
+
+        <!-- Section 5: CTA / Contact -->
+        <section id="section-contact" class="hero-section" aria-label="Kontakt">
+          <div class="hero-section-inner">
+            <h2 class="display-lg section-heading">
+              <span class="word">Gotowy</span> <span class="word">na</span> <span class="word">swój</span><br />
+              <span class="word accent-italic">wymarzony</span> <span class="word">tort?</span>
+            </h2>
+            <p class="body-lg section-body blur-in">
+              Napisz do mnie — opowiedz o swojej okazji, a ja zajmę się resztą.
+            </p>
+            <div class="section-cta-group blur-in">
+              <a href="/kontakt" class="btn-primary" id="cta-kontakt">Skontaktuj się i zarezerwuj termin</a>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ── RIGHT: Pinned Video ────────────────── -->
+      <div class="hero-video-col" id="hero-video-col">
+        <div class="hero-video-wrapper">
+          <video
+            id="hero-video"
+            src="/hero-video.mp4"
+            poster="/hero-poster.webp"
+            muted
+            playsinline
+            preload="metadata"
+            class="hero-video"
+            aria-hidden="true"
+            tabindex="-1"
+          ></video>
+          <!-- Subtle ambient glow behind the video -->
+          <div class="hero-video-glow" aria-hidden="true"></div>
         </div>
-      </section>
-
-    </div>
-
-    <!-- ── RIGHT: Pinned Video ────────────────── -->
-    <div class="hero-video-col" id="hero-video-col">
-      <div class="hero-video-wrapper">
-        <video
-          id="hero-video"
-          src="/hero-video.mp4"
-          poster="/hero-poster.webp"
-          muted
-          playsinline
-          preload="metadata"
-          class="hero-video"
-          aria-hidden="true"
-          tabindex="-1"
-        ></video>
-        <!-- Subtle ambient glow behind the video -->
-        <div class="hero-video-glow" aria-hidden="true"></div>
       </div>
     </div>
-
   </main>
 
   <Footer />
@@ -189,37 +191,54 @@ import Footer from '../components/Footer.astro';
      ═══════════════════════════════════════════ */
   .hero-container {
     position: relative;
+    width: 100%;
+  }
+
+  .hero-sticky-wrapper {
+    height: 100dvh;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    min-height: 100dvh;
     max-width: 1400px;
     margin: 0 auto;
-    overflow-x: clip;
+    overflow: hidden;
   }
 
   /* ── Left Column: scrolling text ─────────── */
   .hero-text-col {
     position: relative;
+    height: 100%;
     z-index: 2;
   }
 
   .hero-section {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     display: flex;
-    align-items: center;
-    min-height: 100dvh;
-    padding: 4rem 2rem 4rem 4rem;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: max(7rem, 18vh) 2rem 4rem 4rem;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .hero-section.is-active {
+    pointer-events: auto;
+    visibility: visible;
   }
 
   .hero-section-inner {
     max-width: 560px;
-    opacity: 0;
-    transform: translateY(60px);
+    width: 100%;
   }
 
-  /* First section starts visible */
-  .hero-section--active .hero-section-inner {
-    opacity: 1;
-    transform: translateY(0);
+  .word {
+    display: inline-block;
+    will-change: filter, transform, opacity;
+    transform-style: preserve-3d;
   }
 
   .section-label {
@@ -265,13 +284,12 @@ import Footer from '../components/Footer.astro';
   /* ── Right Column: pinned video ──────────── */
   .hero-video-col {
     position: relative;
+    height: 100%;
   }
 
   .hero-video-wrapper {
-    position: sticky;
-    top: 0;
     width: 100%;
-    height: 100dvh;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -409,7 +427,7 @@ import Footer from '../components/Footer.astro';
      RESPONSIVE — MOBILE COLLAPSE
      ═══════════════════════════════════════════ */
   @media (max-width: 768px) {
-    .hero-container {
+    .hero-sticky-wrapper {
       display: grid;
       grid-template-columns: 1fr;
     }
@@ -417,21 +435,18 @@ import Footer from '../components/Footer.astro';
     .hero-video-col {
       grid-column: 1;
       grid-row: 1;
-      position: sticky;
+      position: absolute;
       top: 0;
-      height: 100dvh;
+      left: 0;
+      width: 100%;
+      height: 100%;
       z-index: 1;
-      opacity: 0.2; /* Dim the video so text is clearly readable */
+      opacity: 0.2;
       pointer-events: none;
     }
 
     .hero-video-wrapper {
-      position: relative;
-      height: 100dvh;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      height: 100%;
       padding-top: 0;
     }
 
@@ -450,13 +465,9 @@ import Footer from '../components/Footer.astro';
     }
 
     .hero-section {
-      min-height: 100dvh;
-      padding: 3rem 1.5rem;
-      justify-content: center;
-    }
-
-    .hero-section:first-child {
-      min-height: 100dvh;
+      padding: max(6rem, 15vh) 1.5rem 3rem 1.5rem;
+      justify-content: flex-start;
+      align-items: center;
     }
 
     .section-heading {
@@ -474,152 +485,220 @@ import Footer from '../components/Footer.astro';
   const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   function makeAllSectionsVisible() {
-    document.querySelectorAll('.hero-section-inner').forEach((el) => {
+    document.querySelectorAll('.hero-section').forEach((el) => {
+      (el as HTMLElement).style.visibility = 'visible';
       (el as HTMLElement).style.opacity = '1';
+    });
+    document.querySelectorAll('.word, .blur-in').forEach((el) => {
+      (el as HTMLElement).style.opacity = '1';
+      (el as HTMLElement).style.filter = 'none';
       (el as HTMLElement).style.transform = 'none';
     });
   }
 
   if (!motionQuery.matches) {
-    /* ──────────────────────────────────────────────
-       SCROLL-DRIVEN VIDEO PLAYBACK
-       ────────────────────────────────────────────── */
     const video = document.getElementById('hero-video') as HTMLVideoElement | null;
     const heroContainer = document.getElementById('hero-scroll-container');
+    const sections = gsap.utils.toArray('.hero-section') as HTMLElement[];
 
-    if (video && heroContainer) {
-      const initVideo = () => {
-        const duration = video.duration;
-        if (!duration || isNaN(duration)) return;
+    if (heroContainer) {
+      let seeking = false;
 
-        let seeking = false;
-        ScrollTrigger.create({
-          trigger: heroContainer,
-          start: 'top top',
-          end: 'bottom bottom',
-          scrub: true,
-          onUpdate: (self) => {
-            if (seeking) return;
-            const targetTime = self.progress * duration;
-            if (Math.abs(video.currentTime - targetTime) > 0.05) {
-              seeking = true;
-              video.currentTime = targetTime;
-              requestAnimationFrame(() => { seeking = false; });
+      // Ensure video is ready before relying on duration
+      const initTimeline = () => {
+        // Master scroll-linked timeline
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: heroContainer,
+            start: 'top top',
+            end: '+=400%', // 4 transitions for 5 sections
+            pin: '.hero-sticky-wrapper',
+            scrub: 1, // Smooth scrub
+            onUpdate: (self) => {
+              // Update active class
+              const activeIndex = Math.min(sections.length - 1, Math.floor(self.progress * sections.length));
+              sections.forEach((sec, i) => {
+                if (i === activeIndex) {
+                  sec.classList.add('is-active');
+                } else {
+                  sec.classList.remove('is-active');
+                }
+              });
+
+              // Video scrub
+              if (video && !seeking) {
+                const duration = video.duration;
+                if (duration && !isNaN(duration)) {
+                  const targetTime = self.progress * duration;
+                  if (Math.abs(video.currentTime - targetTime) > 0.05) {
+                    seeking = true;
+                    video.currentTime = targetTime;
+                    requestAnimationFrame(() => { seeking = false; });
+                  }
+                }
+              }
             }
+          }
+        });
+
+        // Set up animations for each section
+        sections.forEach((section, i) => {
+          const words = section.querySelectorAll('.word');
+          const elements = section.querySelectorAll('.blur-in');
+
+          // SECTION 0: Plays on load (independent of scroll timeline)
+          if (i === 0) {
+            section.classList.add('is-active');
+            gsap.set(words, {
+              opacity: 0,
+              filter: 'blur(16px) brightness(0.6)',
+              y: 30,
+              scale: 0.9,
+              rotateX: -15
+            });
+            gsap.set(elements, { opacity: 0, filter: 'blur(16px)', y: 30 });
+
+            words.forEach((word, wIdx) => {
+              const progress = wIdx / words.length;
+              const delay = Math.pow(progress, 0.8) * 0.8;
+              const blur = 12 + Math.floor(Math.random() * 8);
+              const scale = 0.9 + Math.sin(wIdx * 0.2) * 0.05;
+              
+              gsap.set(word, { filter: `blur(${blur}px) brightness(0.6)`, scale: scale });
+              
+              gsap.to(word, {
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                rotateX: 0,
+                duration: 2.2,
+                ease: 'power3.out',
+                delay: delay + 0.2
+              });
+              
+              gsap.to(word, {
+                filter: 'blur(0px) brightness(1)',
+                duration: 0.9,
+                ease: 'power2.out',
+                delay: delay + 0.2
+              });
+            });
+
+            elements.forEach((el, eIdx) => {
+              const pseudoIdx = words.length + eIdx;
+              const progress = pseudoIdx / words.length;
+              const delay = Math.pow(progress, 0.8) * 0.8;
+              
+              gsap.to(el, {
+                opacity: 1,
+                y: 0,
+                duration: 2.2,
+                ease: 'power3.out',
+                delay: delay + 0.2
+              });
+              
+              gsap.to(el, {
+                filter: 'blur(0px)',
+                duration: 0.9,
+                ease: 'power2.out',
+                delay: delay + 0.2
+              });
+            });
+          } 
+          // OTHER SECTIONS: Scrubbed IN
+          else {
+            const inStartTime = (i * 20) - 5;
+            
+            gsap.set(words, {
+              opacity: 0,
+              filter: 'blur(16px) brightness(0.6)',
+              y: 30,
+              scale: 0.9,
+              rotateX: -15
+            });
+            gsap.set(elements, { opacity: 0, filter: 'blur(16px)', y: 30 });
+
+            words.forEach((word, wIdx) => {
+              const progress = wIdx / words.length;
+              const delay = Math.pow(progress, 0.8) * 2.0;
+              const blur = 12 + Math.floor(Math.random() * 8);
+              const scale = 0.9 + Math.sin(wIdx * 0.2) * 0.05;
+              
+              tl.set(word, { filter: `blur(${blur}px) brightness(0.6)`, scale: scale }, inStartTime);
+              
+              tl.to(word, {
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                rotateX: 0,
+                duration: 2.5,
+                ease: 'power3.out'
+              }, inStartTime + delay);
+              
+              tl.to(word, {
+                filter: 'blur(0px) brightness(1)',
+                duration: 1.2,
+                ease: 'power2.out'
+              }, inStartTime + delay);
+            });
+
+            elements.forEach((el, eIdx) => {
+              const pseudoIdx = words.length + eIdx;
+              const progress = pseudoIdx / words.length;
+              const delay = Math.pow(progress, 0.8) * 2.0;
+              
+              tl.to(el, {
+                opacity: 1,
+                y: 0,
+                duration: 2.5,
+                ease: 'power3.out'
+              }, inStartTime + delay);
+              
+              tl.to(el, {
+                filter: 'blur(0px)',
+                duration: 1.2,
+                ease: 'power2.out'
+              }, inStartTime + delay);
+            });
+          }
+
+          // ALL SECTIONS EXCEPT LAST: Scrubbed OUT
+          if (i < sections.length - 1) {
+            const outStartTime = (i * 20) + 10;
+            
+            tl.to(elements, {
+              opacity: 0,
+              filter: 'blur(12px)',
+              y: -30,
+              duration: 2.5,
+              stagger: 0.2,
+              ease: 'power2.inOut'
+            }, outStartTime);
+
+            tl.to(words, {
+              opacity: 0,
+              filter: 'blur(12px) brightness(0.6)',
+              y: -30,
+              duration: 2.5,
+              stagger: 0.05,
+              ease: 'power2.inOut'
+            }, outStartTime + 0.5);
           }
         });
       };
 
-      if (video.readyState >= 1) {
-        initVideo();
+      if (video && video.readyState >= 1) {
+        initTimeline();
+      } else if (video) {
+        video.addEventListener('loadedmetadata', initTimeline, { once: true });
       } else {
-        video.addEventListener('loadedmetadata', initVideo, { once: true });
+        initTimeline();
       }
     }
-
-    /* ──────────────────────────────────────────────
-       HERO SECTION 1 — ENTRANCE ANIMATION
-       ────────────────────────────────────────────── */
-    const heroInner = document.querySelector('#section-hero .hero-section-inner');
-    if (heroInner) {
-      const heroChildren = heroInner.querySelectorAll(
-        '.section-label, .section-heading, .section-body, .section-cta-group'
-      );
-      gsap.from(heroChildren, {
-        opacity: 0,
-        y: 24,
-        duration: 0.6,
-        ease: 'power3.out',
-        stagger: 0.1,
-        delay: 0.15,
-        clearProps: 'all',
-      });
-    }
-
-    /* ──────────────────────────────────────────────
-       SECTION TEXT REVEAL ANIMATIONS
-       ────────────────────────────────────────────── */
-    const sections = document.querySelectorAll('.hero-section');
-
-    sections.forEach((section, index) => {
-      const inner = section.querySelector('.hero-section-inner') as HTMLElement;
-      if (!inner) return;
-
-      /* First section uses its own entrance animation above */
-      if (index === 0) return;
-
-      gsap.fromTo(
-        inner,
-        { opacity: 0, y: 60 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.4,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: section,
-            start: 'top 75%',
-            end: 'top 30%',
-            toggleActions: 'play none none none',
-          },
-        }
-      );
-    });
-
-    /* ──────────────────────────────────────────────
-       GALLERY ITEM STAGGER REVEAL
-       ────────────────────────────────────────────── */
-    const galleryItems = document.querySelectorAll('.gallery-item');
-    if (galleryItems.length) {
-      gsap.fromTo(
-        galleryItems,
-        { opacity: 0, y: 30, scale: 0.95 },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.4,
-          ease: 'power2.out',
-          stagger: 0.05,
-          scrollTrigger: {
-            trigger: '#section-gallery',
-            start: 'top 70%',
-            toggleActions: 'play none none none',
-          },
-        }
-      );
-    }
-
-    /* ──────────────────────────────────────────────
-       TESTIMONIAL CARD STAGGER
-       ────────────────────────────────────────────── */
-    const testimonialCards = document.querySelectorAll('.testimonial-card');
-    if (testimonialCards.length) {
-      gsap.fromTo(
-        testimonialCards,
-        { opacity: 0, y: 25 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.5,
-          ease: 'power2.out',
-          stagger: 0.05,
-          scrollTrigger: {
-            trigger: '#section-testimonials',
-            start: 'top 70%',
-            toggleActions: 'play none none none',
-          },
-        }
-      );
-    }
   } else {
-    /* Reduced motion — skip all animations, show everything */
     makeAllSectionsVisible();
   }
 
-  /* ──────────────────────────────────────────────
-     REACT TO LIVE OS MOTION PREFERENCE CHANGES
-     ────────────────────────────────────────────── */
   motionQuery.addEventListener('change', (e) => {
     if (e.matches) {
       ScrollTrigger.getAll().forEach((t) => t.kill());
