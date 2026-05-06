@@ -620,7 +620,7 @@ import Footer from '../components/Footer.astro';
 
             words.forEach((word, wIdx) => {
               const progress = wIdx / words.length;
-              const delay = Math.pow(progress, 0.8) * 2.0;
+              const delay = Math.pow(progress, 0.8) * 8.0;
               const blur = 12 + Math.floor(Math.random() * 8);
               const scale = 0.9 + Math.sin(wIdx * 0.2) * 0.05;
               
@@ -631,13 +631,13 @@ import Footer from '../components/Footer.astro';
                 y: 0,
                 scale: 1,
                 rotateX: 0,
-                duration: 2.5,
+                duration: 6.0,
                 ease: 'power3.out'
               }, inStartTime + delay);
               
               tl.to(word, {
                 filter: 'blur(0px) brightness(1)',
-                duration: 1.2,
+                duration: 3.0,
                 ease: 'power2.out'
               }, inStartTime + delay);
             });
@@ -645,18 +645,18 @@ import Footer from '../components/Footer.astro';
             elements.forEach((el, eIdx) => {
               const pseudoIdx = words.length + eIdx;
               const progress = pseudoIdx / words.length;
-              const delay = Math.pow(progress, 0.8) * 2.0;
+              const delay = Math.pow(progress, 0.8) * 8.0;
               
               tl.to(el, {
                 opacity: 1,
                 y: 0,
-                duration: 2.5,
+                duration: 6.0,
                 ease: 'power3.out'
               }, inStartTime + delay);
               
               tl.to(el, {
                 filter: 'blur(0px)',
-                duration: 1.2,
+                duration: 3.0,
                 ease: 'power2.out'
               }, inStartTime + delay);
             });
