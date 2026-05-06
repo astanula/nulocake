@@ -509,14 +509,40 @@ import Footer from '../components/Footer.astro';
 
       // Ensure video is ready before relying on duration
       const initTimeline = () => {
+        // ── Timing constants ──────────────────────────────────
+        // SW   = section width in timeline time-units
+        // STAG = max stagger delay for word cascade
+        // DUR  = tween duration (transform props)
+        // FDUR = tween duration (filter/blur)
+        // HOLD = time-units where section stays fully visible
+        //
+        // Layout per section:  [intro STAG+DUR] [HOLD] [outro STAG+DUR]
+        // Intro span  = STAG + DUR = 5 + 5 = 10
+        // Outro span  = STAG + DUR = 5 + 5 = 10
+        // Total used  = 10 + HOLD + 10 = 23
+        // SW = 25 (2 spare units as buffer)
+        //
+        // ScrollTrigger end = 500%  →  each section = 100vh of scroll
+        // Hold = 3/25 * 100vh ≈ 12vh ≈ ~120px
+        const SW   = 25;
+        const STAG = 5.0;
+        const DUR  = 5.0;
+        const FDUR = 2.5;
+        const HOLD = 3;
+        const OUTRO_OFFSET = STAG + DUR + HOLD; // 13
+
+        // Cache section 0 elements for onUpdate reset
+        const s0words = sections[0]?.querySelectorAll('.word');
+        const s0elements = sections[0]?.querySelectorAll('.blur-in');
+
         // Master scroll-linked timeline
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: heroContainer,
             start: 'top top',
-            end: '+=600%', // Extra scroll room for hold phases
+            end: '+=500%',
             pin: '.hero-sticky-wrapper',
-            scrub: 1, // Smooth scrub
+            scrub: 1,
             onUpdate: (self) => {
               // Update active class
               const activeIndex = Math.min(sections.length - 1, Math.floor(self.progress * sections.length));
@@ -528,20 +554,29 @@ import Footer from '../components/Footer.astro';
                 }
               });
 
-              // TEMPORARILY DISABLED VIDEO SCRUB FOR PERFORMANCE
-              /*
-              if (video && !seeking) {
-                const duration = video.duration;
-                if (duration && !isNaN(duration)) {
-                  const targetTime = self.progress * duration;
-                  if (Math.abs(video.currentTime - targetTime) > 0.05) {
-                    seeking = true;
-                    video.currentTime = targetTime;
-                    requestAnimationFrame(() => { seeking = false; });
-                  }
-                }
+              // Fix section 0 scroll-back: when scrolling back near
+              // the top, force section 0 words to their visible state.
+              // The standalone load animation is long gone by now, and
+              // the timeline has no intro for section 0, so we must
+              // manually reset when the outro has fully reversed.
+              const s0outroStart = OUTRO_OFFSET; // time 13
+              const timelineTime = self.progress * (sections.length * SW);
+              if (activeIndex === 0 && timelineTime < s0outroStart) {
+                s0words?.forEach((w) => {
+                  gsap.set(w, {
+                    opacity: 1, y: 0, scale: 1, rotateX: 0,
+                    filter: 'blur(0px) brightness(1)',
+                    overwrite: 'auto'
+                  });
+                });
+                s0elements?.forEach((el) => {
+                  gsap.set(el, {
+                    opacity: 1, y: 0,
+                    filter: 'blur(0px)',
+                    overwrite: 'auto'
+                  });
+                });
               }
-              */
             }
           }
         });
@@ -551,12 +586,10 @@ import Footer from '../components/Footer.astro';
           const words = section.querySelectorAll('.word');
           const elements = section.querySelectorAll('.blur-in');
 
-          // SECTION 0: Load animation plays independently, but the scroll
-          // timeline also owns its visible state so reverse-scrub works.
+          // SECTION 0: Standalone load entrance (plays once on page load)
           if (i === 0) {
             section.classList.add('is-active');
 
-            // ── Standalone load entrance (plays once on page load) ──
             gsap.set(words, {
               opacity: 0,
               filter: 'blur(16px) brightness(0.6)',
@@ -575,20 +608,12 @@ import Footer from '../components/Footer.astro';
               gsap.set(word, { filter: `blur(${blur}px) brightness(0.6)`, scale: scale });
               
               gsap.to(word, {
-                opacity: 1,
-                y: 0,
-                scale: 1,
-                rotateX: 0,
-                duration: 2.2,
-                ease: 'power3.out',
-                delay: delay + 0.2
+                opacity: 1, y: 0, scale: 1, rotateX: 0,
+                duration: 2.2, ease: 'power3.out', delay: delay + 0.2
               });
-              
               gsap.to(word, {
                 filter: 'blur(0px) brightness(1)',
-                duration: 0.9,
-                ease: 'power2.out',
-                delay: delay + 0.2
+                duration: 0.9, ease: 'power2.out', delay: delay + 0.2
               });
             });
 
@@ -598,157 +623,104 @@ import Footer from '../components/Footer.astro';
               const delay = Math.pow(progress, 0.8) * 0.8;
               
               gsap.to(el, {
-                opacity: 1,
-                y: 0,
-                duration: 2.2,
-                ease: 'power3.out',
-                delay: delay + 0.2
+                opacity: 1, y: 0,
+                duration: 2.2, ease: 'power3.out', delay: delay + 0.2
               });
-              
               gsap.to(el, {
                 filter: 'blur(0px)',
-                duration: 0.9,
-                ease: 'power2.out',
-                delay: delay + 0.2
+                duration: 0.9, ease: 'power2.out', delay: delay + 0.2
               });
             });
 
-            // ── Anchor the "fully visible" state in the timeline ──
-            // Placed at time 1 (not 0) so it does NOT fire on initial
-            // page load (playhead starts at 0), letting the standalone
-            // entrance animation play. When scrubbing backward from the
-            // outro, GSAP renders the fromTo "from" values (fully visible)
-            // all the way back to time 0.
-            words.forEach((word) => {
-              tl.fromTo(word,
-                { opacity: 1, y: 0, scale: 1, rotateX: 0 },
-                { opacity: 1, y: 0, scale: 1, rotateX: 0, duration: 0.01, immediateRender: false },
-                1
-              );
-              tl.fromTo(word,
-                { filter: 'blur(0px) brightness(1)' },
-                { filter: 'blur(0px) brightness(1)', duration: 0.01, immediateRender: false },
-                1
-              );
-            });
-            elements.forEach((el) => {
-              tl.fromTo(el,
-                { opacity: 1, y: 0 },
-                { opacity: 1, y: 0, duration: 0.01, immediateRender: false },
-                1
-              );
-              tl.fromTo(el,
-                { filter: 'blur(0px)' },
-                { filter: 'blur(0px)', duration: 0.01, immediateRender: false },
-                1
-              );
-            });
-          } 
+            // No timeline intro for section 0 — the load animation
+            // handles it, and onUpdate handles the scroll-back reset.
+          }
           // OTHER SECTIONS: Scrubbed IN
           else {
-            const inStartTime = i * 30;
+            const inStartTime = i * SW;
             
             gsap.set(words, {
               opacity: 0,
               filter: 'blur(16px) brightness(0.6)',
-              y: 30,
-              scale: 0.9,
-              rotateX: -15
+              y: 30, scale: 0.9, rotateX: -15
             });
             gsap.set(elements, { opacity: 0, filter: 'blur(16px)', y: 30 });
 
             words.forEach((word, wIdx) => {
               const progress = wIdx / words.length;
-              const delay = Math.pow(progress, 0.8) * 8.0;
+              const delay = Math.pow(progress, 0.8) * STAG;
               const blur = 12 + Math.floor(Math.random() * 8);
               const scale = 0.9 + Math.sin(wIdx * 0.2) * 0.05;
               
               tl.set(word, { filter: `blur(${blur}px) brightness(0.6)`, scale: scale }, inStartTime);
               
               tl.to(word, {
-                opacity: 1,
-                y: 0,
-                scale: 1,
-                rotateX: 0,
-                duration: 6.0,
-                ease: 'power3.out'
+                opacity: 1, y: 0, scale: 1, rotateX: 0,
+                duration: DUR, ease: 'power3.out'
               }, inStartTime + delay);
               
               tl.to(word, {
                 filter: 'blur(0px) brightness(1)',
-                duration: 3.0,
-                ease: 'power2.out'
+                duration: FDUR, ease: 'power2.out'
               }, inStartTime + delay);
             });
 
             elements.forEach((el, eIdx) => {
               const pseudoIdx = words.length + eIdx;
               const progress = pseudoIdx / words.length;
-              const delay = Math.pow(progress, 0.8) * 8.0;
+              const delay = Math.pow(progress, 0.8) * STAG;
               
               tl.to(el, {
-                opacity: 1,
-                y: 0,
-                duration: 6.0,
-                ease: 'power3.out'
+                opacity: 1, y: 0,
+                duration: DUR, ease: 'power3.out'
               }, inStartTime + delay);
               
               tl.to(el, {
                 filter: 'blur(0px)',
-                duration: 3.0,
-                ease: 'power2.out'
+                duration: FDUR, ease: 'power2.out'
               }, inStartTime + delay);
             });
           }
 
           // ALL SECTIONS EXCEPT LAST: Scrubbed OUT
           if (i < sections.length - 1) {
-            const outStartTime = (i * 30) + 20;
+            const outStartTime = (i * SW) + OUTRO_OFFSET;
             
             words.forEach((word, wIdx) => {
               const progress = wIdx / words.length;
-              const delay = Math.pow(progress, 0.8) * 8.0;
+              const delay = Math.pow(progress, 0.8) * STAG;
               
               tl.to(word, {
-                opacity: 0,
-                y: -30,
-                scale: 1.1,
-                rotateX: 15,
-                duration: 6.0,
-                ease: 'power2.in'
+                opacity: 0, y: -30, scale: 1.1, rotateX: 15,
+                duration: DUR, ease: 'power2.in'
               }, outStartTime + delay);
               
               tl.to(word, {
                 filter: 'blur(16px) brightness(0.6)',
-                duration: 3.0,
-                ease: 'power2.in'
+                duration: FDUR, ease: 'power2.in'
               }, outStartTime + delay);
             });
 
             elements.forEach((el, eIdx) => {
               const pseudoIdx = words.length + eIdx;
               const progress = pseudoIdx / words.length;
-              const delay = Math.pow(progress, 0.8) * 8.0;
+              const delay = Math.pow(progress, 0.8) * STAG;
               
               tl.to(el, {
-                opacity: 0,
-                y: -30,
-                duration: 6.0,
-                ease: 'power2.in'
+                opacity: 0, y: -30,
+                duration: DUR, ease: 'power2.in'
               }, outStartTime + delay);
               
               tl.to(el, {
                 filter: 'blur(16px)',
-                duration: 3.0,
-                ease: 'power2.in'
+                duration: FDUR, ease: 'power2.in'
               }, outStartTime + delay);
             });
           }
         });
 
-        // Pin total timeline duration to exactly sections.length * 30
-        // so that each section gets an equal share of scroll progress.
-        tl.addLabel('end', sections.length * 30);
+        // Pin total timeline duration so each section gets equal scroll share
+        tl.addLabel('end', sections.length * SW);
       };
 
       if (video && video.readyState >= 1) {
