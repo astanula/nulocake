@@ -505,222 +505,270 @@ import Footer from '../components/Footer.astro';
     const sections = gsap.utils.toArray('.hero-section') as HTMLElement[];
 
     if (heroContainer) {
-      let seeking = false;
-
-      // Ensure video is ready before relying on duration
       const initTimeline = () => {
-        // ── Timing constants ──────────────────────────────────
-        // SW   = section width in timeline time-units
-        // STAG = max stagger delay for word cascade
-        // DUR  = tween duration (transform props)
-        // FDUR = tween duration (filter/blur)
-        // HOLD = time-units where section stays fully visible
-        //
-        // Layout per section:  [intro STAG+DUR] [HOLD] [outro STAG+DUR]
-        // Intro span  = STAG + DUR = 5 + 5 = 10
-        // Outro span  = STAG + DUR = 5 + 5 = 10
-        // Total used  = 10 + HOLD + 10 = 23
-        // SW = 25 (2 spare units as buffer)
-        //
-        // ScrollTrigger end = 500%  →  each section = 100vh of scroll
-        // Hold = 3/25 * 100vh ≈ 12vh ≈ ~120px
-        const SW   = 25;
-        const STAG = 5.0;
-        const DUR  = 5.0;
-        const FDUR = 2.5;
-        const HOLD = 3;
-        const OUTRO_OFFSET = STAG + DUR + HOLD; // 13
+        // ── Word-Based Scroll Unit System ──────────────────
+        // Every element has a weight in WU (Word Units).
+        // Duration = WU × PX_PER_WU (in timeline/scroll-px units).
+        // Elements cascade: each starts at DURGAP × previous duration
+        // after the previous element's start.
+        // ScrollTrigger end is in pixels → viewport-independent.
+        const PX_PER_WU    = 40;   // Scroll px per Word Unit
+        const DURGAP       = 0.5;  // Next element starts at 50% of previous duration
+        const HOLD         = 2;    // WU of hold between intro and outro
+        const HOLD_PX      = HOLD * PX_PER_WU;
+        const FDUR_RATIO   = 0.5;  // Filter duration = this × element duration
 
-        // Cache section 0 elements for onUpdate reset
-        const s0words = sections[0]?.querySelectorAll('.word');
-        const s0elements = sections[0]?.querySelectorAll('.blur-in');
+        // Element weights (all 1 WU as configured)
+        const WU_WORD         = 1;
+        const WU_BODY         = 1;  // Body paragraph
+        const WU_CTA          = 1;  // CTA button group
+        const WU_GALLERY      = 1;  // Gallery block
+        const WU_TESTIMONIALS = 1;  // Testimonials stack
 
-        // Master scroll-linked timeline
+        // ── Element data structure ─────────────────────────
+        type AnimElement = {
+          el: Element;
+          wu: number;
+          duration: number;
+          start: number;
+          type: 'word' | 'blur-in';
+        };
+
+        function getBlurInWeight(el: Element): number {
+          if (el.classList.contains('gallery-carousel'))   return WU_GALLERY;
+          if (el.classList.contains('testimonials-stack')) return WU_TESTIMONIALS;
+          if (el.classList.contains('section-cta-group'))  return WU_CTA;
+          return WU_BODY;
+        }
+
+        function buildSectionElements(section: HTMLElement): AnimElement[] {
+          const words   = Array.from(section.querySelectorAll('.word'));
+          const blurIns = Array.from(section.querySelectorAll('.blur-in'));
+          const elems: AnimElement[] = [];
+
+          for (const w of words) {
+            elems.push({ el: w, wu: WU_WORD, duration: 0, start: 0, type: 'word' });
+          }
+          for (const b of blurIns) {
+            elems.push({ el: b, wu: getBlurInWeight(b), duration: 0, start: 0, type: 'blur-in' });
+          }
+
+          // Compute duration and cascading start times
+          for (let j = 0; j < elems.length; j++) {
+            elems[j].duration = elems[j].wu * PX_PER_WU;
+            elems[j].start = j === 0
+              ? 0
+              : elems[j - 1].start + elems[j - 1].duration * DURGAP;
+          }
+          return elems;
+        }
+
+        // ── Compute per-section metrics ────────────────────
+        const sectionData = sections.map((section) => {
+          const elements  = buildSectionElements(section);
+          const last      = elements[elements.length - 1];
+          const introSpan = last.start + last.duration;
+          const sw        = introSpan + HOLD_PX + introSpan; // outro mirrors intro
+          return { section, elements, introSpan, sw };
+        });
+
+        const sectionStarts: number[] = [];
+        let cumulative = 0;
+        for (const data of sectionData) {
+          sectionStarts.push(cumulative);
+          cumulative += data.sw;
+        }
+        const totalDuration = cumulative;
+
+        // Cache section 0 data for onUpdate scroll-back fix
+        const s0elems      = sectionData[0].elements;
+        const s0outroStart = sectionData[0].introSpan + HOLD_PX;
+
+        // ── Master scroll-linked timeline ──────────────────
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: heroContainer,
             start: 'top top',
-            end: '+=500%',
+            end: '+=' + totalDuration,
             pin: '.hero-sticky-wrapper',
             scrub: 1,
             onUpdate: (self) => {
-              // Update active class
-              const activeIndex = Math.min(sections.length - 1, Math.floor(self.progress * sections.length));
-              sections.forEach((sec, i) => {
-                if (i === activeIndex) {
-                  sec.classList.add('is-active');
-                } else {
-                  sec.classList.remove('is-active');
+              // Active section detection (variable-width lookup)
+              const timelinePos = self.progress * totalDuration;
+              let activeIndex = sections.length - 1;
+              for (let k = 0; k < sectionData.length; k++) {
+                if (timelinePos < sectionStarts[k] + sectionData[k].sw) {
+                  activeIndex = k;
+                  break;
                 }
+              }
+
+              sections.forEach((sec, idx) => {
+                sec.classList.toggle('is-active', idx === activeIndex);
               });
 
-              // Fix section 0 scroll-back: when scrolling back near
-              // the top, force section 0 words to their visible state.
-              // The standalone load animation is long gone by now, and
-              // the timeline has no intro for section 0, so we must
-              // manually reset when the outro has fully reversed.
-              const s0outroStart = OUTRO_OFFSET; // time 13
-              const timelineTime = self.progress * (sections.length * SW);
-              if (activeIndex === 0 && timelineTime < s0outroStart) {
-                s0words?.forEach((w) => {
-                  gsap.set(w, {
-                    opacity: 1, y: 0, scale: 1, rotateX: 0,
-                    filter: 'blur(0px) brightness(1)',
-                    overwrite: 'auto'
-                  });
-                });
-                s0elements?.forEach((el) => {
-                  gsap.set(el, {
-                    opacity: 1, y: 0,
-                    filter: 'blur(0px)',
-                    overwrite: 'auto'
-                  });
+              // Section 0 scroll-back fix: force visible state
+              // when scrolled back before the outro starts
+              if (activeIndex === 0 && timelinePos < s0outroStart) {
+                s0elems.forEach((elem) => {
+                  if (elem.type === 'word') {
+                    gsap.set(elem.el, {
+                      opacity: 1, y: 0, scale: 1, rotateX: 0,
+                      filter: 'blur(0px) brightness(1)',
+                      overwrite: 'auto'
+                    });
+                  } else {
+                    gsap.set(elem.el, {
+                      opacity: 1, y: 0,
+                      filter: 'blur(0px)',
+                      overwrite: 'auto'
+                    });
+                  }
                 });
               }
             }
           }
         });
 
-        // Set up animations for each section
-        sections.forEach((section, i) => {
-          const words = section.querySelectorAll('.word');
-          const elements = section.querySelectorAll('.blur-in');
+        // ── Set up animations per section ──────────────────
+        sectionData.forEach((data, i) => {
+          const { section, elements, introSpan } = data;
+          const secStart = sectionStarts[i];
 
-          // SECTION 0: Standalone load entrance (plays once on page load)
+          // SECTION 0: Time-based load animation (not scroll-driven)
           if (i === 0) {
             section.classList.add('is-active');
 
-            gsap.set(words, {
-              opacity: 0,
-              filter: 'blur(16px) brightness(0.6)',
-              y: 30,
-              scale: 0.9,
-              rotateX: -15
-            });
-            gsap.set(elements, { opacity: 0, filter: 'blur(16px)', y: 30 });
-
-            words.forEach((word, wIdx) => {
-              const progress = wIdx / words.length;
-              const delay = Math.pow(progress, 0.8) * 0.8;
-              const blur = 12 + Math.floor(Math.random() * 8);
-              const scale = 0.9 + Math.sin(wIdx * 0.2) * 0.05;
-              
-              gsap.set(word, { filter: `blur(${blur}px) brightness(0.6)`, scale: scale });
-              
-              gsap.to(word, {
-                opacity: 1, y: 0, scale: 1, rotateX: 0,
-                duration: 2.2, ease: 'power3.out', delay: delay + 0.2
-              });
-              gsap.to(word, {
-                filter: 'blur(0px) brightness(1)',
-                duration: 0.9, ease: 'power2.out', delay: delay + 0.2
-              });
+            // Set initial hidden state
+            elements.forEach((elem) => {
+              if (elem.type === 'word') {
+                gsap.set(elem.el, {
+                  opacity: 0, filter: 'blur(16px) brightness(0.6)',
+                  y: 30, scale: 0.9, rotateX: -15
+                });
+              } else {
+                gsap.set(elem.el, { opacity: 0, filter: 'blur(16px)', y: 30 });
+              }
             });
 
-            elements.forEach((el, eIdx) => {
-              const pseudoIdx = words.length + eIdx;
-              const progress = pseudoIdx / words.length;
-              const delay = Math.pow(progress, 0.8) * 0.8;
-              
-              gsap.to(el, {
-                opacity: 1, y: 0,
-                duration: 2.2, ease: 'power3.out', delay: delay + 0.2
-              });
-              gsap.to(el, {
-                filter: 'blur(0px)',
-                duration: 0.9, ease: 'power2.out', delay: delay + 0.2
-              });
+            // Derive time-based delays from WU start positions
+            const maxStart = elements[elements.length - 1].start;
+
+            elements.forEach((elem, idx) => {
+              const delay = maxStart > 0
+                ? (elem.start / maxStart) * 0.8 + 0.2
+                : 0.2;
+
+              if (elem.type === 'word') {
+                const blur  = 12 + Math.floor(Math.random() * 8);
+                const scale = 0.9 + Math.sin(idx * 0.2) * 0.05;
+
+                gsap.set(elem.el, { filter: `blur(${blur}px) brightness(0.6)`, scale });
+
+                gsap.to(elem.el, {
+                  opacity: 1, y: 0, scale: 1, rotateX: 0,
+                  duration: 2.2, ease: 'power3.out', delay
+                });
+                gsap.to(elem.el, {
+                  filter: 'blur(0px) brightness(1)',
+                  duration: 0.9, ease: 'power2.out', delay
+                });
+              } else {
+                gsap.to(elem.el, {
+                  opacity: 1, y: 0,
+                  duration: 2.2, ease: 'power3.out', delay
+                });
+                gsap.to(elem.el, {
+                  filter: 'blur(0px)',
+                  duration: 0.9, ease: 'power2.out', delay
+                });
+              }
             });
 
-            // No timeline intro for section 0 — the load animation
-            // handles it, and onUpdate handles the scroll-back reset.
+            // No timeline intro for section 0 — load animation handles it,
+            // onUpdate handles the scroll-back reset.
           }
-          // OTHER SECTIONS: Scrubbed IN
+          // SECTIONS 1+: Scroll-driven intro
           else {
-            const inStartTime = i * SW;
-            
-            gsap.set(words, {
-              opacity: 0,
-              filter: 'blur(16px) brightness(0.6)',
-              y: 30, scale: 0.9, rotateX: -15
-            });
-            gsap.set(elements, { opacity: 0, filter: 'blur(16px)', y: 30 });
-
-            words.forEach((word, wIdx) => {
-              const progress = wIdx / words.length;
-              const delay = Math.pow(progress, 0.8) * STAG;
-              const blur = 12 + Math.floor(Math.random() * 8);
-              const scale = 0.9 + Math.sin(wIdx * 0.2) * 0.05;
-              
-              tl.set(word, { filter: `blur(${blur}px) brightness(0.6)`, scale: scale }, inStartTime);
-              
-              tl.to(word, {
-                opacity: 1, y: 0, scale: 1, rotateX: 0,
-                duration: DUR, ease: 'power3.out'
-              }, inStartTime + delay);
-              
-              tl.to(word, {
-                filter: 'blur(0px) brightness(1)',
-                duration: FDUR, ease: 'power2.out'
-              }, inStartTime + delay);
+            // Set initial hidden state
+            elements.forEach((elem) => {
+              if (elem.type === 'word') {
+                gsap.set(elem.el, {
+                  opacity: 0, filter: 'blur(16px) brightness(0.6)',
+                  y: 30, scale: 0.9, rotateX: -15
+                });
+              } else {
+                gsap.set(elem.el, { opacity: 0, filter: 'blur(16px)', y: 30 });
+              }
             });
 
-            elements.forEach((el, eIdx) => {
-              const pseudoIdx = words.length + eIdx;
-              const progress = pseudoIdx / words.length;
-              const delay = Math.pow(progress, 0.8) * STAG;
-              
-              tl.to(el, {
-                opacity: 1, y: 0,
-                duration: DUR, ease: 'power3.out'
-              }, inStartTime + delay);
-              
-              tl.to(el, {
-                filter: 'blur(0px)',
-                duration: FDUR, ease: 'power2.out'
-              }, inStartTime + delay);
+            elements.forEach((elem, idx) => {
+              const dur  = elem.duration;
+              const fdur = dur * FDUR_RATIO;
+              const pos  = secStart + elem.start;
+
+              if (elem.type === 'word') {
+                const blur  = 12 + Math.floor(Math.random() * 8);
+                const scale = 0.9 + Math.sin(idx * 0.2) * 0.05;
+
+                tl.set(elem.el, { filter: `blur(${blur}px) brightness(0.6)`, scale }, secStart);
+
+                tl.to(elem.el, {
+                  opacity: 1, y: 0, scale: 1, rotateX: 0,
+                  duration: dur, ease: 'power3.out'
+                }, pos);
+                tl.to(elem.el, {
+                  filter: 'blur(0px) brightness(1)',
+                  duration: fdur, ease: 'power2.out'
+                }, pos);
+              } else {
+                tl.to(elem.el, {
+                  opacity: 1, y: 0,
+                  duration: dur, ease: 'power3.out'
+                }, pos);
+                tl.to(elem.el, {
+                  filter: 'blur(0px)',
+                  duration: fdur, ease: 'power2.out'
+                }, pos);
+              }
             });
           }
 
-          // ALL SECTIONS EXCEPT LAST: Scrubbed OUT
+          // ALL SECTIONS EXCEPT LAST: Scroll-driven outro
+          // Outro mirrors intro — same start offsets and durations
           if (i < sections.length - 1) {
-            const outStartTime = (i * SW) + OUTRO_OFFSET;
-            
-            words.forEach((word, wIdx) => {
-              const progress = wIdx / words.length;
-              const delay = Math.pow(progress, 0.8) * STAG;
-              
-              tl.to(word, {
-                opacity: 0, y: -30, scale: 1.1, rotateX: 15,
-                duration: DUR, ease: 'power2.in'
-              }, outStartTime + delay);
-              
-              tl.to(word, {
-                filter: 'blur(16px) brightness(0.6)',
-                duration: FDUR, ease: 'power2.in'
-              }, outStartTime + delay);
-            });
+            const outroStart = secStart + introSpan + HOLD_PX;
 
-            elements.forEach((el, eIdx) => {
-              const pseudoIdx = words.length + eIdx;
-              const progress = pseudoIdx / words.length;
-              const delay = Math.pow(progress, 0.8) * STAG;
-              
-              tl.to(el, {
-                opacity: 0, y: -30,
-                duration: DUR, ease: 'power2.in'
-              }, outStartTime + delay);
-              
-              tl.to(el, {
-                filter: 'blur(16px)',
-                duration: FDUR, ease: 'power2.in'
-              }, outStartTime + delay);
+            elements.forEach((elem) => {
+              const dur  = elem.duration;
+              const fdur = dur * FDUR_RATIO;
+              const pos  = outroStart + elem.start;
+
+              if (elem.type === 'word') {
+                tl.to(elem.el, {
+                  opacity: 0, y: -30, scale: 1.1, rotateX: 15,
+                  duration: dur, ease: 'power2.in'
+                }, pos);
+                tl.to(elem.el, {
+                  filter: 'blur(16px) brightness(0.6)',
+                  duration: fdur, ease: 'power2.in'
+                }, pos);
+              } else {
+                tl.to(elem.el, {
+                  opacity: 0, y: -30,
+                  duration: dur, ease: 'power2.in'
+                }, pos);
+                tl.to(elem.el, {
+                  filter: 'blur(16px)',
+                  duration: fdur, ease: 'power2.in'
+                }, pos);
+              }
             });
           }
         });
 
-        // Pin total timeline duration so each section gets equal scroll share
-        tl.addLabel('end', sections.length * SW);
+        // Pin total timeline duration
+        tl.addLabel('end', totalDuration);
       };
 
       if (video && video.readyState >= 1) {
