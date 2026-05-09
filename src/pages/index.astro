@@ -667,20 +667,20 @@ import Footer from '../components/Footer.astro';
 
                 gsap.to(elem.el, {
                   opacity: 1, y: 0, scale: 1, rotateX: 0,
-                  duration: 2.2, ease: 'power3.out', delay
+                  duration: 2.2, ease: 'none', delay
                 });
                 gsap.to(elem.el, {
                   filter: 'blur(0px) brightness(1)',
-                  duration: 0.9, ease: 'power2.out', delay
+                  duration: 0.9, ease: 'none', delay
                 });
               } else {
                 gsap.to(elem.el, {
                   opacity: 1, y: 0,
-                  duration: 2.2, ease: 'power3.out', delay
+                  duration: 2.2, ease: 'none', delay
                 });
                 gsap.to(elem.el, {
                   filter: 'blur(0px)',
-                  duration: 0.9, ease: 'power2.out', delay
+                  duration: 0.9, ease: 'none', delay
                 });
               }
             });
@@ -715,20 +715,20 @@ import Footer from '../components/Footer.astro';
 
                 tl.to(elem.el, {
                   opacity: 1, y: 0, scale: 1, rotateX: 0,
-                  duration: dur, ease: 'power3.out'
+                  duration: dur, ease: 'none'
                 }, pos);
                 tl.to(elem.el, {
                   filter: 'blur(0px) brightness(1)',
-                  duration: fdur, ease: 'power2.out'
+                  duration: fdur, ease: 'none'
                 }, pos);
               } else {
                 tl.to(elem.el, {
                   opacity: 1, y: 0,
-                  duration: dur, ease: 'power3.out'
+                  duration: dur, ease: 'none'
                 }, pos);
                 tl.to(elem.el, {
                   filter: 'blur(0px)',
-                  duration: fdur, ease: 'power2.out'
+                  duration: fdur, ease: 'none'
                 }, pos);
               }
             });
@@ -747,20 +747,20 @@ import Footer from '../components/Footer.astro';
               if (elem.type === 'word') {
                 tl.to(elem.el, {
                   opacity: 0, y: -30, scale: 1.1, rotateX: 15,
-                  duration: dur, ease: 'power2.in'
+                  duration: dur, ease: 'none'
                 }, pos);
                 tl.to(elem.el, {
                   filter: 'blur(16px) brightness(0.6)',
-                  duration: fdur, ease: 'power2.in'
+                  duration: fdur, ease: 'none'
                 }, pos);
               } else {
                 tl.to(elem.el, {
                   opacity: 0, y: -30,
-                  duration: dur, ease: 'power2.in'
+                  duration: dur, ease: 'none'
                 }, pos);
                 tl.to(elem.el, {
                   filter: 'blur(16px)',
-                  duration: fdur, ease: 'power2.in'
+                  duration: fdur, ease: 'none'
                 }, pos);
               }
             });
