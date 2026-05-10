@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 For detailed release notes, see the corresponding file in the `.changelog/` directory.
 Each version's details are stored in `.changelog/<version>.<date>.md`.
 
+- [0.10.0] - 2026-05-11: Enhanced Hero section E2E tests
 - [0.9.0] - 2026-05-10: Playwright E2E infrastructure setup
 - [0.8.0] - 2026-05-10: Word-based scroll animation system refactor
 - [0.7.0] - 2026-05-02: Home icon and logo animation
