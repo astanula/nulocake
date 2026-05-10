@@ -517,6 +517,7 @@ import Footer from '../components/Footer.astro';
         const HOLD         = 2;    // WU of hold between intro and outro
         const HOLD_PX      = HOLD * PX_PER_WU;
         const FDUR_RATIO   = 1.0;  // Filter duration = this × element duration
+        const MS_PER_WU    = 250;  // Time-based equivalent of PX_PER_WU (section 0 only)
 
         // Element weights (all 1 WU as configured)
         const WU_WORD         = 1;
@@ -564,11 +565,12 @@ import Footer from '../components/Footer.astro';
         }
 
         // ── Compute per-section metrics ────────────────────
-        const sectionData = sections.map((section) => {
+        const sectionData = sections.map((section, i) => {
           const elements  = buildSectionElements(section);
           const last      = elements[elements.length - 1];
           const introSpan = last.start + last.duration;
-          const sw        = introSpan + HOLD_PX + introSpan; // outro mirrors intro
+          // Section 0: outro only (time-based intro, no scroll intro/hold)
+          const sw = (i === 0) ? introSpan : introSpan + HOLD_PX + introSpan;
           return { section, elements, introSpan, sw };
         });
 
@@ -581,8 +583,7 @@ import Footer from '../components/Footer.astro';
         const totalDuration = cumulative;
 
         // Cache section 0 data for onUpdate scroll-back fix
-        const s0elems      = sectionData[0].elements;
-        const s0outroStart = sectionData[0].introSpan + HOLD_PX;
+        const s0elems = sectionData[0].elements;
 
         // ── Master scroll-linked timeline ──────────────────
         const tl = gsap.timeline({
@@ -608,8 +609,8 @@ import Footer from '../components/Footer.astro';
               });
 
               // Section 0 scroll-back fix: force visible state
-              // when scrolled back before the outro starts
-              if (activeIndex === 0 && timelinePos < s0outroStart) {
+              // when scrolled all the way back (outro hasn't started)
+              if (activeIndex === 0 && timelinePos <= 0) {
                 s0elems.forEach((elem) => {
                   if (elem.type === 'word') {
                     gsap.set(elem.el, {
@@ -651,13 +652,13 @@ import Footer from '../components/Footer.astro';
               }
             });
 
-            // Derive time-based delays from WU start positions
-            const maxStart = elements[elements.length - 1].start;
-
+            // Time-based intro: same WU cascade but using MS_PER_WU
+            // elem.start is in px; convert to seconds: start_s = (elem.start / PX_PER_WU) * MS_PER_WU / 1000
+            // elem.duration in seconds: dur_s = elem.wu * MS_PER_WU / 1000
             elements.forEach((elem, idx) => {
-              const delay = maxStart > 0
-                ? (elem.start / maxStart) * 0.8 + 0.2
-                : 0.2;
+              const delayS = (elem.start / PX_PER_WU) * MS_PER_WU / 1000;
+              const durS   = (elem.wu * MS_PER_WU) / 1000;
+              const fdurS  = durS * FDUR_RATIO;
 
               if (elem.type === 'word') {
                 const blur  = 12 + Math.floor(Math.random() * 8);
@@ -667,20 +668,20 @@ import Footer from '../components/Footer.astro';
 
                 gsap.to(elem.el, {
                   opacity: 1, y: 0, scale: 1, rotateX: 0,
-                  duration: 2.2, ease: 'none', delay
+                  duration: durS, ease: 'none', delay: delayS
                 });
                 gsap.to(elem.el, {
                   filter: 'blur(0px) brightness(1)',
-                  duration: 0.9, ease: 'none', delay
+                  duration: fdurS, ease: 'none', delay: delayS
                 });
               } else {
                 gsap.to(elem.el, {
                   opacity: 1, y: 0,
-                  duration: 2.2, ease: 'none', delay
+                  duration: durS, ease: 'none', delay: delayS
                 });
                 gsap.to(elem.el, {
                   filter: 'blur(0px)',
-                  duration: 0.9, ease: 'none', delay
+                  duration: fdurS, ease: 'none', delay: delayS
                 });
               }
             });
@@ -737,31 +738,65 @@ import Footer from '../components/Footer.astro';
           // ALL SECTIONS EXCEPT LAST: Scroll-driven outro
           // Outro mirrors intro — same start offsets and durations
           if (i < sections.length - 1) {
-            const outroStart = secStart + introSpan + HOLD_PX;
+            const outroStart = (i === 0) ? secStart : secStart + introSpan + HOLD_PX;
 
             elements.forEach((elem) => {
               const dur  = elem.duration;
               const fdur = dur * FDUR_RATIO;
               const pos  = outroStart + elem.start;
 
-              if (elem.type === 'word') {
-                tl.to(elem.el, {
-                  opacity: 0, y: -30, scale: 1.1, rotateX: 15,
-                  duration: dur, ease: 'none'
-                }, pos);
-                tl.to(elem.el, {
-                  filter: 'blur(16px) brightness(0.6)',
-                  duration: fdur, ease: 'none'
-                }, pos);
+              if (i === 0) {
+                // Section 0: use fromTo() with explicit visible "from" state.
+                // .to() would record stale hidden values from timeline creation
+                // (before the time-based intro completes).
+                if (elem.type === 'word') {
+                  tl.fromTo(elem.el, {
+                    opacity: 1, y: 0, scale: 1, rotateX: 0
+                  }, {
+                    opacity: 0, y: -30, scale: 1.1, rotateX: 15,
+                    duration: dur, ease: 'none'
+                  }, pos);
+                  tl.fromTo(elem.el, {
+                    filter: 'blur(0px) brightness(1)'
+                  }, {
+                    filter: 'blur(16px) brightness(0.6)',
+                    duration: fdur, ease: 'none'
+                  }, pos);
+                } else {
+                  tl.fromTo(elem.el, {
+                    opacity: 1, y: 0
+                  }, {
+                    opacity: 0, y: -30,
+                    duration: dur, ease: 'none'
+                  }, pos);
+                  tl.fromTo(elem.el, {
+                    filter: 'blur(0px)'
+                  }, {
+                    filter: 'blur(16px)',
+                    duration: fdur, ease: 'none'
+                  }, pos);
+                }
               } else {
-                tl.to(elem.el, {
-                  opacity: 0, y: -30,
-                  duration: dur, ease: 'none'
-                }, pos);
-                tl.to(elem.el, {
-                  filter: 'blur(16px)',
-                  duration: fdur, ease: 'none'
-                }, pos);
+                // Sections 1+: .to() is fine — scroll-driven intro sets visible state
+                if (elem.type === 'word') {
+                  tl.to(elem.el, {
+                    opacity: 0, y: -30, scale: 1.1, rotateX: 15,
+                    duration: dur, ease: 'none'
+                  }, pos);
+                  tl.to(elem.el, {
+                    filter: 'blur(16px) brightness(0.6)',
+                    duration: fdur, ease: 'none'
+                  }, pos);
+                } else {
+                  tl.to(elem.el, {
+                    opacity: 0, y: -30,
+                    duration: dur, ease: 'none'
+                  }, pos);
+                  tl.to(elem.el, {
+                    filter: 'blur(16px)',
+                    duration: fdur, ease: 'none'
+                  }, pos);
+                }
               }
             });
           }
