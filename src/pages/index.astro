@@ -582,8 +582,24 @@ import Footer from '../components/Footer.astro';
         }
         const totalDuration = cumulative;
 
-        // Cache section 0 data for onUpdate scroll-back fix
+        // ── Section 0 intro cleanup state ────────────────
+        // The time-based intro is a one-shot page-load effect. Once it
+        // completes (or the user scrolls), we kill every related tween
+        // and clearProps so the scroll timeline operates on a clean slate.
         const s0elems = sectionData[0].elements;
+        let s0IntroTweens: gsap.core.Tween[] = [];
+        let s0Cleaned = false;
+
+        function cleanupS0Intro() {
+          if (s0Cleaned) return;
+          s0Cleaned = true;
+          // Kill every time-based tween and wipe inline styles
+          s0IntroTweens.forEach(t => t.kill());
+          s0IntroTweens.length = 0;
+          s0elems.forEach(elem => {
+            gsap.set(elem.el, { clearProps: 'all' });
+          });
+        }
 
         // ── Master scroll-linked timeline ──────────────────
         const tl = gsap.timeline({
@@ -608,24 +624,10 @@ import Footer from '../components/Footer.astro';
                 sec.classList.toggle('is-active', idx === activeIndex);
               });
 
-              // Section 0 scroll-back fix: force visible state
-              // when scrolled all the way back (outro hasn't started)
-              if (activeIndex === 0 && timelinePos <= 0) {
-                s0elems.forEach((elem) => {
-                  if (elem.type === 'word') {
-                    gsap.set(elem.el, {
-                      opacity: 1, y: 0, scale: 1, rotateX: 0,
-                      filter: 'blur(0px) brightness(1)',
-                      overwrite: 'auto'
-                    });
-                  } else {
-                    gsap.set(elem.el, {
-                      opacity: 1, y: 0,
-                      filter: 'blur(0px)',
-                      overwrite: 'auto'
-                    });
-                  }
-                });
+              // If user scrolls while the time-based intro is still running,
+              // clean it up immediately so the scroll outro has a clean slate.
+              if (timelinePos > 0 && !s0Cleaned) {
+                cleanupS0Intro();
               }
             }
           }
@@ -652,9 +654,8 @@ import Footer from '../components/Footer.astro';
               }
             });
 
-            // Time-based intro: same WU cascade but using MS_PER_WU
-            // elem.start is in px; convert to seconds: start_s = (elem.start / PX_PER_WU) * MS_PER_WU / 1000
-            // elem.duration in seconds: dur_s = elem.wu * MS_PER_WU / 1000
+            // Time-based intro: same WU cascade but using MS_PER_WU.
+            // Collect tween references so we can kill them on completion.
             elements.forEach((elem, idx) => {
               const delayS = (elem.start / PX_PER_WU) * MS_PER_WU / 1000;
               const durS   = (elem.wu * MS_PER_WU) / 1000;
@@ -666,28 +667,35 @@ import Footer from '../components/Footer.astro';
 
                 gsap.set(elem.el, { filter: `blur(${blur}px) brightness(0.6)`, scale });
 
-                gsap.to(elem.el, {
+                s0IntroTweens.push(gsap.to(elem.el, {
                   opacity: 1, y: 0, scale: 1, rotateX: 0,
                   duration: durS, ease: 'none', delay: delayS
-                });
-                gsap.to(elem.el, {
+                }));
+                s0IntroTweens.push(gsap.to(elem.el, {
                   filter: 'blur(0px) brightness(1)',
                   duration: fdurS, ease: 'none', delay: delayS
-                });
+                }));
               } else {
-                gsap.to(elem.el, {
+                s0IntroTweens.push(gsap.to(elem.el, {
                   opacity: 1, y: 0,
                   duration: durS, ease: 'none', delay: delayS
-                });
-                gsap.to(elem.el, {
+                }));
+                s0IntroTweens.push(gsap.to(elem.el, {
                   filter: 'blur(0px)',
                   duration: fdurS, ease: 'none', delay: delayS
-                });
+                }));
               }
             });
 
-            // No timeline intro for section 0 — load animation handles it,
-            // onUpdate handles the scroll-back reset.
+            // Schedule cleanup after the last element finishes animating.
+            // After this fires, all section 0 elements are in their natural
+            // CSS state (visible, no inline styles) — a clean slate for the
+            // scroll timeline's outro fromTo() tweens.
+            const lastElem = elements[elements.length - 1];
+            const cleanupDelay =
+              ((lastElem.start / PX_PER_WU) * MS_PER_WU / 1000) +
+              ((lastElem.wu * MS_PER_WU) / 1000);
+            s0IntroTweens.push(gsap.delayedCall(cleanupDelay, cleanupS0Intro) as unknown as gsap.core.Tween);
           }
           // SECTIONS 1+: Scroll-driven intro
           else {
