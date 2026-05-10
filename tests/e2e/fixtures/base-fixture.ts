@@ -15,7 +15,7 @@ import { testConfig } from '../test-config';
  * All test files should import { test, expect } from this module
  * instead of from '@playwright/test' directly.
  */
-export const test = base.extend<{ page: typeof base extends { extend: (arg: infer _) => infer R } ? never : never }>({
+export const test = base.extend({
   page: async ({ page }, use) => {
     // ── 1. GSAP fast-forward via init script ──────────────────────────
     // Runs before any page script. Polls briefly for GSAP (loaded as ES module).

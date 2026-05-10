@@ -1,57 +1,179 @@
-import { test, expect, Locator } from '../fixtures/base-fixture';
+
+import { test, expect } from '../fixtures/base-fixture';
+import type { Locator, Page } from '@playwright/test';
 import { testConfig } from '../test-config';
 import { waitForHydration } from '../helpers/hydration';
 import { scrollToDeterministicPosition } from '../helpers/scroll';
 
-test.describe('Section 0 (Hero) Scroll Animation', () => {
-  test('Step 1: Initial State (Scroll: 0px)', async ({ page }) => {
-    // 1. Navigate to the landing page
-    await page.goto(testConfig.routes.landing);
+type ElementState = 'visible' | 'partially' | 'invisible';
 
-    // 2. Wait for Astro hydration
-    await waitForHydration(page);
+class Section0Simulation {
+  public w1: Locator;
+  public w2: Locator;
+  public w3: Locator;
+  public w4: Locator;
+  public w5: Locator;
+  public w6: Locator;
+  public p1: Locator;
+  public cta1: Locator;
 
-    // 3. Wait for the time-based intro to finish (body overflow is restored)
-    await expect(page.locator('body')).toHaveCSS('overflow', 'visible');
-
-    // 3.5 Force deterministic scroll to 0px so ScrollTrigger properly updates
-    await scrollToDeterministicPosition(page, 0);
-
-    // 4. Assert initial state (Scroll: 0px)
+  constructor(public readonly page: Page) {
     const section0 = page.locator('#section-hero');
-    await expect(section0).toHaveClass(/is-active/);
-
-    // Define elements (W1-W6, P1, CTA1)
     const words = section0.locator('.word');
     const blurIns = section0.locator('.blur-in');
 
-    const w1 = words.nth(0);
-    const w2 = words.nth(1);
-    const w3 = words.nth(2);
-    const w4 = words.nth(3);
-    const w5 = words.nth(4);
-    const w6 = words.nth(5);
-    
-    const p1 = blurIns.nth(0);
-    const cta1 = blurIns.nth(1);
+    this.w1 = words.nth(0);
+    this.w2 = words.nth(1);
+    this.w3 = words.nth(2);
+    this.w4 = words.nth(3);
+    this.w5 = words.nth(4);
+    this.w6 = words.nth(5);
+    this.p1 = blurIns.nth(0);
+    this.cta1 = blurIns.nth(1);
+  }
 
-    // Helper for Fully Visible state
-    const assertFullyVisible = async (locator: Locator) => {
-      await expect(locator).toHaveCSS('opacity', '1');
-      // GSAP sometimes sets filter to blur(0px) brightness(1) or blur(0.0003px), or computed style could be 'none'
-      await expect(locator).toHaveCSS('filter', /none|blur\(0(?:\.\d+)?px\)\s*brightness\(1\)/);
-      // Transform computed style could be 'none' or a matrix starting with scale=1
-      await expect(locator).toHaveCSS('transform', /none|matrix(?:3d)?\(1,\s*0,\s*0/);
-    };
+  async scrollTo(yOffset: number) {
+    await scrollToDeterministicPosition(this.page, yOffset);
+  }
 
-    // Assert all elements are fully visible
-    await assertFullyVisible(w1);
-    await assertFullyVisible(w2);
-    await assertFullyVisible(w3);
-    await assertFullyVisible(w4);
-    await assertFullyVisible(w5);
-    await assertFullyVisible(w6);
-    await assertFullyVisible(p1);
-    await assertFullyVisible(cta1);
+  async assertActive(isActive: boolean) {
+    const section0 = this.page.locator('#section-hero');
+    if (isActive) {
+      await expect(section0).toHaveClass(/is-active/);
+    } else {
+      await expect(section0).not.toHaveClass(/is-active/);
+    }
+  }
+
+  async assertStates(states: {
+    w1?: ElementState;
+    w2?: ElementState;
+    w3?: ElementState;
+    w4?: ElementState;
+    w5?: ElementState;
+    w6?: ElementState;
+    p1?: ElementState;
+    cta1?: ElementState;
+  }) {
+    // Default unspecified elements to 'visible' to keep tests extremely concise
+    const fullStates = {
+      w1: 'visible', w2: 'visible', w3: 'visible', w4: 'visible',
+      w5: 'visible', w6: 'visible', p1: 'visible', cta1: 'visible',
+      ...states
+    } as Record<string, ElementState>;
+
+    for (const [key, state] of Object.entries(fullStates)) {
+      const locator = this[key as keyof Section0Simulation] as Locator;
+      const isWord = key.startsWith('w'); // Words have brightness in filter, blur-in elements do not
+
+      if (state === 'visible') {
+        await expect(locator).toHaveCSS('opacity', '1');
+        if (isWord) {
+          await expect(locator).toHaveCSS('filter', /none|blur\(0(?:\.\d+)?px\)\s*brightness\(1\)/);
+        } else {
+          await expect(locator).toHaveCSS('filter', /none|blur\(0(?:\.\d+)?px\)/);
+        }
+        await expect(locator).toHaveCSS('transform', /none|matrix(?:3d)?\(1,\s*0,\s*0/);
+      }
+      else if (state === 'partially') {
+        await expect(locator).toHaveCSS('opacity', /^0\.5/);
+        if (isWord) {
+          await expect(locator).toHaveCSS('filter', /blur\([78](?:\.\d+)?px\)\s*brightness\(0\.8/);
+        } else {
+          await expect(locator).toHaveCSS('filter', /blur\([78](?:\.\d+)?px\)/);
+        }
+      }
+      else if (state === 'invisible') {
+        await expect(locator).toHaveCSS('opacity', /^0(?:\.0+)?$/);
+        if (isWord) {
+          await expect(locator).toHaveCSS('filter', /blur\(16(?:\.\d+)?px\)\s*brightness\(0\.6/);
+        } else {
+          await expect(locator).toHaveCSS('filter', /blur\(16(?:\.\d+)?px\)/);
+        }
+      }
+    }
+  }
+}
+
+test.describe('Section 0 (Hero) Scroll Animation', () => {
+  let hero: Section0Simulation;
+
+  test.beforeEach(async ({ page }) => {
+    hero = new Section0Simulation(page);
+    await page.goto(testConfig.routes.landing);
+    await waitForHydration(page);
+    await expect(page.locator('body')).toHaveCSS('overflow', 'visible');
+  });
+
+  test('Step 1: Initial State (Scroll: 0px)', async () => {
+    await hero.scrollTo(0);
+    await hero.assertActive(true);
+    await hero.assertStates({}); // All default to 'visible'
+  });
+
+  test('Step 1.1: Press Arrow Down (Scroll: 40px)', async () => {
+    await hero.scrollTo(40);
+    await hero.assertActive(true);
+    await hero.assertStates({
+      w1: 'invisible',
+      w2: 'partially'
+      // w3 through cta1 implicitly default to 'visible'
+    });
+  });
+
+  test('Step 1.2: Press Arrow Down (Scroll: 80px)', async () => {
+    await hero.scrollTo(80);
+    await hero.assertActive(true);
+    await hero.assertStates({
+      w1: 'invisible',
+      w2: 'invisible',
+      w3: 'invisible',
+      w4: 'partially'
+      // w5 through cta1 implicitly default to 'visible'
+    });
+  });
+
+  test('Step 1.3: Press Arrow Down (Scroll: 120px)', async () => {
+    await hero.scrollTo(120);
+    await hero.assertActive(true);
+    await hero.assertStates({
+      w1: 'invisible',
+      w2: 'invisible',
+      w3: 'invisible',
+      w4: 'invisible',
+      w5: 'invisible',
+      w6: 'partially'
+      // p1, cta1 implicitly default to 'visible'
+    });
+  });
+
+  test('Step 1.4: Press Arrow Down (Scroll: 160px)', async () => {
+    await hero.scrollTo(160);
+    await hero.assertActive(true);
+    await hero.assertStates({
+      w1: 'invisible',
+      w2: 'invisible',
+      w3: 'invisible',
+      w4: 'invisible',
+      w5: 'invisible',
+      w6: 'invisible',
+      p1: 'invisible',
+      cta1: 'partially'
+    });
+  });
+
+  test('Step 1.5: Press Arrow Down (Scroll: 200px)', async () => {
+    await hero.scrollTo(200);
+    await hero.assertActive(false);
+    await hero.assertStates({
+      w1: 'invisible',
+      w2: 'invisible',
+      w3: 'invisible',
+      w4: 'invisible',
+      w5: 'invisible',
+      w6: 'invisible',
+      p1: 'invisible',
+      cta1: 'invisible'
+    });
   });
 });

@@ -791,8 +791,8 @@ import Footer from '../components/Footer.astro';
             }
           });
 
-          // Pin total timeline duration
-          tl.addLabel('end', totalDuration);
+          // Force timeline duration to exactly match totalDuration
+          tl.set({}, {}, totalDuration);
         }
       };
 
