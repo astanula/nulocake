@@ -767,6 +767,7 @@ import Footer from '../components/Footer.astro';
                 // Sections 1+: intro tweens leave elements visible,
                 //   .to() records visible as "from" → animates to hidden. ✓
                 if (elem.type === 'word') {
+                  if (i === 0) tl.set(elem.el, { filter: 'blur(0px) brightness(1)' }, pos);
                   tl.to(elem.el, {
                     opacity: 0, y: -30, scale: 1.1, rotateX: 15,
                     duration: dur, ease: 'none'
@@ -776,6 +777,7 @@ import Footer from '../components/Footer.astro';
                     duration: fdur, ease: 'none'
                   }, pos);
                 } else {
+                  if (i === 0) tl.set(elem.el, { filter: 'blur(0px)' }, pos);
                   tl.to(elem.el, {
                     opacity: 0, y: -30,
                     duration: dur, ease: 'none'
