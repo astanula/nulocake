@@ -10,6 +10,7 @@ Scroll-driven section animations where each element's animation duration and sta
 | `DURGAP` | ≥ 0 | Fraction of the previous element's duration that elapses before the next element starts. `< 1` = elements overlap (e.g. `0.5` means next starts at 50% of previous). `1` = next starts exactly when previous finishes. `> 1` = visible pause between previous finishing and next starting (e.g. `1.5` means a gap equal to 50% of previous duration). |
 | `HOLD` | WU | Scroll distance (in WU) the section stays fully visible between intro and outro. |
 | `FDUR_RATIO` | 0–1 | Fraction of element duration used for the filter/blur tween. E.g. `0.5` means blur clears in half the scroll distance of the main animation. The filter tween runs in parallel with the main tween, starting at the same time. |
+| `MS_PER_WU` | milliseconds | Time-based equivalent of `PX_PER_WU`, used only for section 0's page-load intro animation. `element.duration = element.WU × MS_PER_WU`. |
 
 ## Element Weights
 
@@ -189,9 +190,47 @@ activeIndex = index of the section whose range
               contains timelinePosition
 ```
 
-## Section 0 Exception
+## Section 0: Time-Based Intro
 
-Section 0 plays a time-based entrance animation on page load (not scroll-driven). Its intro is standalone. Only its outro is part of the scroll timeline. When the user scrolls back into section 0's range before the outro offset, force all elements to their fully-visible state via `onUpdate`.
+Section 0 is the only section that does **not** have a scroll-driven intro or hold. Its lifecycle is:
+
+### Page Load: Time-Based Intro
+
+On page load, section 0 plays a one-time entrance animation using the **same WU weights, cascade logic, and DURGAP** as scroll-driven sections, but durations are in **milliseconds** instead of pixels:
+
+```
+element.duration = element.WU × MS_PER_WU
+element[i].start = element[i-1].start + element[i-1].duration × DURGAP
+```
+
+This is a standalone GSAP animation (`gsap.to()`), not part of the scroll timeline. It plays once and completes. After it finishes, section 0 is in its fully-visible state — equivalent to being at the end of hold in a normal section.
+
+### Scroll Budget
+
+Section 0's scroll budget contains **only its outro**:
+
+```
+SW[0] = OutroSpan
+```
+
+There is no scroll-driven intro and no hold. The outro uses the same WU-based cascade as other sections (with `PX_PER_WU`), giving symmetric timing when reversed.
+
+### Scrolling Behavior
+
+- **Scroll down:** The outro starts immediately from the top of the page. Words blur out, fade, and exit.
+- **Scroll back up:** The outro reverses — words unblur, reappear, and settle back. At scroll position 0, section 0 is fully visible.
+- **Scroll-back safety:** When the timeline position is within section 0's range and before the outro has started progressing, force all section 0 elements to their fully-visible state via `onUpdate`. This prevents stale inline styles from the time-based intro from conflicting with the scroll timeline.
+
+### Timeline Layout
+
+```
+Scroll position →
+
+0                    OutroSpan    OutroSpan + SW[1]          ...
+├── section 0 outro ──┤├── section 1 (intro+hold+outro) ──┤ ...
+```
+
+Section 1's scroll-driven intro begins exactly where section 0's outro ends.
 
 ## GSAP Implementation Mapping
 
