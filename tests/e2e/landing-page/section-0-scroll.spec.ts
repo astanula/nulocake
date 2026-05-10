@@ -5,6 +5,12 @@ import { testConfig } from '../test-config';
 import { waitForHydration } from '../helpers/hydration';
 import { scrollToDeterministicPosition } from '../helpers/scroll';
 
+/** 
+ * Word Unit (WU) scale. 
+ * Matches PX_PER_WU in src/pages/index.astro 
+ */
+const PX_PER_WU = 40;
+
 type ElementState = 'visible' | 'partially' | 'invisible';
 
 class Section0Simulation {
@@ -32,8 +38,8 @@ class Section0Simulation {
     this.cta1 = blurIns.nth(1);
   }
 
-  async scrollTo(yOffset: number) {
-    await scrollToDeterministicPosition(this.page, yOffset);
+  async scrollToWU(wu: number) {
+    await scrollToDeterministicPosition(this.page, wu * PX_PER_WU);
   }
 
   async assertActive(isActive: boolean) {
@@ -105,14 +111,14 @@ test.describe('Section 0 (Hero) Scroll Animation', () => {
     await expect(page.locator('body')).toHaveCSS('overflow', 'visible');
   });
 
-  test('Step 1: Initial State (Scroll: 0px)', async () => {
-    await hero.scrollTo(0);
+  test('Step 1: Initial State (Scroll: 0 WU)', async () => {
+    await hero.scrollToWU(0);
     await hero.assertActive(true);
     await hero.assertStates({}); // All default to 'visible'
   });
 
-  test('Step 1.1: Press Arrow Down (Scroll: 40px)', async () => {
-    await hero.scrollTo(40);
+  test('Step 1.1: Press Arrow Down (Scroll: 1 WU)', async () => {
+    await hero.scrollToWU(1);
     await hero.assertActive(true);
     await hero.assertStates({
       w1: 'invisible',
@@ -121,8 +127,8 @@ test.describe('Section 0 (Hero) Scroll Animation', () => {
     });
   });
 
-  test('Step 1.2: Press Arrow Down (Scroll: 80px)', async () => {
-    await hero.scrollTo(80);
+  test('Step 1.2: Press Arrow Down (Scroll: 2 WU)', async () => {
+    await hero.scrollToWU(2);
     await hero.assertActive(true);
     await hero.assertStates({
       w1: 'invisible',
@@ -133,8 +139,8 @@ test.describe('Section 0 (Hero) Scroll Animation', () => {
     });
   });
 
-  test('Step 1.3: Press Arrow Down (Scroll: 120px)', async () => {
-    await hero.scrollTo(120);
+  test('Step 1.3: Press Arrow Down (Scroll: 3 WU)', async () => {
+    await hero.scrollToWU(3);
     await hero.assertActive(true);
     await hero.assertStates({
       w1: 'invisible',
@@ -147,8 +153,8 @@ test.describe('Section 0 (Hero) Scroll Animation', () => {
     });
   });
 
-  test('Step 1.4: Press Arrow Down (Scroll: 160px)', async () => {
-    await hero.scrollTo(160);
+  test('Step 1.4: Press Arrow Down (Scroll: 4 WU)', async () => {
+    await hero.scrollToWU(4);
     await hero.assertActive(true);
     await hero.assertStates({
       w1: 'invisible',
@@ -162,8 +168,8 @@ test.describe('Section 0 (Hero) Scroll Animation', () => {
     });
   });
 
-  test('Step 1.5: Press Arrow Down (Scroll: 200px)', async () => {
-    await hero.scrollTo(200);
+  test('Step 1.5: Press Arrow Down (Scroll: 5 WU)', async () => {
+    await hero.scrollToWU(5);
     await hero.assertActive(false);
     await hero.assertStates({
       w1: 'invisible',
@@ -176,4 +182,76 @@ test.describe('Section 0 (Hero) Scroll Animation', () => {
       cta1: 'invisible'
     });
   });
+
+  test('Step 2.1: Press Arrow Up (Scroll: 4 WU)', async ({ page }) => {
+    // First scroll down past the section
+    await hero.scrollToWU(5);
+    // Then scroll back up
+    await hero.scrollToWU(4);
+    
+    await hero.assertActive(true);
+    await expect(page.locator('#section-story')).not.toHaveClass(/is-active/); // Section 1
+
+    await hero.assertStates({
+      w1: 'invisible',
+      w2: 'invisible',
+      w3: 'invisible',
+      w4: 'invisible',
+      w5: 'invisible',
+      w6: 'invisible',
+      p1: 'invisible',
+      cta1: 'partially'
+    });
+  });
+
+  test('Step 2.2: Press Arrow Up (Scroll: 3 WU)', async () => {
+    await hero.scrollToWU(5);
+    await hero.scrollToWU(3);
+
+    await hero.assertActive(true);
+    await hero.assertStates({
+      w1: 'invisible',
+      w2: 'invisible',
+      w3: 'invisible',
+      w4: 'invisible',
+      w5: 'invisible',
+      w6: 'partially'
+      // p1, cta1 implicitly default to 'visible'
+    });
+  });
+
+  test('Step 2.3: Press Arrow Up (Scroll: 2 WU)', async () => {
+    await hero.scrollToWU(5);
+    await hero.scrollToWU(2);
+
+    await hero.assertActive(true);
+    await hero.assertStates({
+      w1: 'invisible',
+      w2: 'invisible',
+      w3: 'invisible',
+      w4: 'partially'
+      // w5 through cta1 implicitly default to 'visible'
+    });
+  });
+
+  test('Step 2.4: Press Arrow Up (Scroll: 1 WU)', async () => {
+    await hero.scrollToWU(5);
+    await hero.scrollToWU(1);
+
+    await hero.assertActive(true);
+    await hero.assertStates({
+      w1: 'invisible',
+      w2: 'partially'
+      // w3 through cta1 implicitly default to 'visible'
+    });
+  });
+
+  test('Step 2.5: Press Arrow Up (Scroll: 0 WU)', async () => {
+    await hero.scrollToWU(5);
+    await hero.scrollToWU(0);
+
+    await hero.assertActive(true);
+    await hero.assertStates({}); // All default to 'visible'
+  });
 });
+
