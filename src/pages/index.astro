@@ -749,31 +749,33 @@ import Footer from '../components/Footer.astro';
                 // Section 0: use fromTo() with explicit visible "from" state.
                 // .to() would record stale hidden values from timeline creation
                 // (before the time-based intro completes).
+                // immediateRender: false prevents overriding the time-based intro's
+                // initial hidden state during timeline construction.
                 if (elem.type === 'word') {
                   tl.fromTo(elem.el, {
                     opacity: 1, y: 0, scale: 1, rotateX: 0
                   }, {
                     opacity: 0, y: -30, scale: 1.1, rotateX: 15,
-                    duration: dur, ease: 'none'
+                    duration: dur, ease: 'none', immediateRender: false
                   }, pos);
                   tl.fromTo(elem.el, {
                     filter: 'blur(0px) brightness(1)'
                   }, {
                     filter: 'blur(16px) brightness(0.6)',
-                    duration: fdur, ease: 'none'
+                    duration: fdur, ease: 'none', immediateRender: false
                   }, pos);
                 } else {
                   tl.fromTo(elem.el, {
                     opacity: 1, y: 0
                   }, {
                     opacity: 0, y: -30,
-                    duration: dur, ease: 'none'
+                    duration: dur, ease: 'none', immediateRender: false
                   }, pos);
                   tl.fromTo(elem.el, {
                     filter: 'blur(0px)'
                   }, {
                     filter: 'blur(16px)',
-                    duration: fdur, ease: 'none'
+                    duration: fdur, ease: 'none', immediateRender: false
                   }, pos);
                 }
               } else {
