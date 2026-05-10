@@ -47,6 +47,12 @@
       "sourceType": "github",
       "computedHash": "72af4a036d417d6eaef7478eca2f28e760631fb78db822ba34a9c706797aab62"
     },
+    "playwright-generate-test": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/playwright-generate-test/SKILL.md",
+      "computedHash": "8f963da3e25f705ff39755b8b990f20da0c0320cb86ac83fcc4d2d4eca91f6e4"
+    },
     "systematic-debugging": {
       "source": "obra/superpowers",
       "sourceType": "github",
