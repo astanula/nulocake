@@ -2,11 +2,7 @@ import { expect } from '../fixtures/base-fixture';
 import type { Locator, Page } from '@playwright/test';
 import { scrollToDeterministicPosition } from '../helpers/scroll';
 
-/** 
- * Word Unit (WU) scale. 
- * Matches PX_PER_WU in src/pages/index.astro 
- */
-export const PX_PER_WU = 40;
+import { PX_PER_WU } from '../../../src/config/animation';
 
 export type ElementState = 'visible' | 'partially' | 'invisible';
 

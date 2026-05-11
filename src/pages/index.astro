@@ -482,6 +482,18 @@ import Footer from '../components/Footer.astro';
 <script>
   import gsap from 'gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import {
+    PX_PER_WU,
+    DURGAP,
+    HOLD,
+    FDUR_RATIO,
+    MS_PER_WU,
+    WU_WORD,
+    WU_BODY,
+    WU_CTA,
+    WU_GALLERY,
+    WU_TESTIMONIALS
+  } from '../config/animation';
 
   gsap.registerPlugin(ScrollTrigger);
 
@@ -512,19 +524,8 @@ import Footer from '../components/Footer.astro';
         // Elements cascade: each starts at DURGAP × previous duration
         // after the previous element's start.
         // ScrollTrigger end is in pixels → viewport-independent.
-        const PX_PER_WU    = 40;   // Scroll px per Word Unit
-        const DURGAP       = 0.5;  // Next element starts at 50% of previous duration
-        const HOLD         = 2;    // WU of hold between intro and outro
-        const HOLD_PX      = HOLD * PX_PER_WU;
-        const FDUR_RATIO   = 1.0;  // Filter duration = this × element duration
-        const MS_PER_WU    = 250;  // Time-based equivalent of PX_PER_WU (section 0 only)
 
-        // Element weights (all 1 WU as configured)
-        const WU_WORD         = 1;
-        const WU_BODY         = 1;  // Body paragraph
-        const WU_CTA          = 1;  // CTA button group
-        const WU_GALLERY      = 1;  // Gallery block
-        const WU_TESTIMONIALS = 1;  // Testimonials stack
+        const HOLD_PX      = HOLD * PX_PER_WU;
 
         // ── Element data structure ─────────────────────────
         type AnimElement = {

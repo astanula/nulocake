@@ -58,9 +58,9 @@ We will rewrite the spec files to loop over dynamically generated checkpoints in
 
 ## Execution Tasks
 
-- [ ] Centralize configuration: Create `src/config/animation.ts` and extract all constants (`PX_PER_WU`, `HOLD`, `MS_PER_WU`, `DURGAP`, `FDUR_RATIO`).
-- [ ] Implement weight tracking: Extract `WU_WORD`, `WU_BODY`, `WU_CTA`, `WU_GALLERY`, `WU_TESTIMONIALS` to `src/config/animation.ts`.
-- [ ] Refactor production: Update `src/pages/index.astro` to import all constants from `src/config/animation.ts` instead of defining them locally.
+- [x] Centralize configuration: Create `src/config/animation.ts` and extract all constants (`PX_PER_WU`, `HOLD`, `MS_PER_WU`, `DURGAP`, `FDUR_RATIO`).
+- [x] Implement weight tracking: Extract `WU_WORD`, `WU_BODY`, `WU_CTA`, `WU_GALLERY`, `WU_TESTIMONIALS` to `src/config/animation.ts`.
+- [x] Refactor production: Update `src/pages/index.astro` to import all constants from `src/config/animation.ts` instead of defining them locally.
 - [ ] Build math engine: Create `timeline-math.ts` and implement element start, duration, and end calculations.
 - [ ] Implement dynamic stagger: Map `DURGAP` into the cascading start time calculation in `timeline-math.ts`.
 - [ ] Build state assertion helper: Implement `getExpectedStateAtWU(wu)` function in `timeline-math.ts`.
