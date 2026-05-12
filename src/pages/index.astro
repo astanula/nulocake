@@ -94,51 +94,63 @@ import Footer from '../components/Footer.astro';
               <span class="word">Co</span> <span class="word">mówią</span> <span class="word">moi</span><br />
               <span class="word accent-italic">klienci?</span>
             </h2>
-            <div class="testimonials-stack blur-in">
-              <blockquote class="testimonial-card">
-                <div class="testimonial-stars" role="img" aria-label="5 z 5 gwiazdek">
-                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                </div>
-                <p class="testimonial-text">"Tort był absolutnym dziełem sztuki. Nikt nie chciał go kroić, dopóki nie spróbowaliśmy pierwszego kawałka!"</p>
-                <footer class="testimonial-author">
-                  <span class="testimonial-name">Anna Kowalska</span>
-                  <span class="testimonial-role">Wesele, czerwiec 2025</span>
-                </footer>
-              </blockquote>
+            <div class="testimonials-carousel blur-in" id="testimonials-carousel" aria-live="polite">
+              <div class="carousel-track">
+                <blockquote class="testimonial-card carousel-slide">
+                  <div class="testimonial-stars" role="img" aria-label="5 z 5 gwiazdek">
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  </div>
+                  <p class="testimonial-text">"Tort był absolutnym dziełem sztuki. Nikt nie chciał go kroić, dopóki nie spróbowaliśmy pierwszego kawałka!"</p>
+                  <footer class="testimonial-author">
+                    <span class="testimonial-name">Anna Kowalska</span>
+                    <span class="testimonial-role">Wesele, czerwiec 2025</span>
+                  </footer>
+                </blockquote>
 
-              <blockquote class="testimonial-card">
-                <div class="testimonial-stars" role="img" aria-label="5 z 5 gwiazdek">
-                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                </div>
-                <p class="testimonial-text">"Szukałem czegoś unikalnego na 30-ste urodziny żony. Nulo Cake przerosiło moje oczekiwania."</p>
-                <footer class="testimonial-author">
-                  <span class="testimonial-name">Marek Wiśniewski</span>
-                  <span class="testimonial-role">Urodziny, marzec 2025</span>
-                </footer>
-              </blockquote>
+                <blockquote class="testimonial-card carousel-slide">
+                  <div class="testimonial-stars" role="img" aria-label="5 z 5 gwiazdek">
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  </div>
+                  <p class="testimonial-text">"Szukałem czegoś unikalnego na 30-ste urodziny żony. Nulo Cake przerosiło moje oczekiwania."</p>
+                  <footer class="testimonial-author">
+                    <span class="testimonial-name">Marek Wiśniewski</span>
+                    <span class="testimonial-role">Urodziny, marzec 2025</span>
+                  </footer>
+                </blockquote>
 
-              <blockquote class="testimonial-card">
-                <div class="testimonial-stars" role="img" aria-label="5 z 5 gwiazdek">
-                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                </div>
-                <p class="testimonial-text">"Perfekcyjne wykonanie i niesamowity smak. Goście do dziś pytają, skąd mieliśmy ten tort!"</p>
-                <footer class="testimonial-author">
-                  <span class="testimonial-name">Katarzyna Nowicka</span>
-                  <span class="testimonial-role">Komunia, maj 2025</span>
-                </footer>
-              </blockquote>
+                <blockquote class="testimonial-card carousel-slide">
+                  <div class="testimonial-stars" role="img" aria-label="5 z 5 gwiazdek">
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  </div>
+                  <p class="testimonial-text">"Perfekcyjne wykonanie i niesamowity smak. Goście do dziś pytają, skąd mieliśmy ten tort!"</p>
+                  <footer class="testimonial-author">
+                    <span class="testimonial-name">Katarzyna Nowicka</span>
+                    <span class="testimonial-role">Komunia, maj 2025</span>
+                  </footer>
+                </blockquote>
+              </div>
+              <button class="carousel-btn carousel-prev" aria-label="Poprzednia opinia" id="carousel-prev">
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10 3L5 8l5 5"/>
+                </svg>
+              </button>
+              <button class="carousel-btn carousel-next" aria-label="Następna opinia" id="carousel-next">
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 3l5 5-5 5"/>
+                </svg>
+              </button>
             </div>
           </div>
         </section>
@@ -360,12 +372,24 @@ import Footer from '../components/Footer.astro';
     transform: scale(1.06);
   }
 
-  /* ── Testimonials ────────────────────────── */
-  .testimonials-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+  /* ── Testimonials Carousel ─────────────────── */
+  .testimonials-carousel {
+    position: relative;
+    overflow: hidden;
     margin-top: 1.5rem;
+    padding: 0 10%;
+  }
+
+  .carousel-track {
+    display: flex;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  }
+
+  .carousel-slide {
+    flex: 0 0 80%;
+    padding: 0 0.5rem;
+    box-sizing: border-box;
   }
 
   .testimonial-card {
@@ -374,6 +398,49 @@ import Footer from '../components/Footer.astro';
     border-radius: 0.25rem;
     border: none;
     margin: 0;
+  }
+
+  .carousel-slide .testimonial-card {
+    height: 100%;
+    margin: 0;
+  }
+
+  .carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+    background: var(--color-surface-container-low);
+    border: 1px solid var(--color-outline);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--color-on-surface);
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    padding: 0;
+  }
+
+  .carousel-btn:hover,
+  .carousel-btn:focus-visible {
+    background: var(--color-surface-container);
+    border-color: var(--color-primary);
+    outline: none;
+  }
+
+  .carousel-btn:active {
+    transform: translateY(-50%) scale(0.95);
+  }
+
+  .carousel-prev {
+    left: 0;
+  }
+
+  .carousel-next {
+    right: 0;
   }
 
   .testimonial-stars {
@@ -538,7 +605,7 @@ import Footer from '../components/Footer.astro';
 
         function getBlurInWeight(el: Element): number {
           if (el.classList.contains('gallery-carousel'))   return WU_GALLERY;
-          if (el.classList.contains('testimonials-stack')) return WU_TESTIMONIALS;
+          if (el.classList.contains('testimonials-carousel')) return WU_TESTIMONIALS;
           if (el.classList.contains('section-cta-group'))  return WU_CTA;
           return WU_BODY;
         }
@@ -815,5 +882,107 @@ import Footer from '../components/Footer.astro';
       makeAllSectionsVisible();
     }
   });
+
+  /* ═══════════════════════════════════════════
+     TESTIMONIALS CAROUSEL
+     Auto-play every 10s, manual nav with arrows
+     ═══════════════════════════════════════════ */
+  function initTestimonialsCarousel() {
+    const carousel = document.getElementById('testimonials-carousel');
+    if (!carousel) return;
+
+    const track = carousel.querySelector('.carousel-track') as HTMLElement | null;
+    const slides = carousel.querySelectorAll('.carousel-slide');
+    const prevBtn = document.getElementById('carousel-prev') as HTMLButtonElement | null;
+    const nextBtn = document.getElementById('carousel-next') as HTMLButtonElement | null;
+
+    if (!track || slides.length === 0) return;
+
+    let currentIndex = 0;
+    let autoPlayInterval: ReturnType<typeof setInterval> | null = null;
+    const AUTO_PLAY_DELAY = 10000; // 10 seconds
+
+    function updateCarousel(animate: boolean = true) {
+      const slideWidth = 80; // 80% as set in CSS
+      const offset = -(currentIndex * slideWidth);
+      if (animate) {
+        track.style.transition = 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+      } else {
+        track.style.transition = 'none';
+      }
+      track.style.transform = `translateX(${offset}%)`;
+    }
+
+    function goToPrev() {
+      currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+      updateCarousel();
+      resetAutoPlay();
+    }
+
+    function goToNext() {
+      currentIndex = (currentIndex + 1) % slides.length;
+      updateCarousel();
+      resetAutoPlay();
+    }
+
+    function startAutoPlay() {
+      if (autoPlayInterval) clearInterval(autoPlayInterval);
+      autoPlayInterval = setInterval(goToNext, AUTO_PLAY_DELAY);
+    }
+
+    function stopAutoPlay() {
+      if (autoPlayInterval) {
+        clearInterval(autoPlayInterval);
+        autoPlayInterval = null;
+      }
+    }
+
+    function resetAutoPlay() {
+      stopAutoPlay();
+      startAutoPlay();
+    }
+
+    // Event listeners for buttons
+    if (prevBtn) prevBtn.addEventListener('click', goToPrev);
+    if (nextBtn) nextBtn.addEventListener('click', goToNext);
+
+    // Pause on hover/focus
+    carousel.addEventListener('mouseenter', stopAutoPlay);
+    carousel.addEventListener('mouseleave', startAutoPlay);
+    carousel.addEventListener('focusin', stopAutoPlay);
+    carousel.addEventListener('focusout', startAutoPlay);
+
+    // Touch/swipe support
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    carousel.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    carousel.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      const diff = touchStartX - touchEndX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) {
+          goToNext();
+        } else {
+          goToPrev();
+        }
+      }
+    }, { passive: true });
+
+    // Keyboard navigation
+    carousel.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') goToPrev();
+      if (e.key === 'ArrowRight') goToNext();
+    });
+
+    // Initialize
+    updateCarousel(false);
+    startAutoPlay();
+  }
+
+  initTestimonialsCarousel();
 </script>
 
