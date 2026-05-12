@@ -554,6 +554,7 @@ import Footer from '../components/Footer.astro';
     DURGAP,
     HOLD,
     FDUR_RATIO,
+    LIFT_PX,
     MS_PER_WU,
     WU_WORD,
     WU_BODY,
@@ -668,10 +669,10 @@ import Footer from '../components/Footer.astro';
           if (elem.type === 'word') {
             gsap.set(elem.el, {
               opacity: 0, filter: 'blur(16px) brightness(0.6)',
-              y: 30, scale: 0.9, rotateX: -15
+               y: LIFT_PX, scale: 0.9, rotateX: -15
             });
           } else {
-            gsap.set(elem.el, { opacity: 0, filter: 'blur(16px)', y: 30 });
+                  gsap.set(elem.el, { opacity: 0, filter: 'blur(16px)', y: LIFT_PX });
           }
         });
 
@@ -778,11 +779,11 @@ import Footer from '../components/Footer.astro';
               elements.forEach((elem) => {
                 if (elem.type === 'word') {
                   gsap.set(elem.el, {
-                    opacity: 0, filter: 'blur(16px) brightness(0.6)',
-                    y: 30, scale: 0.9, rotateX: -15
-                  });
+                     opacity: 0, filter: 'blur(16px) brightness(0.6)',
+                     y: LIFT_PX, scale: 0.9, rotateX: -15
+                   });
                 } else {
-                  gsap.set(elem.el, { opacity: 0, filter: 'blur(16px)', y: 30 });
+            gsap.set(elem.el, { opacity: 0, filter: 'blur(16px)', y: LIFT_PX });
                 }
               });
 
@@ -834,21 +835,21 @@ import Footer from '../components/Footer.astro';
                 // Sections 1+: intro tweens leave elements visible,
                 //   .to() records visible as "from" → animates to hidden. ✓
                 if (elem.type === 'word') {
-                  if (i === 0) tl.set(elem.el, { filter: 'blur(0px) brightness(1)' }, pos);
-                  tl.to(elem.el, {
-                    opacity: 0, y: -30, scale: 1.1, rotateX: 15,
-                    duration: dur, ease: 'none'
-                  }, pos);
-                  tl.to(elem.el, {
-                    filter: 'blur(16px) brightness(0.6)',
-                    duration: fdur, ease: 'none'
-                  }, pos);
-                } else {
-                  if (i === 0) tl.set(elem.el, { filter: 'blur(0px)' }, pos);
-                  tl.to(elem.el, {
-                    opacity: 0, y: -30,
-                    duration: dur, ease: 'none'
-                  }, pos);
+                   if (i === 0) tl.set(elem.el, { filter: 'blur(0px) brightness(1)' }, pos);
+                   tl.to(elem.el, {
+                     opacity: 0, y: -LIFT_PX, scale: 1.1, rotateX: 15,
+                     duration: dur, ease: 'none'
+                   }, pos);
+                   tl.to(elem.el, {
+                     filter: 'blur(16px) brightness(0.6)',
+                     duration: fdur, ease: 'none'
+                   }, pos);
+                 } else {
+                   if (i === 0) tl.set(elem.el, { filter: 'blur(0px)' }, pos);
+                   tl.to(elem.el, {
+                     opacity: 0, y: -LIFT_PX,
+                     duration: dur, ease: 'none'
+                   }, pos);
                   tl.to(elem.el, {
                     filter: 'blur(16px)',
                     duration: fdur, ease: 'none'

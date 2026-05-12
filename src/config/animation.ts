@@ -12,6 +12,7 @@ export const MS_PER_WU = 250;  // Time-based equivalent of PX_PER_WU (section 0 
 
 // ── Visual Parameters ────────────────────────────────
 export const FDUR_RATIO = 1.0; // Filter duration = this × element duration
+export const LIFT_PX    = 30;   // Vertical lift offset (px) for intro/outro animations
 
 // ── Element Weights (in Word Units) ──────────────────
 export const WU_WORD         = 1;
