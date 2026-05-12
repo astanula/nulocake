@@ -558,8 +558,7 @@ import Footer from '../components/Footer.astro';
     WU_WORD,
     WU_BODY,
     WU_CTA,
-    WU_GALLERY,
-    WU_TESTIMONIALS
+    WU_CAROUSEL
   } from '../config/animation';
 
   gsap.registerPlugin(ScrollTrigger);
@@ -604,8 +603,8 @@ import Footer from '../components/Footer.astro';
         };
 
         function getBlurInWeight(el: Element): number {
-          if (el.classList.contains('gallery-carousel'))   return WU_GALLERY;
-          if (el.classList.contains('testimonials-carousel')) return WU_TESTIMONIALS;
+          if (el.classList.contains('gallery-carousel'))   return WU_CAROUSEL;
+          if (el.classList.contains('testimonials-carousel')) return WU_CAROUSEL;
           if (el.classList.contains('section-cta-group'))  return WU_CTA;
           return WU_BODY;
         }

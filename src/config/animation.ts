@@ -17,5 +17,4 @@ export const FDUR_RATIO = 1.0; // Filter duration = this × element duration
 export const WU_WORD         = 1;
 export const WU_BODY         = 1;
 export const WU_CTA          = 1;
-export const WU_GALLERY      = 1;
-export const WU_TESTIMONIALS = 1;
+export const WU_CAROUSEL     = 1;

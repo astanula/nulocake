@@ -1,3 +1,3 @@
 - [x] Change testimonials to carousel
-- [ ] Replace both WU_TESTIMONIALS and WU_GALLERY with WU_CAROUSEL
+- [x] Replace both WU_TESTIMONIALS and WU_GALLERY with WU_CAROUSEL
 - [ ] Extract y lift to variable, blur 16px etc, to not have hardcoded values
