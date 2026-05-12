@@ -14,6 +14,24 @@ export const MS_PER_WU = 250;  // Time-based equivalent of PX_PER_WU (section 0 
 export const FDUR_RATIO = 1.0; // Filter duration = this × element duration
 export const LIFT_PX    = 30;   // Vertical lift offset (px) for intro/outro animations
 
+// Blur range
+export const BLUR_MAX_PX  = 16;  // Max blur (px) when element is hidden
+export const BLUR_MIN_PX  = 12;  // Min random blur at intro start
+export const BLUR_RANGE   = 8;   // Random blur variation range
+
+// Brightness
+export const BRIGHTNESS_MIN = 0.6; // Brightness when hidden
+export const BRIGHTNESS_MAX = 1.0; // Brightness when visible
+
+// Scale
+export const SCALE_INTRO = 0.9;  // Initial scale at intro start
+export const SCALE_OUTRO = 1.1;  // Final scale at outro end
+export const SCALE_VARIATION    = 0.05; // Per-element scale jitter
+export const SCALE_VARIATION_FREQ = 0.2; // Frequency for scale sine variation
+
+// 3D Rotation
+export const ROTATEX_DEG = 15; // 3D rotation angle (degrees)
+
 // ── Element Weights (in Word Units) ──────────────────
 export const WU_WORD         = 1;
 export const WU_BODY         = 1;

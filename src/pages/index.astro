@@ -555,6 +555,16 @@ import Footer from '../components/Footer.astro';
     HOLD,
     FDUR_RATIO,
     LIFT_PX,
+    BLUR_MAX_PX,
+    BLUR_MIN_PX,
+    BLUR_RANGE,
+    BRIGHTNESS_MIN,
+    BRIGHTNESS_MAX,
+    SCALE_INTRO,
+    SCALE_OUTRO,
+    SCALE_VARIATION,
+    SCALE_VARIATION_FREQ,
+    ROTATEX_DEG,
     MS_PER_WU,
     WU_WORD,
     WU_BODY,
@@ -668,11 +678,11 @@ import Footer from '../components/Footer.astro';
         s0elements.forEach((elem) => {
           if (elem.type === 'word') {
             gsap.set(elem.el, {
-              opacity: 0, filter: 'blur(16px) brightness(0.6)',
-               y: LIFT_PX, scale: 0.9, rotateX: -15
+              opacity: 0, filter: `blur(${BLUR_MAX_PX}px) brightness(${BRIGHTNESS_MIN})`,
+               y: LIFT_PX, scale: SCALE_INTRO, rotateX: -ROTATEX_DEG
             });
           } else {
-                  gsap.set(elem.el, { opacity: 0, filter: 'blur(16px)', y: LIFT_PX });
+                  gsap.set(elem.el, { opacity: 0, filter: `blur(${BLUR_MAX_PX}px)`, y: LIFT_PX });
           }
         });
 
@@ -684,28 +694,28 @@ import Footer from '../components/Footer.astro';
           const fdurS  = durS * FDUR_RATIO;
 
           if (elem.type === 'word') {
-            const blur  = 12 + Math.floor(Math.random() * 8);
-            const scale = 0.9 + Math.sin(idx * 0.2) * 0.05;
+              const blur  = BLUR_MIN_PX + Math.floor(Math.random() * BLUR_RANGE);
+             const scale = SCALE_INTRO + Math.sin(idx * SCALE_VARIATION_FREQ) * SCALE_VARIATION;
 
-            gsap.set(elem.el, { filter: `blur(${blur}px) brightness(0.6)`, scale });
+             gsap.set(elem.el, { filter: `blur(${blur}px) brightness(${BRIGHTNESS_MIN})`, scale });
 
             introTweens.push(gsap.to(elem.el, {
               opacity: 1, y: 0, scale: 1, rotateX: 0,
               duration: durS, ease: 'none', delay: delayS
             }));
             introTweens.push(gsap.to(elem.el, {
-              filter: 'blur(0px) brightness(1)',
-              duration: fdurS, ease: 'none', delay: delayS
-            }));
+               filter: `blur(0px) brightness(${BRIGHTNESS_MAX})`,
+               duration: fdurS, ease: 'none', delay: delayS
+             }));
           } else {
             introTweens.push(gsap.to(elem.el, {
               opacity: 1, y: 0,
               duration: durS, ease: 'none', delay: delayS
             }));
-            introTweens.push(gsap.to(elem.el, {
-              filter: 'blur(0px)',
-              duration: fdurS, ease: 'none', delay: delayS
-            }));
+              introTweens.push(gsap.to(elem.el, {
+               filter: `blur(0px)`,
+               duration: fdurS, ease: 'none', delay: delayS
+             }));
           }
         });
 
@@ -778,13 +788,13 @@ import Footer from '../components/Footer.astro';
               // Set initial hidden state
               elements.forEach((elem) => {
                 if (elem.type === 'word') {
-                  gsap.set(elem.el, {
-                     opacity: 0, filter: 'blur(16px) brightness(0.6)',
-                     y: LIFT_PX, scale: 0.9, rotateX: -15
-                   });
-                } else {
-            gsap.set(elem.el, { opacity: 0, filter: 'blur(16px)', y: LIFT_PX });
-                }
+                   gsap.set(elem.el, {
+                      opacity: 0, filter: `blur(${BLUR_MAX_PX}px) brightness(${BRIGHTNESS_MIN})`,
+                      y: LIFT_PX, scale: SCALE_INTRO, rotateX: -ROTATEX_DEG
+                    });
+                 } else {
+             gsap.set(elem.el, { opacity: 0, filter: `blur(${BLUR_MAX_PX}px)`, y: LIFT_PX });
+                 }
               });
 
               elements.forEach((elem, idx) => {
@@ -793,29 +803,29 @@ import Footer from '../components/Footer.astro';
                 const pos  = secStart + elem.start;
 
                 if (elem.type === 'word') {
-                  const blur  = 12 + Math.floor(Math.random() * 8);
-                  const scale = 0.9 + Math.sin(idx * 0.2) * 0.05;
+                   const blur  = BLUR_MIN_PX + Math.floor(Math.random() * BLUR_RANGE);
+                   const scale = SCALE_INTRO + Math.sin(idx * SCALE_VARIATION_FREQ) * SCALE_VARIATION;
 
-                  tl.set(elem.el, { filter: `blur(${blur}px) brightness(0.6)`, scale }, secStart);
+                   tl.set(elem.el, { filter: `blur(${blur}px) brightness(${BRIGHTNESS_MIN})`, scale }, secStart);
 
                   tl.to(elem.el, {
                     opacity: 1, y: 0, scale: 1, rotateX: 0,
                     duration: dur, ease: 'none'
                   }, pos);
                   tl.to(elem.el, {
-                    filter: 'blur(0px) brightness(1)',
-                    duration: fdur, ease: 'none'
-                  }, pos);
-                } else {
-                  tl.to(elem.el, {
-                    opacity: 1, y: 0,
-                    duration: dur, ease: 'none'
-                  }, pos);
-                  tl.to(elem.el, {
-                    filter: 'blur(0px)',
-                    duration: fdur, ease: 'none'
-                  }, pos);
-                }
+                     filter: `blur(0px) brightness(${BRIGHTNESS_MAX})`,
+                     duration: fdur, ease: 'none'
+                   }, pos);
+                 } else {
+                   tl.to(elem.el, {
+                     opacity: 1, y: 0,
+                     duration: dur, ease: 'none'
+                   }, pos);
+                   tl.to(elem.el, {
+                     filter: `blur(0px)`,
+                     duration: fdur, ease: 'none'
+                   }, pos);
+                 }
               });
             }
 
@@ -835,26 +845,26 @@ import Footer from '../components/Footer.astro';
                 // Sections 1+: intro tweens leave elements visible,
                 //   .to() records visible as "from" → animates to hidden. ✓
                 if (elem.type === 'word') {
-                   if (i === 0) tl.set(elem.el, { filter: 'blur(0px) brightness(1)' }, pos);
+                   if (i === 0) tl.set(elem.el, { filter: `blur(0px) brightness(${BRIGHTNESS_MAX})` }, pos);
                    tl.to(elem.el, {
-                     opacity: 0, y: -LIFT_PX, scale: 1.1, rotateX: 15,
+                     opacity: 0, y: -LIFT_PX, scale: SCALE_OUTRO, rotateX: ROTATEX_DEG,
                      duration: dur, ease: 'none'
                    }, pos);
                    tl.to(elem.el, {
-                     filter: 'blur(16px) brightness(0.6)',
+                     filter: `blur(${BLUR_MAX_PX}px) brightness(${BRIGHTNESS_MIN})`,
                      duration: fdur, ease: 'none'
                    }, pos);
                  } else {
-                   if (i === 0) tl.set(elem.el, { filter: 'blur(0px)' }, pos);
+                   if (i === 0) tl.set(elem.el, { filter: `blur(0px)` }, pos);
                    tl.to(elem.el, {
                      opacity: 0, y: -LIFT_PX,
                      duration: dur, ease: 'none'
                    }, pos);
                   tl.to(elem.el, {
-                    filter: 'blur(16px)',
-                    duration: fdur, ease: 'none'
-                  }, pos);
-                }
+                     filter: `blur(${BLUR_MAX_PX}px)`,
+                     duration: fdur, ease: 'none'
+                   }, pos);
+                 }
               });
             }
           });

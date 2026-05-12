@@ -2,7 +2,32 @@ import { expect } from '../fixtures/base-fixture';
 import type { Locator, Page } from '@playwright/test';
 import { scrollToDeterministicPosition } from '../helpers/scroll';
 
-import { PX_PER_WU } from '../../../src/config/animation';
+import {
+  PX_PER_WU,
+  BLUR_MAX_PX,
+  BRIGHTNESS_MIN,
+  BRIGHTNESS_MAX,
+} from '../../../src/config/animation';
+
+// Pre-compute expected CSS values for each state
+const PARTIAL_BLUR_EXPECTED = BLUR_MAX_PX * 0.5; // 8px
+const PARTIAL_BRIGHTNESS_EXPECTED = BRIGHTNESS_MIN + (BRIGHTNESS_MAX - BRIGHTNESS_MIN) * 0.5; // 0.8
+
+// Build regex patterns dynamically from constants
+const VISIBLE_FILTER_WORD = new RegExp(`none|blur\\(0(?:\\.\\d+)?px\\)\\s*brightness\\(${BRIGHTNESS_MAX}\\)`);
+const VISIBLE_FILTER_BLUR = /none|blur\(0(?:\.\d+)?px\)/;
+
+const PARTIAL_FILTER_WORD = new RegExp(
+  `blur\\(${PARTIAL_BLUR_EXPECTED}(?:\\.\\d+)?px\\)\\s*brightness\\(${PARTIAL_BRIGHTNESS_EXPECTED.toFixed(1).replace('.', '\\.')}\\)`
+);
+const PARTIAL_FILTER_BLUR = new RegExp(
+  `blur\\(${PARTIAL_BLUR_EXPECTED}(?:\\.\\d+)?px\\)`
+);
+
+const INVISIBLE_FILTER_WORD = new RegExp(
+  `blur\\(${BLUR_MAX_PX}(?:\\.\\d+)?px\\)\\s*brightness\\(${BRIGHTNESS_MIN.toFixed(1).replace('.', '\\.')}\\)`
+);
+const INVISIBLE_FILTER_BLUR = new RegExp(`blur\\(${BLUR_MAX_PX}(?:\\.\\d+)?px\\)`);
 
 export type ElementState = 'visible' | 'partially' | 'invisible';
 
@@ -68,26 +93,26 @@ export class Section0Simulation {
       if (state === 'visible') {
         await expect(locator).toHaveCSS('opacity', '1');
         if (isWord) {
-          await expect(locator).toHaveCSS('filter', /none|blur\(0(?:\.\d+)?px\)\s*brightness\(1\)/);
+          await expect(locator).toHaveCSS('filter', VISIBLE_FILTER_WORD);
         } else {
-          await expect(locator).toHaveCSS('filter', /none|blur\(0(?:\.\d+)?px\)/);
+          await expect(locator).toHaveCSS('filter', VISIBLE_FILTER_BLUR);
         }
         await expect(locator).toHaveCSS('transform', /none|matrix(?:3d)?\(1,\s*0,\s*0/);
       }
       else if (state === 'partially') {
         await expect(locator).toHaveCSS('opacity', /^0\.5/);
         if (isWord) {
-          await expect(locator).toHaveCSS('filter', /blur\([78](?:\.\d+)?px\)\s*brightness\(0\.8/);
+          await expect(locator).toHaveCSS('filter', PARTIAL_FILTER_WORD);
         } else {
-          await expect(locator).toHaveCSS('filter', /blur\([78](?:\.\d+)?px\)/);
+          await expect(locator).toHaveCSS('filter', PARTIAL_FILTER_BLUR);
         }
       }
       else if (state === 'invisible') {
         await expect(locator).toHaveCSS('opacity', /^0(?:\.0+)?$/);
         if (isWord) {
-          await expect(locator).toHaveCSS('filter', /blur\(16(?:\.\d+)?px\)\s*brightness\(0\.6/);
+          await expect(locator).toHaveCSS('filter', INVISIBLE_FILTER_WORD);
         } else {
-          await expect(locator).toHaveCSS('filter', /blur\(16(?:\.\d+)?px\)/);
+          await expect(locator).toHaveCSS('filter', INVISIBLE_FILTER_BLUR);
         }
       }
     }

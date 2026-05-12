@@ -4,6 +4,9 @@ All notable changes to this project are documented here.
 For detailed release notes, see the corresponding file in the `.changelog/` directory.
 Each version's details are stored in `.changelog/<version>.<date>.md`.
 
+- [0.12.1] - 2026-05-13: Extract all animation constants and update E2E tests
+- [0.12.0] - 2026-05-13: Consolidate carousel animation weights
+- [0.11.0] - 2026-05-13: Testimonials carousel implementation
 - [0.10.1] - 2026-05-11: Centralized animation configuration
 - [0.10.0] - 2026-05-11: Enhanced Hero section E2E tests
 - [0.9.0] - 2026-05-10: Playwright E2E infrastructure setup
