@@ -588,303 +588,314 @@ import Footer from '../components/Footer.astro';
     });
   }
 
-  if (!motionQuery.matches) {
-    const video = document.getElementById('hero-video') as HTMLVideoElement | null;
+  // ═══════════════════════════════════════════════════
+  // Data computation (shared between Phase 1 and Phase 2)
+  // ═══════════════════════════════════════════════════
+
+  function getHeroElements() {
     const heroContainer = document.getElementById('hero-scroll-container');
     const sections = gsap.utils.toArray('.hero-section') as HTMLElement[];
+    return { heroContainer, sections };
+  }
 
-    if (heroContainer) {
-      const initTimeline = () => {
-        // ── Word-Based Scroll Unit System ──────────────────
-        // Every element has a weight in WU (Word Units).
-        // Duration = WU × PX_PER_WU (in timeline/scroll-px units).
-        // Elements cascade: each starts at DURGAP × previous duration
-        // after the previous element's start.
-        // ScrollTrigger end is in pixels → viewport-independent.
+  type AnimElement = {
+    el: Element;
+    wu: number;
+    duration: number;
+    start: number;
+    type: 'word' | 'blur-in';
+  };
 
-        const HOLD_PX      = HOLD * PX_PER_WU;
+  function computeSectionData(sections: HTMLElement[]) {
+    const HOLD_PX = HOLD * PX_PER_WU;
 
-        // ── Element data structure ─────────────────────────
-        type AnimElement = {
-          el: Element;
-          wu: number;
-          duration: number;
-          start: number;
-          type: 'word' | 'blur-in';
-        };
+    function getBlurInWeight(el: Element): number {
+      if (el.classList.contains('gallery-carousel')) return WU_CAROUSEL;
+      if (el.classList.contains('testimonials-carousel')) return WU_CAROUSEL;
+      if (el.classList.contains('section-cta-group')) return WU_CTA;
+      return WU_BODY;
+    }
 
-        function getBlurInWeight(el: Element): number {
-          if (el.classList.contains('gallery-carousel'))   return WU_CAROUSEL;
-          if (el.classList.contains('testimonials-carousel')) return WU_CAROUSEL;
-          if (el.classList.contains('section-cta-group'))  return WU_CTA;
-          return WU_BODY;
-        }
+    function buildSectionElements(section: HTMLElement): AnimElement[] {
+      const words = Array.from(section.querySelectorAll('.word'));
+      const blurIns = Array.from(section.querySelectorAll('.blur-in'));
+      const elems: AnimElement[] = [];
 
-        function buildSectionElements(section: HTMLElement): AnimElement[] {
-          const words   = Array.from(section.querySelectorAll('.word'));
-          const blurIns = Array.from(section.querySelectorAll('.blur-in'));
-          const elems: AnimElement[] = [];
+      for (const w of words) {
+        elems.push({ el: w, wu: WU_WORD, duration: 0, start: 0, type: 'word' });
+      }
+      for (const b of blurIns) {
+        elems.push({ el: b, wu: getBlurInWeight(b), duration: 0, start: 0, type: 'blur-in' });
+      }
 
-          for (const w of words) {
-            elems.push({ el: w, wu: WU_WORD, duration: 0, start: 0, type: 'word' });
+      for (let j = 0; j < elems.length; j++) {
+        elems[j].duration = elems[j].wu * PX_PER_WU;
+        elems[j].start = j === 0
+          ? 0
+          : elems[j - 1].start + elems[j - 1].duration * DURGAP;
+      }
+      return elems;
+    }
+
+    const sectionData = sections.map((section, i) => {
+      const elements = buildSectionElements(section);
+      const last = elements[elements.length - 1];
+      const introSpan = last.start + last.duration;
+      const sw = (i === 0) ? introSpan : introSpan + HOLD_PX + introSpan;
+      return { section, elements, introSpan, sw };
+    });
+
+    const sectionStarts: number[] = [];
+    let cumulative = 0;
+    for (const data of sectionData) {
+      sectionStarts.push(cumulative);
+      cumulative += data.sw;
+    }
+    const totalDuration = cumulative;
+
+    return { sectionData, sectionStarts, totalDuration };
+  }
+
+  // ═══════════════════════════════════════════════════
+  // Phase 2: Scroll-driven timeline
+  // ═══════════════════════════════════════════════════
+
+  function buildScrollTimeline(heroContainer: HTMLElement, sectionData, sectionStarts, totalDuration, sections: HTMLElement[]) {
+    const HOLD_PX = HOLD * PX_PER_WU;
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: heroContainer,
+        start: 'top top',
+        end: '+=' + totalDuration,
+        pin: '.hero-sticky-wrapper',
+        scrub: 1,
+        onUpdate: (self) => {
+          const timelinePos = self.progress * totalDuration;
+          let activeIndex = sections.length - 1;
+          for (let k = 0; k < sectionData.length; k++) {
+            if (timelinePos < sectionStarts[k] + sectionData[k].sw) {
+              activeIndex = k;
+              break;
+            }
           }
-          for (const b of blurIns) {
-            elems.push({ el: b, wu: getBlurInWeight(b), duration: 0, start: 0, type: 'blur-in' });
-          }
-
-          // Compute duration and cascading start times
-          for (let j = 0; j < elems.length; j++) {
-            elems[j].duration = elems[j].wu * PX_PER_WU;
-            elems[j].start = j === 0
-              ? 0
-              : elems[j - 1].start + elems[j - 1].duration * DURGAP;
-          }
-          return elems;
+          sections.forEach((sec, idx) => {
+            sec.classList.toggle('is-active', idx === activeIndex);
+          });
         }
+      }
+    });
 
-        // ── Compute per-section metrics ────────────────────
-        const sectionData = sections.map((section, i) => {
-          const elements  = buildSectionElements(section);
-          const last      = elements[elements.length - 1];
-          const introSpan = last.start + last.duration;
-          // Section 0: outro only (time-based intro, no scroll intro/hold)
-          const sw = (i === 0) ? introSpan : introSpan + HOLD_PX + introSpan;
-          return { section, elements, introSpan, sw };
-        });
+    sectionData.forEach((data, i) => {
+      const { section, elements, introSpan } = data;
+      const secStart = sectionStarts[i];
 
-        const sectionStarts: number[] = [];
-        let cumulative = 0;
-        for (const data of sectionData) {
-          sectionStarts.push(cumulative);
-          cumulative += data.sw;
-        }
-        const totalDuration = cumulative;
-
-        // ════════════════════════════════════════════════════
-        // PHASE 1 — Time-based intro for section 0 (page load)
-        // Runs once, blocks scroll, then self-destructs.
-        // The scroll timeline does NOT exist during this phase.
-        // ════════════════════════════════════════════════════
-
-        // Block scroll while the intro plays
-        document.documentElement.style.overflow = 'hidden';
-        document.body.style.overflow = 'hidden';
-
-        const section0 = sections[0] as HTMLElement;
-        section0.classList.add('is-active');
-        const s0elements = sectionData[0].elements;
-
-        // Set initial hidden state
-        s0elements.forEach((elem) => {
+      if (i > 0) {
+        elements.forEach((elem) => {
           if (elem.type === 'word') {
             gsap.set(elem.el, {
               opacity: 0, filter: `blur(${BLUR_MAX_PX}px) brightness(${BRIGHTNESS_MIN})`,
-               y: LIFT_PX, scale: SCALE_INTRO, rotateX: -ROTATEX_DEG
+              y: LIFT_PX, scale: SCALE_INTRO, rotateX: -ROTATEX_DEG
             });
           } else {
-                  gsap.set(elem.el, { opacity: 0, filter: `blur(${BLUR_MAX_PX}px)`, y: LIFT_PX });
+            gsap.set(elem.el, { opacity: 0, filter: `blur(${BLUR_MAX_PX}px)`, y: LIFT_PX });
           }
         });
 
-        // Create time-based intro tweens (WU cascade with MS_PER_WU)
-        const introTweens: gsap.core.Tween[] = [];
-        s0elements.forEach((elem, idx) => {
-          const delayS = (elem.start / PX_PER_WU) * MS_PER_WU / 1000;
-          const durS   = (elem.wu * MS_PER_WU) / 1000;
-          const fdurS  = durS * FDUR_RATIO;
+        elements.forEach((elem, idx) => {
+          const dur = elem.duration;
+          const fdur = dur * FDUR_RATIO;
+          const pos = secStart + elem.start;
 
           if (elem.type === 'word') {
-              const blur  = BLUR_MIN_PX + Math.floor(Math.random() * BLUR_RANGE);
-             const scale = SCALE_INTRO + Math.sin(idx * SCALE_VARIATION_FREQ) * SCALE_VARIATION;
-
-             gsap.set(elem.el, { filter: `blur(${blur}px) brightness(${BRIGHTNESS_MIN})`, scale });
-
-            introTweens.push(gsap.to(elem.el, {
+            const blur = BLUR_MIN_PX + Math.floor(Math.random() * BLUR_RANGE);
+            const scale = SCALE_INTRO + Math.sin(idx * SCALE_VARIATION_FREQ) * SCALE_VARIATION;
+            tl.set(elem.el, { filter: `blur(${blur}px) brightness(${BRIGHTNESS_MIN})`, scale }, secStart);
+            tl.to(elem.el, {
               opacity: 1, y: 0, scale: 1, rotateX: 0,
-              duration: durS, ease: 'none', delay: delayS
-            }));
-            introTweens.push(gsap.to(elem.el, {
-               filter: `blur(0px) brightness(${BRIGHTNESS_MAX})`,
-               duration: fdurS, ease: 'none', delay: delayS
-             }));
+              duration: dur, ease: 'none'
+            }, pos);
+            tl.to(elem.el, {
+              filter: `blur(0px) brightness(${BRIGHTNESS_MAX})`,
+              duration: fdur, ease: 'none'
+            }, pos);
           } else {
-            introTweens.push(gsap.to(elem.el, {
+            tl.to(elem.el, {
               opacity: 1, y: 0,
-              duration: durS, ease: 'none', delay: delayS
-            }));
-              introTweens.push(gsap.to(elem.el, {
-               filter: `blur(0px)`,
-               duration: fdurS, ease: 'none', delay: delayS
-             }));
+              duration: dur, ease: 'none'
+            }, pos);
+            tl.to(elem.el, {
+              filter: `blur(0px)`,
+              duration: fdur, ease: 'none'
+            }, pos);
           }
         });
+      }
 
-        // When the last element finishes: kill intro, wipe styles, build scroll timeline
-        const lastS0 = s0elements[s0elements.length - 1];
-        const introEndS =
-          ((lastS0.start / PX_PER_WU) * MS_PER_WU / 1000) +
-          ((lastS0.wu * MS_PER_WU) / 1000);
+      if (i < sections.length - 1) {
+        const outroStart = (i === 0) ? secStart : secStart + introSpan + HOLD_PX;
 
-        gsap.delayedCall(introEndS, () => {
-          // Kill every time-based tween
-          introTweens.forEach(t => t.kill());
-          introTweens.length = 0;
+        elements.forEach((elem) => {
+          const dur = elem.duration;
+          const fdur = dur * FDUR_RATIO;
+          const pos = outroStart + elem.start;
 
-          // Clear ALL inline styles — elements revert to CSS defaults (visible)
-          s0elements.forEach(elem => {
-            gsap.set(elem.el, { clearProps: 'all' });
-          });
-
-          // Unblock scroll and ensure we're at the top
-          window.scrollTo(0, 0);
-          document.documentElement.style.overflow = '';
-          document.body.style.overflow = '';
-
-          // ════════════════════════════════════════════════════
-          // PHASE 2 — Scroll-driven timeline (all sections)
-          // Created AFTER the time-based intro is fully cleaned up.
-          // Section 0 elements are in pristine CSS state (visible).
-          // No fromTo/immediateRender hacks needed.
-          // ════════════════════════════════════════════════════
-          buildScrollTimeline();
+          if (elem.type === 'word') {
+            if (i === 0) tl.set(elem.el, { filter: `blur(0px) brightness(${BRIGHTNESS_MAX})` }, pos);
+            tl.to(elem.el, {
+              opacity: 0, y: -LIFT_PX, scale: SCALE_OUTRO, rotateX: ROTATEX_DEG,
+              duration: dur, ease: 'none'
+            }, pos);
+            tl.to(elem.el, {
+              filter: `blur(${BLUR_MAX_PX}px) brightness(${BRIGHTNESS_MIN})`,
+              duration: fdur, ease: 'none'
+            }, pos);
+          } else {
+            if (i === 0) tl.set(elem.el, { filter: `blur(0px)` }, pos);
+            tl.to(elem.el, {
+              opacity: 0, y: -LIFT_PX,
+              duration: dur, ease: 'none'
+            }, pos);
+            tl.to(elem.el, {
+              filter: `blur(${BLUR_MAX_PX}px)`,
+              duration: fdur, ease: 'none'
+            }, pos);
+          }
         });
+      }
+    });
 
-        function buildScrollTimeline() {
-          const tl = gsap.timeline({
-            scrollTrigger: {
-              trigger: heroContainer,
-              start: 'top top',
-              end: '+=' + totalDuration,
-              pin: '.hero-sticky-wrapper',
-              scrub: 1,
-              onUpdate: (self) => {
-                // Active section detection (variable-width lookup)
-                const timelinePos = self.progress * totalDuration;
-                let activeIndex = sections.length - 1;
-                for (let k = 0; k < sectionData.length; k++) {
-                  if (timelinePos < sectionStarts[k] + sectionData[k].sw) {
-                    activeIndex = k;
-                    break;
-                  }
-                }
+    tl.set({}, {}, totalDuration);
+  }
 
-                sections.forEach((sec, idx) => {
-                  sec.classList.toggle('is-active', idx === activeIndex);
-                });
-              }
-            }
-          });
+  // ═══════════════════════════════════════════════════
+  // Phase 1: Time-based intro for section 0
+  // ═══════════════════════════════════════════════════
 
-          // ── Set up animations per section ──────────────────
-          sectionData.forEach((data, i) => {
-            const { section, elements, introSpan } = data;
-            const secStart = sectionStarts[i];
+  function runPhase1(sectionData, sectionStarts, totalDuration, sections: HTMLElement[], heroContainer: HTMLElement) {
+    const s0elements = sectionData[0].elements;
+    const section0 = sections[0] as HTMLElement;
 
-            // SECTION 0: No scroll intro — time-based intro already handled it.
-            // Elements are in clean visible state (no inline styles).
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    section0.classList.add('is-active');
 
-            // SECTIONS 1+: Scroll-driven intro
-            if (i > 0) {
-              // Set initial hidden state
-              elements.forEach((elem) => {
-                if (elem.type === 'word') {
-                   gsap.set(elem.el, {
-                      opacity: 0, filter: `blur(${BLUR_MAX_PX}px) brightness(${BRIGHTNESS_MIN})`,
-                      y: LIFT_PX, scale: SCALE_INTRO, rotateX: -ROTATEX_DEG
-                    });
-                 } else {
-             gsap.set(elem.el, { opacity: 0, filter: `blur(${BLUR_MAX_PX}px)`, y: LIFT_PX });
-                 }
-              });
-
-              elements.forEach((elem, idx) => {
-                const dur  = elem.duration;
-                const fdur = dur * FDUR_RATIO;
-                const pos  = secStart + elem.start;
-
-                if (elem.type === 'word') {
-                   const blur  = BLUR_MIN_PX + Math.floor(Math.random() * BLUR_RANGE);
-                   const scale = SCALE_INTRO + Math.sin(idx * SCALE_VARIATION_FREQ) * SCALE_VARIATION;
-
-                   tl.set(elem.el, { filter: `blur(${blur}px) brightness(${BRIGHTNESS_MIN})`, scale }, secStart);
-
-                  tl.to(elem.el, {
-                    opacity: 1, y: 0, scale: 1, rotateX: 0,
-                    duration: dur, ease: 'none'
-                  }, pos);
-                  tl.to(elem.el, {
-                     filter: `blur(0px) brightness(${BRIGHTNESS_MAX})`,
-                     duration: fdur, ease: 'none'
-                   }, pos);
-                 } else {
-                   tl.to(elem.el, {
-                     opacity: 1, y: 0,
-                     duration: dur, ease: 'none'
-                   }, pos);
-                   tl.to(elem.el, {
-                     filter: `blur(0px)`,
-                     duration: fdur, ease: 'none'
-                   }, pos);
-                 }
-              });
-            }
-
-            // ALL SECTIONS EXCEPT LAST: Scroll-driven outro
-            // Outro mirrors intro — same start offsets and durations
-            if (i < sections.length - 1) {
-              const outroStart = (i === 0) ? secStart : secStart + introSpan + HOLD_PX;
-
-              elements.forEach((elem) => {
-                const dur  = elem.duration;
-                const fdur = dur * FDUR_RATIO;
-                const pos  = outroStart + elem.start;
-
-                // All sections use .to() — no special cases.
-                // Section 0: elements are in clean CSS visible state,
-                //   .to() records visible as "from" → animates to hidden. ✓
-                // Sections 1+: intro tweens leave elements visible,
-                //   .to() records visible as "from" → animates to hidden. ✓
-                if (elem.type === 'word') {
-                   if (i === 0) tl.set(elem.el, { filter: `blur(0px) brightness(${BRIGHTNESS_MAX})` }, pos);
-                   tl.to(elem.el, {
-                     opacity: 0, y: -LIFT_PX, scale: SCALE_OUTRO, rotateX: ROTATEX_DEG,
-                     duration: dur, ease: 'none'
-                   }, pos);
-                   tl.to(elem.el, {
-                     filter: `blur(${BLUR_MAX_PX}px) brightness(${BRIGHTNESS_MIN})`,
-                     duration: fdur, ease: 'none'
-                   }, pos);
-                 } else {
-                   if (i === 0) tl.set(elem.el, { filter: `blur(0px)` }, pos);
-                   tl.to(elem.el, {
-                     opacity: 0, y: -LIFT_PX,
-                     duration: dur, ease: 'none'
-                   }, pos);
-                  tl.to(elem.el, {
-                     filter: `blur(${BLUR_MAX_PX}px)`,
-                     duration: fdur, ease: 'none'
-                   }, pos);
-                 }
-              });
-            }
-          });
-
-          // Force timeline duration to exactly match totalDuration
-          tl.set({}, {}, totalDuration);
-        }
-      };
-
-      if (video && video.readyState >= 1) {
-        initTimeline();
-      } else if (video) {
-        video.addEventListener('loadedmetadata', initTimeline, { once: true });
+    s0elements.forEach((elem) => {
+      if (elem.type === 'word') {
+        gsap.set(elem.el, {
+          opacity: 0, filter: `blur(${BLUR_MAX_PX}px) brightness(${BRIGHTNESS_MIN})`,
+          y: LIFT_PX, scale: SCALE_INTRO, rotateX: -ROTATEX_DEG
+        });
       } else {
-        initTimeline();
+        gsap.set(elem.el, { opacity: 0, filter: `blur(${BLUR_MAX_PX}px)`, y: LIFT_PX });
+      }
+    });
+
+    const introTweens: gsap.core.Tween[] = [];
+    s0elements.forEach((elem, idx) => {
+      const delayS = (elem.start / PX_PER_WU) * MS_PER_WU / 1000;
+      const durS = (elem.wu * MS_PER_WU) / 1000;
+      const fdurS = durS * FDUR_RATIO;
+
+      if (elem.type === 'word') {
+        const blur = BLUR_MIN_PX + Math.floor(Math.random() * BLUR_RANGE);
+        const scale = SCALE_INTRO + Math.sin(idx * SCALE_VARIATION_FREQ) * SCALE_VARIATION;
+        gsap.set(elem.el, { filter: `blur(${blur}px) brightness(${BRIGHTNESS_MIN})`, scale });
+
+        introTweens.push(gsap.to(elem.el, {
+          opacity: 1, y: 0, scale: 1, rotateX: 0,
+          duration: durS, ease: 'none', delay: delayS
+        }));
+        introTweens.push(gsap.to(elem.el, {
+          filter: `blur(0px) brightness(${BRIGHTNESS_MAX})`,
+          duration: fdurS, ease: 'none', delay: delayS
+        }));
+      } else {
+        introTweens.push(gsap.to(elem.el, {
+          opacity: 1, y: 0,
+          duration: durS, ease: 'none', delay: delayS
+        }));
+        introTweens.push(gsap.to(elem.el, {
+          filter: `blur(0px)`,
+          duration: fdurS, ease: 'none', delay: delayS
+        }));
+      }
+    });
+
+    const lastS0 = s0elements[s0elements.length - 1];
+    const introEndS =
+      ((lastS0.start / PX_PER_WU) * MS_PER_WU / 1000) +
+      ((lastS0.wu * MS_PER_WU) / 1000);
+
+    gsap.delayedCall(introEndS, () => {
+      introTweens.forEach(t => t.kill());
+      introTweens.length = 0;
+
+      s0elements.forEach(elem => {
+        gsap.set(elem.el, { clearProps: 'all' });
+      });
+
+      window.scrollTo(0, 0);
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+
+      window.hasSeenIntro = true;
+
+      buildScrollTimeline(heroContainer, sectionData, sectionStarts, totalDuration, sections);
+    });
+  }
+
+  // ═══════════════════════════════════════════════════
+  // Main initialization (runs on astro:page-load)
+  // ═══════════════════════════════════════════════════
+
+  function initHomePage() {
+    if (motionQuery.matches) {
+      makeAllSectionsVisible();
+      return;
+    }
+
+    const { heroContainer, sections } = getHeroElements();
+
+    if (!heroContainer || sections.length === 0) return;
+
+    const video = document.getElementById('hero-video') as HTMLVideoElement | null;
+
+    ScrollTrigger.getAll().forEach((t) => t.kill());
+
+    const { sectionData, sectionStarts, totalDuration } = computeSectionData(sections);
+
+    if (window.hasSeenIntro) {
+      const section0 = sections[0] as HTMLElement;
+      section0.classList.add('is-active');
+
+      sectionData[0].elements.forEach(elem => {
+        gsap.set(elem.el, { clearProps: 'all' });
+      });
+
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+
+      buildScrollTimeline(heroContainer, sectionData, sectionStarts, totalDuration, sections);
+    } else {
+      // Video-ready check: wait for metadata if video exists but isn't ready yet
+      if (video && video.readyState >= 1) {
+        runPhase1(sectionData, sectionStarts, totalDuration, sections, heroContainer);
+      } else if (video) {
+        video.addEventListener('loadedmetadata', () => {
+          runPhase1(sectionData, sectionStarts, totalDuration, sections, heroContainer);
+        }, { once: true });
+      } else {
+        runPhase1(sectionData, sectionStarts, totalDuration, sections, heroContainer);
       }
     }
-  } else {
-    makeAllSectionsVisible();
   }
+
+  document.addEventListener('astro:page-load', initHomePage);
+
+  // ═══════════════════════════════════════════════════
+  // Reduced motion handler
+  // ═══════════════════════════════════════════════════
 
   motionQuery.addEventListener('change', (e) => {
     if (e.matches) {
@@ -910,10 +921,10 @@ import Footer from '../components/Footer.astro';
 
     let currentIndex = 0;
     let autoPlayInterval: ReturnType<typeof setInterval> | null = null;
-    const AUTO_PLAY_DELAY = 10000; // 10 seconds
+    const AUTO_PLAY_DELAY = 10000;
 
     function updateCarousel(animate: boolean = true) {
-      const slideWidth = 80; // 80% as set in CSS
+      const slideWidth = 80;
       const offset = -(currentIndex * slideWidth);
       if (animate) {
         track.style.transition = 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
@@ -952,17 +963,14 @@ import Footer from '../components/Footer.astro';
       startAutoPlay();
     }
 
-    // Event listeners for buttons
     if (prevBtn) prevBtn.addEventListener('click', goToPrev);
     if (nextBtn) nextBtn.addEventListener('click', goToNext);
 
-    // Pause on hover/focus
     carousel.addEventListener('mouseenter', stopAutoPlay);
     carousel.addEventListener('mouseleave', startAutoPlay);
     carousel.addEventListener('focusin', stopAutoPlay);
     carousel.addEventListener('focusout', startAutoPlay);
 
-    // Touch/swipe support
     let touchStartX = 0;
     let touchEndX = 0;
 
@@ -982,13 +990,11 @@ import Footer from '../components/Footer.astro';
       }
     }, { passive: true });
 
-    // Keyboard navigation
     carousel.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowLeft') goToPrev();
       if (e.key === 'ArrowRight') goToNext();
     });
 
-    // Initialize
     updateCarousel(false);
     startAutoPlay();
   }
