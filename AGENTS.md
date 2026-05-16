@@ -3,9 +3,22 @@
 ## Project Overview
 Astro v6.1.5 with View Transitions, GSAP v3.15.0 (ScrollTrigger), Tailwind CSS.
 
+## Design System
+Always load and reference `DESIGN.md` for design-related tasks including:
+- Color palette and token usage
+- Typography (Epilogue, Manrope)
+- Layout & composition decisions
+- Interactions & animation implementation
+- Any UI/UX changes
+
 ## src/pages/index.astro
 
+"Strona główna" - landing page
+
 ### Animation System
+
+Detailed documentation in `docs/architecture/word-based-scroll-animation-system.md` — read this file for full system specification before making animation changes.
+
 Two-phase setup:
 - **Phase 1** - Time-based intro for section 0 (plays once per session, blocks scroll)
 - **Phase 2** - Scroll-driven timeline for all sections (GSAP ScrollTrigger with pinned `.hero-sticky-wrapper`)

@@ -5,14 +5,14 @@
  */
 
 // ── Core Scroll System ───────────────────────────────
-export const PX_PER_WU = 40;   // Scroll pixels per Word Unit
-export const DURGAP    = 0.5;  // Next element starts at 50% of previous duration
+export const PX_PER_WU = 80;   // Scroll pixels per Word Unit
+export const DURGAP    = 0.25;  // Next element starts at 50% of previous duration
 export const HOLD      = 2;    // WU of hold between intro and outro
 export const MS_PER_WU = 250;  // Time-based equivalent of PX_PER_WU (section 0 only)
 
 // ── Visual Parameters ────────────────────────────────
 export const FDUR_RATIO = 1.0; // Filter duration = this × element duration
-export const LIFT_PX    = 30;   // Vertical lift offset (px) for intro/outro animations
+export const LIFT_PX    = 60;   // Vertical lift offset (px) for intro/outro animations
 
 // Blur range
 export const BLUR_MAX_PX  = 16;  // Max blur (px) when element is hidden
