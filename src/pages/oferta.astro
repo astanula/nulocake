@@ -114,6 +114,31 @@ import Footer from '../components/Footer.astro';
     display: flex;
     flex-direction: column;
     justify-content: center;
+    padding: max(7rem, 18vh) 2rem 4rem 4rem;
+  }
+
+  .hero-section-inner {
+    max-width: 560px;
+    width: 100%;
+  }
+
+  .section-heading {
+    margin-bottom: 1.5rem;
+  }
+
+  .section-body {
+    margin-bottom: 1rem;
+  }
+
+  .section-body:last-of-type {
+    margin-bottom: 2rem;
+  }
+
+  .section-cta-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 2rem;
   }
 
   .section-body ul, .section-body ol:not(.steps-list) {
@@ -164,6 +189,7 @@ import Footer from '../components/Footer.astro';
     .oferta-section {
       padding: max(6rem, 15vh) 1.5rem 3rem 1.5rem;
       justify-content: flex-start;
+      align-items: center;
     }
 
     .steps-list li {
