@@ -22,4 +22,4 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
-test-results/.last-run.json
+test-results/

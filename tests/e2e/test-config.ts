@@ -17,5 +17,9 @@ export const testConfig = {
   /** Named routes for test navigation */
   routes: {
     landing: '/',
+    oferta: '/oferta',
+    galeria: '/galeria',
+    oMnie: '/o-mnie',
+    kontakt: '/kontakt',
   },
 } as const;
