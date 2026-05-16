@@ -573,6 +573,7 @@ import Footer from '../components/Footer.astro';
   } from '../config/animation';
 
   gsap.registerPlugin(ScrollTrigger);
+let testimonialsAutoPlayInterval: ReturnType<typeof setInterval> | null = null;
 
   const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -896,6 +897,31 @@ import Footer from '../components/Footer.astro';
     window.homePageLoadListenerAdded = true;
   }
 
+  if (!window.homePageBeforeSwapListenerAdded) {
+    document.addEventListener('astro:before-swap', () => {
+      const heroContainer = document.getElementById('hero-scroll-container');
+      if (!heroContainer) return;
+
+      // Kill homepage ScrollTrigger instances
+      ScrollTrigger.getAll().forEach(t => {
+        if (t.pin && (t.pin as HTMLElement).classList.contains('hero-sticky-wrapper')) {
+          t.kill();
+        }
+      });
+
+      // Clear testimonials auto-play interval
+      if (testimonialsAutoPlayInterval) {
+        clearInterval(testimonialsAutoPlayInterval);
+        testimonialsAutoPlayInterval = null;
+      }
+
+      // Reset overflow styles
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    });
+    window.homePageBeforeSwapListenerAdded = true;
+  }
+
   // ═══════════════════════════════════════════════════
   // Reduced motion handler
   // ═══════════════════════════════════════════════════
@@ -923,7 +949,6 @@ import Footer from '../components/Footer.astro';
     if (!track || slides.length === 0) return;
 
     let currentIndex = 0;
-    let autoPlayInterval: ReturnType<typeof setInterval> | null = null;
     const AUTO_PLAY_DELAY = 10000;
 
     function updateCarousel(animate: boolean = true) {
@@ -950,14 +975,14 @@ import Footer from '../components/Footer.astro';
     }
 
     function startAutoPlay() {
-      if (autoPlayInterval) clearInterval(autoPlayInterval);
-      autoPlayInterval = setInterval(goToNext, AUTO_PLAY_DELAY);
+      if (testimonialsAutoPlayInterval) clearInterval(testimonialsAutoPlayInterval);
+      testimonialsAutoPlayInterval = setInterval(goToNext, AUTO_PLAY_DELAY);
     }
 
     function stopAutoPlay() {
-      if (autoPlayInterval) {
-        clearInterval(autoPlayInterval);
-        autoPlayInterval = null;
+      if (testimonialsAutoPlayInterval) {
+        clearInterval(testimonialsAutoPlayInterval);
+        testimonialsAutoPlayInterval = null;
       }
     }
 
