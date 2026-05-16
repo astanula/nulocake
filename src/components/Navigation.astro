@@ -3,7 +3,6 @@ import logo from '../assets/nulocake logo.svg';
 import { Image } from 'astro:assets';
 const path = Astro.url.pathname;
 ---
-
 <nav id="main-nav" class="nav">
   <div class="nav-inner">
     <a href="/" class="nav-logo" aria-label="Nulo Cake - strona główna">
@@ -326,12 +325,32 @@ const path = Astro.url.pathname;
     }
   };
 
+  let toggle, links, backdrop, closeBtn;
+
+  function openMenu() {
+    toggle?.setAttribute('aria-expanded', 'true');
+    toggle?.setAttribute('aria-label', 'Zamknij menu');
+    toggle?.classList.add('active');
+    links?.classList.add('open');
+    backdrop?.classList.add('open');
+    closeBtn?.focus();
+  }
+
+  function closeMenu() {
+    toggle?.setAttribute('aria-expanded', 'false');
+    toggle?.setAttribute('aria-label', 'Otwórz menu');
+    toggle?.classList.remove('active');
+    links?.classList.remove('open');
+    backdrop?.classList.remove('open');
+    toggle?.focus();
+  }
+
   function initNav() {
     const nav = document.getElementById('main-nav');
-    const toggle = document.getElementById('nav-toggle');
-    const links = document.getElementById('nav-links');
-    const backdrop = document.getElementById('nav-backdrop');
-    const closeBtn = document.getElementById('nav-close');
+    toggle = document.getElementById('nav-toggle');
+    links = document.getElementById('nav-links');
+    backdrop = document.getElementById('nav-backdrop');
+    closeBtn = document.getElementById('nav-close');
 
     if (!isInitialized) {
       window.addEventListener('scroll', onScroll, { passive: true });
@@ -376,28 +395,8 @@ const path = Astro.url.pathname;
 
       isInitialized = true;
     }
-    
-    onScroll();
 
-    /* Open / close helpers */
-    function openMenu() {
-      toggle?.setAttribute('aria-expanded', 'true');
-      toggle?.setAttribute('aria-label', 'Zamknij menu');
-      toggle?.classList.add('active');
-      links?.classList.add('open');
-      backdrop?.classList.add('open');
-      closeBtn?.focus();
-    }
-
-    function closeMenu() {
-      toggle?.setAttribute('aria-expanded', 'false');
-      toggle?.setAttribute('aria-label', 'Otwórz menu');
-      toggle?.classList.remove('active');
-      links?.classList.remove('open');
-      backdrop?.classList.remove('open');
-      toggle?.focus();
-    }
-
+    // One-time persistent element handlers
     toggle?.addEventListener('click', () => {
       const expanded = toggle.getAttribute('aria-expanded') === 'true';
       if (expanded) {
@@ -410,11 +409,7 @@ const path = Astro.url.pathname;
     closeBtn?.addEventListener('click', closeMenu);
     backdrop?.addEventListener('click', closeMenu);
 
-    const navLinksArray = Array.from(links?.querySelectorAll('a') || []);
-    navLinksArray.forEach((link) => {
-      // Avoid attaching closeMenu to desktop links if they animate, but it's harmless
-      link.addEventListener('click', closeMenu);
-    });
+    onScroll();
 
     /* Limelight animation using GSAP */
     const limelight = document.getElementById('nav-limelight');
@@ -431,41 +426,81 @@ const path = Astro.url.pathname;
         gsap.set(limelight, { x: getLimelightX(targetLink), opacity: 1 });
       }
 
-      const animateToLinkAndNavigate = (anchor, href) => {
-        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('nav-link--active'));
-        anchor.classList.add('nav-link--active');
-        
+    }
+  }
+
+  // Delegated click handler for nav links and logo
+  function handleNavDelegatedClick(event) {
+    // Handle .nav-link clicks
+    const navLink = event.target.closest('.nav-link');
+    if (navLink) {
+      event.preventDefault();
+      closeMenu();
+      const isNavigating = navLink.dataset.isNavigating === 'true';
+      if (isNavigating) return;
+      navLink.dataset.isNavigating = 'true';
+      // Update active class
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('nav-link--active'));
+      navLink.classList.add('nav-link--active');
+      // Limelight animation
+      const limelight = document.getElementById('nav-limelight');
+      if (limelight && window.innerWidth > 768) {
+        const getLimelightX = (element) => element.offsetLeft + (element.offsetWidth / 2) - 25;
         gsap.to(limelight, {
-          x: getLimelightX(anchor),
+          x: getLimelightX(navLink),
           duration: 0.4,
           ease: 'power2.inOut',
           opacity: 1,
           onComplete: () => {
-            navigate(href);
+            navigate(navLink.href);
+            delete navLink.dataset.isNavigating;
           }
         });
-      };
-
-      document.querySelectorAll('.nav-link').forEach((link) => {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          animateToLinkAndNavigate(e.currentTarget, e.currentTarget.href);
-        });
-      });
-
-      const logoLink = document.querySelector('.nav-logo');
-      if (logoLink) {
-        logoLink.addEventListener('click', (e) => {
-          const homeLink = document.querySelector('.nav-link[href="/"]');
-          if (homeLink && !homeLink.classList.contains('nav-link--active')) {
-            e.preventDefault();
-            animateToLinkAndNavigate(homeLink, logoLink.href);
-          }
-        });
+      } else {
+        navigate(navLink.href);
+        delete navLink.dataset.isNavigating;
+      }
+      return;
+    }
+    // Handle .nav-logo clicks
+    const logoLink = event.target.closest('.nav-logo');
+    if (logoLink) {
+      const homeLink = document.querySelector('.nav-link[href="/"]');
+      if (homeLink && !homeLink.classList.contains('nav-link--active')) {
+        event.preventDefault();
+        closeMenu();
+        // Update active class
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('nav-link--active'));
+        homeLink.classList.add('nav-link--active');
+        // Limelight animation
+        const limelight = document.getElementById('nav-limelight');
+        if (limelight && window.innerWidth > 768) {
+          const getLimelightX = (element) => element.offsetLeft + (element.offsetWidth / 2) - 25;
+          gsap.to(limelight, {
+            x: getLimelightX(homeLink),
+            duration: 0.4,
+            ease: 'power2.inOut',
+            opacity: 1,
+            onComplete: () => {
+              navigate(logoLink.href);
+            }
+          });
+        } else {
+          navigate(logoLink.href);
+        }
       }
     }
   }
 
+  // Guard delegated handler to attach once
+  if (!document.hasNavClickDelegated) {
+    document.addEventListener('click', handleNavDelegatedClick);
+    document.hasNavClickDelegated = true;
+  }
+
   // Run on initial load and every subsequent page swap
-  document.addEventListener('astro:page-load', initNav);
+  if (!document.hasNavPageLoadListener) {
+    document.addEventListener('astro:page-load', initNav);
+    document.hasNavPageLoadListener = true;
+  }
 </script>
