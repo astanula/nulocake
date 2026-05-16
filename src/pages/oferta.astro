@@ -8,8 +8,8 @@ import Footer from '../components/Footer.astro';
   <Navigation />
   <main class="oferta-container">
     <!-- Sekcja 1: Co kryje się w środku? -->
-    <section class="hero-section oferta-section">
-      <div class="hero-section-inner">
+    <section class="content-section">
+      <div class="content-section-inner">
         <h2 class="display-lg section-heading">Co kryje się w środku?</h2>
         <p class="body-lg section-body">W moich tortach nie znajdziesz gotowych mieszanek – używam tylko prawdziwego masła, belgijskiej czekolady i świeżych owoców.</p>
         <p class="body-lg section-body">Każde piętro tortu to puszysty biszkopt i aż 3 warstwy przepysznego kremu/żelki</p>
@@ -21,8 +21,8 @@ import Footer from '../components/Footer.astro';
     </section>
 
     <!-- Sekcja 2: Magia detali – Możliwości dekoracji -->
-    <section class="hero-section oferta-section">
-      <div class="hero-section-inner">
+    <section class="content-section">
+      <div class="content-section-inner">
         <h2 class="display-lg section-heading">Magia detali – Możliwości dekoracji</h2>
         <p class="body-lg section-body">Wygląd tortu ogranicza tylko nasza wyobraźnia. W moich projektach najczęściej wykorzystuję:</p>
         <ul class="section-body body-lg">
@@ -41,8 +41,8 @@ import Footer from '../components/Footer.astro';
     </section>
 
     <!-- Sekcja 3: Przewodnik po porcjach i cennik -->
-    <section class="hero-section oferta-section">
-      <div class="hero-section-inner">
+    <section class="content-section">
+      <div class="content-section-inner">
         <h2 class="display-lg section-heading">Przewodnik po porcjach i cennik</h2>
         <p class="body-lg section-body">Ceny zaczynają się od X zł za porcję. Ostateczna cena tortu zależy od liczby porcji oraz stopnia skomplikowania dekoracji.</p>
         <p class="body-lg section-body">Tabelka z rozmiarami tortów wg. ilości porcji (kolumny: ilość porcji, średnica, ilość pięter). Tu wspomnieć też jaka średnica to tort 1 piętrowy, jaka 2 piętrowy, jaka 3 piętrowy, itp. Wymienić też Bento cake w tabelce!</p>
@@ -53,8 +53,8 @@ import Footer from '../components/Footer.astro';
     </section>
 
     <!-- Sekcja 4: Jak zamówić wymarzony tort? -->
-    <section class="hero-section oferta-section">
-      <div class="hero-section-inner">
+    <section class="content-section">
+      <div class="content-section-inner">
         <h2 class="display-lg section-heading">Jak zamówić wymarzony tort? (4 proste kroki)</h2>
         <ol class="steps-list">
           <li>
@@ -82,8 +82,8 @@ import Footer from '../components/Footer.astro';
     </section>
 
     <!-- Sekcja 5: Coś więcej niż torty? -->
-    <section class="hero-section oferta-section">
-      <div class="hero-section-inner">
+    <section class="content-section">
+      <div class="content-section-inner">
         <h2 class="display-lg section-heading">Coś więcej niż torty?</h2>
         <p class="body-lg section-body">Opis co oprócz tortów jest w ofercie</p>
         <ul class="section-body body-lg">
@@ -104,9 +104,10 @@ import Footer from '../components/Footer.astro';
   .oferta-container {
     max-width: 1400px;
     margin: 0 auto;
+    width: 100%;
   }
 
-  .oferta-section {
+  .content-section {
     position: relative;
     visibility: visible;
     pointer-events: auto;
@@ -118,8 +119,8 @@ import Footer from '../components/Footer.astro';
     padding: max(7rem, 18vh) 2rem 4rem 4rem;
   }
 
-  .hero-section-inner {
-    max-width: 560px;
+  .content-section-inner {
+    max-width: none;
     width: 100%;
   }
 
@@ -187,7 +188,7 @@ import Footer from '../components/Footer.astro';
   }
 
   @media (max-width: 768px) {
-    .oferta-section {
+    .content-section {
       padding: max(6rem, 15vh) 1.5rem 3rem 1.5rem;
       justify-content: flex-start;
       align-items: center;
