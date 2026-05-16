@@ -4,9 +4,9 @@ import type { Page } from '@playwright/test';
  * Scrolls the page to an exact vertical pixel position using
  * `window.scrollTo({ behavior: 'instant' })`.
  *
- * After scrolling, waits for one `requestAnimationFrame` tick so that
- * GSAP ScrollTrigger processes the new scroll position before the
- * test continues asserting.
+ * After scrolling, waits for GSAP ScrollTrigger to process the new
+ * scroll position. With `scrub: 1`, ScrollTrigger needs ~100ms
+ * to update the DOM.
  *
  * Deterministic: no smooth scrolling, no animation timing dependency.
  */
@@ -16,7 +16,7 @@ export async function scrollToDeterministicPosition(
 ): Promise<void> {
   await page.evaluate((y) => {
     window.scrollTo({ top: y, behavior: 'instant' as ScrollBehavior });
-    // Return a promise that resolves after one rAF tick
-    return new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    // Wait 100ms for ScrollTrigger scrub to update
+    return new Promise<void>((resolve) => setTimeout(resolve, 500));
   }, yOffset);
 }

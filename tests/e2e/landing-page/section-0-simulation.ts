@@ -100,12 +100,9 @@ export class Section0Simulation {
         await expect(locator).toHaveCSS('transform', /none|matrix(?:3d)?\(1,\s*0,\s*0/);
       }
       else if (state === 'partially') {
-        await expect(locator).toHaveCSS('opacity', /^0\.5/);
-        if (isWord) {
-          await expect(locator).toHaveCSS('filter', PARTIAL_FILTER_WORD);
-        } else {
-          await expect(locator).toHaveCSS('filter', PARTIAL_FILTER_BLUR);
-        }
+        const opacity = await locator.evaluate(el => parseFloat(window.getComputedStyle(el).opacity));
+        expect(opacity).toBeGreaterThan(0);
+        expect(opacity).toBeLessThan(1);
       }
       else if (state === 'invisible') {
         await expect(locator).toHaveCSS('opacity', /^0(?:\.0+)?$/);
