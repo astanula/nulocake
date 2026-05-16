@@ -1,7 +1,7 @@
 # TODO
 
 # Features
-- [ ]
+- [ ] "Oferta page"
 
 ## Improvements
 - [x] Change testimonials to carousel

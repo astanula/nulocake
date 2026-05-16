@@ -4,39 +4,170 @@ import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
 ---
 
-<Layout title="Oferta — Nulo Cake" description="Poznaj ofertę artystycznych tortów na zamówienie. Torty weselne, urodzinowe i okolicznościowe tworzone z pasją.">
+<Layout title="Oferta — Nulo Cake" description="Poznaj ofertę artystycznych tortów na zamówienie. Składniki, dekoracje, cennik i sposób zamawiania.">
   <Navigation />
-  <main class="page-placeholder">
-    <div class="placeholder-inner">
-      <p class="label-md">Oferta</p>
-      <h1 class="display-lg">Wkrótce</h1>
-      <p class="body-lg">Ta strona jest w przygotowaniu.</p>
-      <a href="/" class="btn-secondary">Wróć na stronę główną</a>
-    </div>
+  <main class="oferta-container">
+    <!-- Sekcja 1: Co kryje się w środku? -->
+    <section class="hero-section oferta-section">
+      <div class="hero-section-inner">
+        <h2 class="display-lg section-heading">Co kryje się w środku?</h2>
+        <p class="body-lg section-body">W moich tortach nie znajdziesz gotowych mieszanek – używam tylko prawdziwego masła, belgijskiej czekolady i świeżych owoców.</p>
+        <p class="body-lg section-body">Każde piętro tortu to puszysty biszkopt i aż 3 warstwy przepysznego kremu/żelki</p>
+        <p class="body-lg section-body">Tabelka z kombinacjami smaków</p>
+        <div class="section-cta-group">
+          <a href="/kontakt" class="btn-primary">Mam pytanie o smaki</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sekcja 2: Magia detali – Możliwości dekoracji -->
+    <section class="hero-section oferta-section">
+      <div class="hero-section-inner">
+        <h2 class="display-lg section-heading">Magia detali – Możliwości dekoracji</h2>
+        <p class="body-lg section-body">Wygląd tortu ogranicza tylko nasza wyobraźnia. W moich projektach najczęściej wykorzystuję:</p>
+        <ul class="section-body body-lg">
+          <li>Ręcznie rzeźbione figurki (Masa cukrowa)</li>
+          <li>Wydruki jadalne (Opłatek lub masa cukrowa)</li>
+          <li>Dekoracje z papieru waflowego</li>
+          <li>Dekoracje naturalne (Żywe kwiaty i owoce)</li>
+          <li>Słodycze i technika Drip Cake</li>
+          <li>Napisy i Toppery</li>
+        </ul>
+        <p class="body-lg section-body">Każdy tort wyceniam indywidualnie, ponieważ stopień skomplikowania dekoracji (np. ręczne lepienie figurek) wpływa na czas mojej pracy i ostateczny koszt.</p>
+        <div class="section-cta-group">
+          <a href="/kontakt" class="btn-primary">Mam pytanie o dekoracje</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sekcja 3: Przewodnik po porcjach i cennik -->
+    <section class="hero-section oferta-section">
+      <div class="hero-section-inner">
+        <h2 class="display-lg section-heading">Przewodnik po porcjach i cennik</h2>
+        <p class="body-lg section-body">Ceny zaczynają się od X zł za porcję. Ostateczna cena tortu zależy od liczby porcji oraz stopnia skomplikowania dekoracji.</p>
+        <p class="body-lg section-body">Tabelka z rozmiarami tortów wg. ilości porcji (kolumny: ilość porcji, średnica, ilość pięter). Tu wspomnieć też jaka średnica to tort 1 piętrowy, jaka 2 piętrowy, jaka 3 piętrowy, itp. Wymienić też Bento cake w tabelce!</p>
+        <div class="section-cta-group">
+          <a href="/kontakt" class="btn-primary">Zapytaj o rozmiar i cenę</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sekcja 4: Jak zamówić wymarzony tort? -->
+    <section class="hero-section oferta-section">
+      <div class="hero-section-inner">
+        <h2 class="display-lg section-heading">Jak zamówić wymarzony tort? (4 proste kroki)</h2>
+        <ol class="steps-list">
+          <li>
+            <h3 class="body-lg section-body">Podaj szczegóły (Zapytanie)</h3>
+            <ul class="section-body body-lg">
+              <li><strong>Datę uroczystości</strong> (sprawdzę dostępność terminu)</li>
+              <li><strong>Liczbę gości</strong> (dobierzemy odpowiednią wielkość/liczbę pięter)</li>
+              <li><strong>Okazję oraz motyw przewodni</strong> (np. „urodziny w stylu leśnym”, „wesele boho”)</li>
+            </ul>
+          </li>
+          <li>
+            <h3 class="body-lg section-body">Ustalimy smaki i design</h3>
+          </li>
+          <li>
+            <h3 class="body-lg section-body">Zamów i zarezerwuj termin</h3>
+          </li>
+          <li>
+            <h3 class="body-lg section-body">Odbiór i dostawa (podać gdzie)</h3>
+          </li>
+        </ol>
+        <div class="section-cta-group">
+          <a href="/kontakt" class="btn-primary">Zamów lub zadaj pytanie</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sekcja 5: Coś więcej niż torty? -->
+    <section class="hero-section oferta-section">
+      <div class="hero-section-inner">
+        <h2 class="display-lg section-heading">Coś więcej niż torty?</h2>
+        <p class="body-lg section-body">Opis co oprócz tortów jest w ofercie</p>
+        <ul class="section-body body-lg">
+          <li>Babeczki</li>
+          <li>Zestawy prezentowe: Bento cake + babeczki</li>
+          <li>Zapytaj jeśli potrzebujesz czegoś innego.</li>
+        </ul>
+        <div class="section-cta-group">
+          <a href="/kontakt" class="btn-primary">Zapytaj o dodatkową ofertę</a>
+        </div>
+      </div>
+    </section>
   </main>
   <Footer />
 </Layout>
 
 <style>
-  .page-placeholder {
+  .oferta-container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .oferta-section {
+    position: relative;
+    visibility: visible;
+    pointer-events: auto;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .section-body ul, .section-body ol:not(.steps-list) {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .section-body li {
+    margin-bottom: 0.5rem;
+  }
+
+  .steps-list {
+    counter-reset: step;
+    list-style: none;
+    padding-left: 0;
+    margin: 1.5rem 0 2rem 0;
+  }
+
+  .steps-list li {
+    counter-increment: step;
+    margin-bottom: 1.5rem;
+    padding-left: 3rem;
+    position: relative;
+  }
+
+  .steps-list li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 2rem;
+    height: 2rem;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100dvh;
-    padding: 2rem;
+    font-weight: 600;
+    font-size: 0.875rem;
   }
-  .placeholder-inner {
-    text-align: left;
-    max-width: 480px;
+
+  .steps-list h3 {
+    margin-bottom: 0.5rem;
   }
-  .placeholder-inner .label-md {
-    color: var(--color-primary);
-    margin-bottom: 1rem;
-  }
-  .placeholder-inner .display-lg {
-    margin-bottom: 1rem;
-  }
-  .placeholder-inner .body-lg {
-    margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    .oferta-section {
+      padding: max(6rem, 15vh) 1.5rem 3rem 1.5rem;
+      justify-content: flex-start;
+    }
+
+    .steps-list li {
+      padding-left: 2.5rem;
+    }
   }
 </style>
