@@ -891,7 +891,10 @@ import Footer from '../components/Footer.astro';
     }
   }
 
-  document.addEventListener('astro:page-load', initHomePage);
+  if (!window.homePageLoadListenerAdded) {
+    document.addEventListener('astro:page-load', initHomePage);
+    window.homePageLoadListenerAdded = true;
+  }
 
   // ═══════════════════════════════════════════════════
   // Reduced motion handler
