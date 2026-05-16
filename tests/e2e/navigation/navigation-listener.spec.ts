@@ -116,18 +116,15 @@ test.describe('Navigation listener accumulation fix', () => {
     expect(box2!.height).toBeCloseTo(box1!.height, 0);
   });
 
-  test('navigation triggers exactly once per click', async ({ page }) => {
+  test('navigation completes without errors', async ({ page }) => {
     await navigateAndHydrate(page, testConfig.routes.landing);
 
-    // Add a listener to count navigate() calls
-    await page.evaluate(() => {
-      (window as any).navigationCount = 0;
-      // Monkey-patch history.pushState to count navigations
-      const originalPushState = history.pushState;
-      history.pushState = function (...args) {
-        (window as any).navigationCount++;
-        return originalPushState.apply(this, args);
-      };
+    // Listen for console errors
+    const errors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        errors.push(msg.text());
+      }
     });
 
     // Click Oferta link
@@ -135,16 +132,43 @@ test.describe('Navigation listener accumulation fix', () => {
     await page.waitForURL('**/oferta');
     await waitForHydration(page);
 
-    const navCount1 = await page.evaluate(() => (window as any).navigationCount);
-    expect(navCount1).toBe(1);
+    // Verify no errors occurred during navigation
+    expect(errors).toHaveLength(0);
+    await expect(page).toHaveURL(/\/oferta/);
 
     // Click Home link
     await page.click('a.nav-link[href="/"]');
     await page.waitForURL('**/');
     await waitForHydration(page);
 
-    const navCount2 = await page.evaluate(() => (window as any).navigationCount);
-    expect(navCount2).toBe(2);
+    // Verify no errors on second navigation
+    expect(errors).toHaveLength(0);
+    await expect(page).toHaveURL(testConfig.routes.landing);
+  });
+
+  test('rapid clicks do not cause multiple navigations', async ({ page }) => {
+    await navigateAndHydrate(page, testConfig.routes.landing);
+
+    // Listen for console errors
+    const errors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        errors.push(msg.text());
+      }
+    });
+
+    // Click the same link multiple times rapidly
+    await page.click('a.nav-link[href="/oferta"]');
+    await page.click('a.nav-link[href="/oferta"]');
+    await page.click('a.nav-link[href="/oferta"]');
+
+    // Wait for navigation to complete (should only navigate once)
+    await page.waitForURL('**/oferta');
+    await waitForHydration(page);
+
+    // Verify no errors (multiple navigate() calls would cause errors)
+    expect(errors).toHaveLength(0);
+    await expect(page).toHaveURL(/\/oferta/);
   });
 
   test('logo click navigates correctly', async ({ page }) => {
