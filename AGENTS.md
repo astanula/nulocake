@@ -36,3 +36,7 @@ Hero video (`#hero-video`) is temporarily commented out in HTML. When re-enabled
 
 ### Cleanup
 Kill old ScrollTrigger instances before building new timeline: `ScrollTrigger.getAll().forEach(t => t.kill())`
+
+## Testing
+
+When running or writing tests please check `docs/testing.md` for details
