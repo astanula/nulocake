@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 For detailed release notes, see the corresponding file in the `.changelog/` directory.
 Each version's details are stored in `.changelog/<version>.<date>.md`.
 
+- [0.12.3] - 2026-05-17: Prevent duplicate listener registration
 - [0.12.2] - 2026-05-15: Fix home page animation on navigation return
 - [0.12.1] - 2026-05-13: Extract all animation constants and update E2E tests
 - [0.12.0] - 2026-05-13: Consolidate carousel animation weights
