@@ -39,4 +39,4 @@ Kill old ScrollTrigger instances before building new timeline: `ScrollTrigger.ge
 
 ## Testing
 
-When running or writing tests please check `docs/testing.md` for details
+NEVER run the tests by yourself unless I ask you to. When running or writing tests please check `docs/testing.md` for details.

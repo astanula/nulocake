@@ -22,3 +22,9 @@
 Test output can be checked in standard terminal stdout or outputed (as json)
 
 `npx playwright test tests/e2e --config=tests/e2e/playwright.config.ts --reporter=json > test-results.json`
+
+## Testing Internal Hooks
+
+To allow Playwright to test memory leaks and cleanup of deeply internal libraries (like GSAP ScrollTrigger) without shipping test-only variables to production users, the test suite injects a special global flag: `window.__E2E_TEST__ = true` before the application loads. 
+
+The application can safely check `if (window.__E2E_TEST__)` to expose internals. For example, in `index.astro`, we expose `ScrollTrigger` to `window` only if this flag is present, allowing tests to count active instances and ensure they are properly destroyed on View Transition navigations.

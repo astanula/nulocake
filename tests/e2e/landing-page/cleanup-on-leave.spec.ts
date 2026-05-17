@@ -42,15 +42,16 @@ test.describe('Homepage cleanup on leave', () => {
   /**
    * Helper: Get ScrollTrigger instances pinned to hero-sticky-wrapper
    */
-  async function getHomepageScrollTriggers(page: any) {
+  async function getHomepageScrollTriggers(page: any): Promise<number> {
     return await page.evaluate(() => {
       const allTriggers = (window as any).ScrollTrigger?.getAll() ?? [];
-      return allTriggers.filter((t: any) => {
+      const filtered = allTriggers.filter((t: any) => {
         const pin = t.pin;
         if (!pin) return false;
         const el = pin instanceof HTMLElement ? pin : document.querySelector(pin);
         return el && el.classList.contains('hero-sticky-wrapper');
       });
+      return filtered.length;
     });
   }
 
@@ -99,8 +100,8 @@ test.describe('Homepage cleanup on leave', () => {
     await page.waitForTimeout(2000);
 
     // Get initial ScrollTrigger count for homepage
-    const initialTriggers = await getHomepageScrollTriggers(page);
-    expect(initialTriggers.length).toBeGreaterThan(0);
+    const initialTriggersCount = await getHomepageScrollTriggers(page);
+    expect(initialTriggersCount).toBeGreaterThan(0);
 
     // Navigate away from homepage
     await page.click('a.nav-link[href="/oferta"]');
@@ -119,11 +120,11 @@ test.describe('Homepage cleanup on leave', () => {
     await page.waitForTimeout(2000);
 
     // Get ScrollTrigger count after re-visit
-    const afterRevisitTriggers = await getHomepageScrollTriggers(page);
+    const afterRevisitTriggersCount = await getHomepageScrollTriggers(page);
 
     // Should have fresh instances (old ones were killed)
     // The count should be the same as initial (not accumulated)
-    expect(afterRevisitTriggers.length).toBe(initialTriggers.length);
+    expect(afterRevisitTriggersCount).toBe(initialTriggersCount);
   });
 
   test('testimonials interval is cleared on leave', async ({ page }) => {

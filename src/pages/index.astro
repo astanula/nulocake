@@ -573,6 +573,12 @@ import Footer from '../components/Footer.astro';
   } from '../config/animation';
 
   gsap.registerPlugin(ScrollTrigger);
+
+  // Expose ScrollTrigger for Playwright E2E tests
+  if (typeof window !== 'undefined' && (window as any).__E2E_TEST__) {
+    (window as any).ScrollTrigger = ScrollTrigger;
+  }
+
 let testimonialsAutoPlayInterval: ReturnType<typeof setInterval> | null = null;
 
   const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');

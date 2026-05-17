@@ -20,6 +20,9 @@ export const test = base.extend({
     // ── 1. GSAP fast-forward via init script ──────────────────────────
     // Runs before any page script. Polls briefly for GSAP (loaded as ES module).
     await page.addInitScript((timeScale: number) => {
+      // Expose E2E flag for the application to conditionally expose internals (like ScrollTrigger)
+      (window as any).__E2E_TEST__ = true;
+
       const poll = () => {
         if (typeof (window as any).gsap !== 'undefined') {
           (window as any).gsap.globalTimeline.timeScale(timeScale);
