@@ -932,12 +932,15 @@ let testimonialsAutoPlayInterval: ReturnType<typeof setInterval> | null = null;
   // Reduced motion handler
   // ═══════════════════════════════════════════════════
 
-  motionQuery.addEventListener('change', (e) => {
-    if (e.matches) {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-      makeAllSectionsVisible();
-    }
-  });
+  if (!window.motionQueryListenerAdded) {
+    motionQuery.addEventListener('change', (e) => {
+      if (e.matches) {
+        ScrollTrigger.getAll().forEach((t) => t.kill());
+        makeAllSectionsVisible();
+      }
+    });
+    window.motionQueryListenerAdded = true;
+  }
 
   /* ═══════════════════════════════════════════
      TESTIMONIALS CAROUSEL
