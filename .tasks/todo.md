@@ -10,3 +10,4 @@
 
 ## Bugs
 - [ ] After time-based animation finishes on landing page, the page shifts weirdly to the left a bit
+- [ ] Main manu shift animations don't work anymore. Broken in b7c2ae599a68781f4687b6958fb886915a88b27c
