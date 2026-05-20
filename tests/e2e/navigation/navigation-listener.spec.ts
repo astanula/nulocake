@@ -3,15 +3,13 @@ import { testConfig } from '../test-config';
 import { waitForHydration } from '../helpers/hydration';
 
 /**
- * Tests for navigation listener accumulation fix.
+ * Tests for navigation behavior.
  *
  * Verifies that:
- * 1. Guard variables prevent duplicate listener registration
- * 2. Multiple navigations don't cause listener accumulation
- * 3. Oferta page styling is preserved after multiple navigations
- * 4. Navigation triggers exactly once per click
+ * 1. Oferta page styling is preserved after multiple navigations
+ * 2. Navigation triggers exactly once per click
  */
-test.describe('Navigation listener accumulation fix', () => {
+test.describe('Navigation', () => {
   /**
    * Helper: Navigate and wait for hydration
    */
@@ -19,67 +17,6 @@ test.describe('Navigation listener accumulation fix', () => {
     await page.goto(route);
     await waitForHydration(page);
   }
-
-  /**
-   * Helper: Get listener guard states from page with retry
-   */
-  async function getGuardStates(page: any) {
-    return await page.evaluate(() => {
-      return {
-        hasNavPageLoadListener: (document as any).hasNavPageLoadListener,
-        hasNavClickDelegated: (document as any).hasNavClickDelegated,
-      };
-    });
-  }
-
-  /**
-   * Helper: Wait for guard variables to be set
-   */
-  async function waitForGuardVariables(page: any) {
-    await page.waitForFunction(() => {
-      return (document as any).hasNavPageLoadListener === true &&
-             (document as any).hasNavClickDelegated === true;
-    }, { timeout: 10000 });
-  }
-
-  test('guard variables are set after initial load', async ({ page }) => {
-    await navigateAndHydrate(page, testConfig.routes.landing);
-
-    // Wait for guard variables to be set
-    await waitForGuardVariables(page);
-
-    const guards = await getGuardStates(page);
-
-    expect(guards.hasNavPageLoadListener).toBe(true);
-    expect(guards.hasNavClickDelegated).toBe(true);
-  });
-
-  test('multiple navigations preserve guard variables', async ({ page }) => {
-    // Start at landing page
-    await navigateAndHydrate(page, testConfig.routes.landing);
-    await waitForGuardVariables(page);
-    const guardsAfterFirst = await getGuardStates(page);
-    expect(guardsAfterFirst.hasNavPageLoadListener).toBe(true);
-    expect(guardsAfterFirst.hasNavClickDelegated).toBe(true);
-
-    // Navigate to Oferta
-    await page.click('a.nav-link[href="/oferta"]');
-    await page.waitForURL('**/oferta');
-    await waitForHydration(page);
-
-    const guardsAfterSecond = await getGuardStates(page);
-    expect(guardsAfterSecond.hasNavPageLoadListener).toBe(true);
-    expect(guardsAfterSecond.hasNavClickDelegated).toBe(true);
-
-    // Navigate back to Home
-    await page.click('a.nav-link[href="/"]');
-    await page.waitForURL('**/');
-    await waitForHydration(page);
-
-    const guardsAfterThird = await getGuardStates(page);
-    expect(guardsAfterThird.hasNavPageLoadListener).toBe(true);
-    expect(guardsAfterThird.hasNavClickDelegated).toBe(true);
-  });
 
   test('Oferta page styling is preserved after multiple navigations', async ({ page }) => {
     // Navigate: Home -> Oferta -> Home -> Oferta
@@ -200,5 +137,81 @@ test.describe('Navigation listener accumulation fix', () => {
     // Close via backdrop
     await page.click('#nav-backdrop');
     await expect(navLinks).not.toHaveClass(/open/);
+  });
+
+  /**
+   * Test: Verify limelight animation is triggered with correct GSAP parameters.
+   * 
+   * This test intercepts the GSAP animation call to ensure:
+   * 1. The limelight element is the target of the gsap.to() call
+   * 2. Animation duration is 0.4 seconds as specified
+   * 3. Easing function is 'power2.inOut' as specified
+   * 4. An onComplete callback is present (which triggers navigation after animation)
+   * 5. Navigation to the target page occurs (proving onComplete fired)
+   * 6. Intermediate position check: verifies the limelight actually moves during animation
+   */
+  test('limelight animation triggers with correct parameters', async ({ page }) => {
+    await navigateAndHydrate(page, testConfig.routes.landing);
+
+    // Get initial limelight position before animation
+    const limelight = page.locator('#nav-limelight');
+    const initialBox = await limelight.boundingBox();
+
+    // Set up interception of gsap.to to capture limelight animation
+    const animationPromise = page.evaluate(() => {
+      return new Promise<{
+        duration: number;
+        ease: string;
+        hasOnComplete: boolean;
+        targetIsLimelight: boolean;
+      }>((resolve) => {
+        const limelight = document.getElementById('nav-limelight');
+        const originalTo = window.gsap.to;
+        
+        window.gsap.to = function(target: any, vars: any) {
+          // Check if this gsap.to call targets the limelight element
+          const isLimelight = 
+            target === limelight || 
+            (target && target.id === 'nav-limelight');
+          
+          if (isLimelight) {
+            resolve({
+              duration: vars.duration,
+              ease: vars.ease,
+              hasOnComplete: typeof vars.onComplete === 'function',
+              targetIsLimelight: true
+            });
+          }
+          
+          // Call original gsap.to with original arguments
+          return originalTo.call(this, target, vars);
+        };
+      });
+    });
+
+    // Click Oferta link to trigger the animation
+    await page.click('a.nav-link[href="/oferta"]');
+    
+    // Wait for animation to start then check intermediate position
+    await page.waitForTimeout(100);
+    const intermediateBox = await limelight.boundingBox();
+    
+    // Verify animation is actually moving the limelight (intermediate position ≠ initial)
+    expect(intermediateBox).not.toBeNull();
+    expect(intermediateBox!.x).not.toEqual(initialBox!.x);
+    
+    // Wait for animation to be intercepted
+    const params = await animationPromise;
+    
+    // Verify animation targets the correct element
+    expect(params.targetIsLimelight).toBe(true);
+    // Verify animation parameters
+    expect(params.duration).toBe(0.4);
+    expect(params.ease).toBe('power2.inOut');
+    expect(params.hasOnComplete).toBe(true);
+    
+    // Verify navigation occurred (proves onComplete callback fired)
+    await page.waitForURL('**/oferta');
+    await expect(page).toHaveURL(/\/oferta/);
   });
 });

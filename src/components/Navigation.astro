@@ -306,9 +306,15 @@ const path = Astro.url.pathname;
   import gsap from 'gsap';
   import { navigate } from 'astro:transitions/client';
 
+  // Expose gsap globally for test interception (only in E2E test mode)
+  if (typeof window !== 'undefined' && (window as any).__E2E_TEST__) {
+    window.gsap = gsap;
+  }
+
   let isInitialized = false;
   let ticking = false;
   let resizeTimer;
+  let limelightController;
 
   const onScroll = () => {
     if (!ticking) {
@@ -426,77 +432,56 @@ const path = Astro.url.pathname;
         gsap.set(limelight, { x: getLimelightX(targetLink), opacity: 1 });
       }
 
-    }
-  }
-
-  // Delegated click handler for nav links and logo
-  function handleNavDelegatedClick(event) {
-    // Handle .nav-link clicks
-    const navLink = event.target.closest('.nav-link');
-    if (navLink) {
-      event.preventDefault();
-      closeMenu();
-      const isNavigating = navLink.dataset.isNavigating === 'true';
-      if (isNavigating) return;
-      navLink.dataset.isNavigating = 'true';
-      // Update active class
-      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('nav-link--active'));
-      navLink.classList.add('nav-link--active');
-      // Limelight animation
-      const limelight = document.getElementById('nav-limelight');
-      if (limelight && window.innerWidth > 768) {
-        const getLimelightX = (element) => element.offsetLeft + (element.offsetWidth / 2) - 25;
+      // Animation function
+      const animateToLinkAndNavigate = (anchor, href) => {
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('nav-link--active'));
+        anchor.classList.add('nav-link--active');
+        
         gsap.to(limelight, {
-          x: getLimelightX(navLink),
+          x: getLimelightX(anchor),
           duration: 0.4,
           ease: 'power2.inOut',
           opacity: 1,
           onComplete: () => {
-            navigate(navLink.href);
-            delete navLink.dataset.isNavigating;
+            navigate(href);
+            delete anchor.dataset.isNavigating;
           }
         });
-      } else {
-        navigate(navLink.href);
-        delete navLink.dataset.isNavigating;
-      }
-      return;
-    }
-    // Handle .nav-logo clicks
-    const logoLink = event.target.closest('.nav-logo');
-    if (logoLink) {
-      const homeLink = document.querySelector('.nav-link[href="/"]');
-      if (homeLink && !homeLink.classList.contains('nav-link--active')) {
-        event.preventDefault();
-        closeMenu();
-        // Update active class
-        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('nav-link--active'));
-        homeLink.classList.add('nav-link--active');
-        // Limelight animation
-        const limelight = document.getElementById('nav-limelight');
-        if (limelight && window.innerWidth > 768) {
-          const getLimelightX = (element) => element.offsetLeft + (element.offsetWidth / 2) - 25;
-          gsap.to(limelight, {
-            x: getLimelightX(homeLink),
-            duration: 0.4,
-            ease: 'power2.inOut',
-            opacity: 1,
-            onComplete: () => {
-              navigate(logoLink.href);
-            }
-          });
-        } else {
-          navigate(logoLink.href);
-        }
+      };
+
+      // Clean up previous listeners
+      limelightController?.abort();
+      limelightController = new AbortController();
+
+      // Attach click listeners to nav links with navigation guard
+      document.querySelectorAll('.nav-link').forEach((link) => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          closeMenu();
+          const linkEl = e.currentTarget;
+          const isNavigating = linkEl.dataset.isNavigating === 'true';
+          if (isNavigating) return;
+          linkEl.dataset.isNavigating = 'true';
+          animateToLinkAndNavigate(linkEl, linkEl.href);
+        }, { signal: limelightController.signal });
+      });
+
+      // Attach click listener to logo
+      const logoLink = document.querySelector('.nav-logo');
+      if (logoLink) {
+        logoLink.addEventListener('click', (e) => {
+          const homeLink = document.querySelector('.nav-link[href="/"]');
+          if (homeLink && !homeLink.classList.contains('nav-link--active')) {
+            e.preventDefault();
+            closeMenu();
+            animateToLinkAndNavigate(homeLink, logoLink.href);
+          }
+        }, { signal: limelightController.signal });
       }
     }
   }
 
-  // Guard delegated handler to attach once
-  if (!document.hasNavClickDelegated) {
-    document.addEventListener('click', handleNavDelegatedClick);
-    document.hasNavClickDelegated = true;
-  }
+
 
   // Run on initial load and every subsequent page swap
   if (!document.hasNavPageLoadListener) {
