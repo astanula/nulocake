@@ -13,9 +13,9 @@ All gallery layout and movement constants will be defined in a configuration fil
 - **Spacing**: Vertical gap between images inside a column is configurable.
 
 ### Responsiveness (Column Count)
-- **Desktop (Wide screen)**: 4 columns.
-- **Tablet (Medium screen)**: 3 columns.
-- **Mobile (Small screen)**: 2 columns.
+- **Desktop** (`≥1024px`): 4 columns.
+- **Tablet** (`≥640px`): 3 columns.
+- **Mobile** (`<640px`): 2 columns.
 - All available images must be dynamically distributed across the active columns so that no image is excluded on smaller viewports (Option B).
 
 ### Looping Behavior (Approach 1)
@@ -28,6 +28,7 @@ All gallery layout and movement constants will be defined in a configuration fil
 
 ### Interactivity
 - **Hover state**: Hovering over any image in the gallery pauses the scrolling of **all columns** simultaneously to allow the user to inspect a cake. Leaving the hover resumes scrolling.
+- **Smooth pause/resume**: Instead of abrupt `pause()`/`play()`, use `gsap.to(tweens, { timeScale: 0 })` on hover and `gsap.to(tweens, { timeScale: 1 })` on leave to smoothly decelerate/accelerate the columns (approx. 0.4s ease).
 
 ---
 
@@ -48,21 +49,20 @@ export const GALLERY_CONFIG = {
 };
 ```
 
-### Step 2: Dynamic Image Fetching (Compile-Time)
+### Step 2: Dynamic Image Fetching & Rendering (Compile-Time)
 In `src/pages/galeria.astro` (Astro Frontmatter):
 - Fetch all images under `src/assets/gallery/*.{jpeg,jpg,png,webp}` using `import.meta.glob`.
 - Parse filename format `{column}-{row}.{ext}` to determine original design positions for sorted ordering.
-- Pass the final array of images (containing source path, filename, width, height) down to client-side JS as a JSON string attribute on a DOM root node.
+- Render all images at build time using Astro's `<Image>` component for automatic optimization (WebP, srcset, lazy loading).
+- All 4 columns are rendered in the HTML at build time with duplicated image sets for looping. Client-side JS handles visibility (hiding/showing columns) based on viewport width rather than constructing DOM from scratch.
 
-### Step 3: Distribution & DOM Construction (Client-Side)
+### Step 3: Column Visibility & Layout (Client-Side)
 In `src/pages/galeria.astro` (Client-Side Script):
-- Listen to `DOMContentLoaded` / `astro:page-load` and window `resize` (debounced).
-- Measure viewport width to choose number of columns $N \in \{2, 3, 4\}$.
-- Distribute all images into $N$ columns round-robin.
-- Create column wrapper elements:
-  - Populate them with the distributed images (duplicated once).
-  - Inject CSS styles (gap, width, flex column).
-  - Clear and append these columns to the gallery container.
+- Listen to `astro:page-load` and window `resize` (debounced, ~200ms).
+- Measure viewport width to choose number of visible columns $N \in \{2, 3, 4\}$ using the breakpoints from Section 2.
+- Show the first $N$ columns, hide the rest via CSS class toggle.
+- Images from hidden columns are redistributed into visible columns by moving DOM nodes (preserving Astro's optimized `<img>` elements).
+- **On resize**: kill all existing GSAP tweens (`activeTweens.forEach(t => t.kill())`) before redistributing and re-creating animations.
 
 ### Step 4: GSAP Loop Choreography
 - For each column wrapper:
@@ -71,8 +71,8 @@ In `src/pages/galeria.astro` (Client-Side Script):
   - Direction DOWN: `gsap.fromTo(el, { yPercent: -50 }, { yPercent: 0, duration: SPEED, ease: "none", repeat: -1 })`
   - Track all tweens in a global array `activeTweens`.
 - Attach `mouseenter`/`mouseleave` to the parent gallery container:
-  - Pause all: `activeTweens.forEach(t => t.pause())`
-  - Play all: `activeTweens.forEach(t => t.play())`
+  - Pause all: `gsap.to(activeTweens, { timeScale: 0, duration: 0.4, ease: 'power2.out' })`
+  - Play all: `gsap.to(activeTweens, { timeScale: 1, duration: 0.4, ease: 'power2.in' })`
 
 ---
 
