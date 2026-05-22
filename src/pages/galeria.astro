@@ -39,12 +39,45 @@ allImages.forEach((img, i) => {
 
 <Layout title="Galeria — Nulo Cake" description="Galeria artystycznych tortów na zamówienie. Torty weselne, urodzinowe i okolicznościowe.">
   <Navigation />
-  <main class="page-placeholder">
-    <div class="placeholder-inner">
-      <p class="label-md">Galeria</p>
-      <h1 class="display-lg">Wkrótce</h1>
-      <p class="body-lg">Ta strona jest w przygotowaniu.</p>
-      <a href="/" class="btn-secondary">Wróć na stronę główną</a>
+  <main class="gallery-page" id="gallery-page">
+    <div class="gallery-container" id="gallery-container">
+      {columns.map((colImages, colIndex) => (
+        <div
+          class="gallery-column"
+          data-col-index={colIndex}
+          data-col-direction={colIndex % 2 === 0 ? 'up' : 'down'}
+          data-col-speed={COLUMN_SPEEDS[colIndex]}
+        >
+          <div class="gallery-column-inner" style={`gap: ${IMAGE_GAP};`}>
+            {/* First set */}
+            {colImages.map((img, imgIndex) => (
+              <div class="gallery-image-wrapper">
+                <Image
+                  src={img.src}
+                  alt={`Tort ${colIndex + 1}-${imgIndex + 1}`}
+                  widths={[300, 500]}
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  loading="lazy"
+                  class="gallery-image"
+                />
+              </div>
+            ))}
+            {/* Duplicated set for seamless loop */}
+            {colImages.map((img, imgIndex) => (
+              <div class="gallery-image-wrapper" aria-hidden="true">
+                <Image
+                  src={img.src}
+                  alt=""
+                  widths={[300, 500]}
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  loading="lazy"
+                  class="gallery-image"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   </main>
   <Footer />
