@@ -1,7 +1,40 @@
 ---
+import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
+import { COLUMN_SPEEDS, IMAGE_GAP } from '../config/gallery';
+
+// ── Fetch all gallery images at build time ──────────────
+const imageModules = import.meta.glob<{ default: ImageMetadata }>(
+  '../assets/gallery/*.{jpeg,jpg,png,webp}',
+  { eager: true }
+);
+
+// ── Parse filenames and sort by column-row ──────────────
+type GalleryImage = {
+  src: ImageMetadata;
+  column: number;
+  row: number;
+};
+
+const allImages: GalleryImage[] = Object.entries(imageModules)
+  .map(([path, mod]) => {
+    const filename = path.split('/').pop()!.replace(/\.[^.]+$/, '');
+    const [colStr, rowStr] = filename.split('-');
+    return {
+      src: mod.default,
+      column: parseInt(colStr, 10),
+      row: parseInt(rowStr, 10),
+    };
+  })
+  .sort((a, b) => a.column - b.column || a.row - b.row);
+
+// ── Distribute images into 4 columns (round-robin by original column) ──
+const columns: GalleryImage[][] = [[], [], [], []];
+allImages.forEach((img, i) => {
+  columns[i % 4].push(img);
+});
 ---
 
 <Layout title="Galeria — Nulo Cake" description="Galeria artystycznych tortów na zamówienie. Torty weselne, urodzinowe i okolicznościowe.">
