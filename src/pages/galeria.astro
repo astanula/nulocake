@@ -128,3 +128,245 @@ allImages.forEach((img, i) => {
     object-fit: cover;
   }
 </style>
+
+<script>
+  import gsap from 'gsap';
+  import {
+    COLUMN_SPEEDS,
+    BREAKPOINTS,
+    HOVER_TRANSITION_DURATION,
+  } from '../config/gallery';
+
+  let activeTweens: gsap.core.Tween[] = [];
+  let resizeTimer: ReturnType<typeof setTimeout> | null = null;
+  let cleanupController: AbortController | null = null;
+
+  /**
+   * Determine how many columns should be visible based on viewport width.
+   */
+  function getColumnCount(): number {
+    const w = window.innerWidth;
+    if (w >= BREAKPOINTS.desktop) return 4;
+    if (w >= BREAKPOINTS.tablet) return 3;
+    return 2;
+  }
+
+  /**
+   * Redistribute images from hidden columns into visible ones.
+   * Moves actual DOM nodes so Astro's optimized <img> elements are preserved.
+   */
+  function redistributeColumns(
+    allColumns: HTMLElement[],
+    visibleCount: number
+  ): void {
+    // Collect all image wrappers from hidden columns
+    const hiddenImages: HTMLElement[] = [];
+    for (let i = visibleCount; i < allColumns.length; i++) {
+      const inner = allColumns[i].querySelector('.gallery-column-inner');
+      if (!inner) continue;
+      // Only take the first-half (non-duplicate) images
+      const wrappers = Array.from(
+        inner.querySelectorAll('.gallery-image-wrapper:not([aria-hidden])')
+      ) as HTMLElement[];
+      hiddenImages.push(...wrappers);
+    }
+
+    // Round-robin distribute hidden images into visible columns
+    const visibleInners = allColumns
+      .slice(0, visibleCount)
+      .map((col) => col.querySelector('.gallery-column-inner')!);
+
+    hiddenImages.forEach((wrapper, i) => {
+      const targetInner = visibleInners[i % visibleCount];
+      // Insert before the first aria-hidden duplicate
+      const firstDupe = targetInner.querySelector('[aria-hidden]');
+      if (firstDupe) {
+        targetInner.insertBefore(wrapper, firstDupe);
+      } else {
+        targetInner.appendChild(wrapper);
+      }
+    });
+
+    // Rebuild the duplicate set in each visible column
+    visibleInners.forEach((inner) => {
+      // Remove old duplicates
+      inner
+        .querySelectorAll('[aria-hidden]')
+        .forEach((el) => el.remove());
+
+      // Clone the current images as new duplicates
+      const originals = Array.from(
+        inner.querySelectorAll('.gallery-image-wrapper')
+      );
+      originals.forEach((orig) => {
+        const clone = orig.cloneNode(true) as HTMLElement;
+        clone.setAttribute('aria-hidden', 'true');
+        // Clear alt on cloned images
+        const img = clone.querySelector('img');
+        if (img) img.alt = '';
+        inner.appendChild(clone);
+      });
+    });
+
+    // Toggle visibility
+    allColumns.forEach((col, i) => {
+      col.classList.toggle('is-hidden', i >= visibleCount);
+    });
+  }
+
+  /**
+   * Create GSAP infinite loop tweens for each visible column.
+   */
+  function createLoopTweens(allColumns: HTMLElement[]): void {
+    // Kill any existing tweens
+    activeTweens.forEach((t) => t.kill());
+    activeTweens = [];
+
+    allColumns.forEach((col) => {
+      if (col.classList.contains('is-hidden')) return;
+
+      const inner = col.querySelector('.gallery-column-inner') as HTMLElement;
+      if (!inner) return;
+
+      const direction = col.dataset.colDirection;
+      const speed = parseFloat(col.dataset.colSpeed || '30');
+
+      if (direction === 'up') {
+        // Scroll up: translate from 0% to -50%
+        const tween = gsap.to(inner, {
+          yPercent: -50,
+          duration: speed,
+          ease: 'none',
+          repeat: -1,
+        });
+        activeTweens.push(tween);
+      } else {
+        // Scroll down: translate from -50% to 0%
+        const tween = gsap.fromTo(
+          inner,
+          { yPercent: -50 },
+          {
+            yPercent: 0,
+            duration: speed,
+            ease: 'none',
+            repeat: -1,
+          }
+        );
+        activeTweens.push(tween);
+      }
+    });
+  }
+
+  /**
+   * Attach hover listeners for smooth pause/resume.
+   * Uses the AbortController signal so listeners are auto-removed on cleanup.
+   */
+  function attachHoverListeners(
+    container: HTMLElement,
+    signal: AbortSignal
+  ): void {
+    container.addEventListener('mouseenter', () => {
+      activeTweens.forEach((tween) => {
+        gsap.to(tween, {
+          timeScale: 0,
+          duration: HOVER_TRANSITION_DURATION,
+          ease: 'power2.out',
+        });
+      });
+    }, { signal });
+
+    container.addEventListener('mouseleave', () => {
+      activeTweens.forEach((tween) => {
+        gsap.to(tween, {
+          timeScale: 1,
+          duration: HOVER_TRANSITION_DURATION,
+          ease: 'power2.in',
+        });
+      });
+    }, { signal });
+  }
+
+  /**
+   * Clean up all gallery resources (tweens, timers, event listeners).
+   */
+  function cleanupGallery(): void {
+    // Kill all loop tweens
+    activeTweens.forEach((t) => t.kill());
+    activeTweens = [];
+
+    // Clear debounce timer
+    if (resizeTimer) {
+      clearTimeout(resizeTimer);
+      resizeTimer = null;
+    }
+
+    // Abort all event listeners (resize + hover)
+    if (cleanupController) {
+      cleanupController.abort();
+      cleanupController = null;
+    }
+  }
+
+  /**
+   * Main initialization — called on every page load.
+   */
+  function initGallery(): void {
+    const container = document.getElementById('gallery-container');
+    if (!container) return;
+
+    const allColumns = Array.from(
+      container.querySelectorAll('.gallery-column')
+    ) as HTMLElement[];
+    if (allColumns.length === 0) return;
+
+    // Reduced motion: show static grid, no animation
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (motionQuery.matches) return;
+
+    // Clean up any previous instance (e.g., from a prior page-load)
+    cleanupGallery();
+
+    // Create a new AbortController for this gallery instance
+    cleanupController = new AbortController();
+    const { signal } = cleanupController;
+
+    const visibleCount = getColumnCount();
+    redistributeColumns(allColumns, visibleCount);
+    createLoopTweens(allColumns);
+    attachHoverListeners(container, signal);
+
+    // Handle resize — uses signal so it's auto-removed on cleanup
+    window.addEventListener('resize', () => {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        const newCount = getColumnCount();
+        // Kill old tweens
+        activeTweens.forEach((t) => t.kill());
+        activeTweens = [];
+        // Reset column transforms
+        allColumns.forEach((col) => {
+          const inner = col.querySelector('.gallery-column-inner') as HTMLElement;
+          if (inner) gsap.set(inner, { clearProps: 'all' });
+        });
+        redistributeColumns(allColumns, newCount);
+        createLoopTweens(allColumns);
+      }, 200);
+    }, { signal });
+  }
+
+  // ── Astro lifecycle ───────────────────────────────
+  if (!(window as any).__galleryListenerAdded) {
+    document.addEventListener('astro:page-load', initGallery);
+    (window as any).__galleryListenerAdded = true;
+  }
+
+  // Clean up on navigation away
+  if (!(window as any).__galleryBeforeSwapAdded) {
+    document.addEventListener('astro:before-swap', () => {
+      const container = document.getElementById('gallery-container');
+      if (!container) return;
+      cleanupGallery();
+    });
+    (window as any).__galleryBeforeSwapAdded = true;
+  }
+</script>
