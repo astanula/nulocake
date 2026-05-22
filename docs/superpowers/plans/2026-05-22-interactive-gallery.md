@@ -315,6 +315,7 @@ Add the following `<script>` block after the closing `</style>` tag:
 
   let activeTweens: gsap.core.Tween[] = [];
   let resizeTimer: ReturnType<typeof setTimeout> | null = null;
+  let cleanupController: AbortController | null = null;
 
   /**
    * Determine how many columns should be visible based on viewport width.
@@ -434,8 +435,12 @@ Add the following `<script>` block after the closing `</style>` tag:
 
   /**
    * Attach hover listeners for smooth pause/resume.
+   * Uses the AbortController signal so listeners are auto-removed on cleanup.
    */
-  function attachHoverListeners(container: HTMLElement): void {
+  function attachHoverListeners(
+    container: HTMLElement,
+    signal: AbortSignal
+  ): void {
     container.addEventListener('mouseenter', () => {
       activeTweens.forEach((tween) => {
         gsap.to(tween, {
@@ -444,7 +449,7 @@ Add the following `<script>` block after the closing `</style>` tag:
           ease: 'power2.out',
         });
       });
-    });
+    }, { signal });
 
     container.addEventListener('mouseleave', () => {
       activeTweens.forEach((tween) => {
@@ -454,7 +459,28 @@ Add the following `<script>` block after the closing `</style>` tag:
           ease: 'power2.in',
         });
       });
-    });
+    }, { signal });
+  }
+
+  /**
+   * Clean up all gallery resources (tweens, timers, event listeners).
+   */
+  function cleanupGallery(): void {
+    // Kill all loop tweens
+    activeTweens.forEach((t) => t.kill());
+    activeTweens = [];
+
+    // Clear debounce timer
+    if (resizeTimer) {
+      clearTimeout(resizeTimer);
+      resizeTimer = null;
+    }
+
+    // Abort all event listeners (resize + hover)
+    if (cleanupController) {
+      cleanupController.abort();
+      cleanupController = null;
+    }
   }
 
   /**
@@ -473,12 +499,19 @@ Add the following `<script>` block after the closing `</style>` tag:
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (motionQuery.matches) return;
 
+    // Clean up any previous instance (e.g., from a prior page-load)
+    cleanupGallery();
+
+    // Create a new AbortController for this gallery instance
+    cleanupController = new AbortController();
+    const { signal } = cleanupController;
+
     const visibleCount = getColumnCount();
     redistributeColumns(allColumns, visibleCount);
     createLoopTweens(allColumns);
-    attachHoverListeners(container);
+    attachHoverListeners(container, signal);
 
-    // Handle resize
+    // Handle resize — uses signal so it's auto-removed on cleanup
     window.addEventListener('resize', () => {
       if (resizeTimer) clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
@@ -494,7 +527,7 @@ Add the following `<script>` block after the closing `</style>` tag:
         redistributeColumns(allColumns, newCount);
         createLoopTweens(allColumns);
       }, 200);
-    });
+    }, { signal });
   }
 
   // ── Astro lifecycle ───────────────────────────────
@@ -508,12 +541,7 @@ Add the following `<script>` block after the closing `</style>` tag:
     document.addEventListener('astro:before-swap', () => {
       const container = document.getElementById('gallery-container');
       if (!container) return;
-      activeTweens.forEach((t) => t.kill());
-      activeTweens = [];
-      if (resizeTimer) {
-        clearTimeout(resizeTimer);
-        resizeTimer = null;
-      }
+      cleanupGallery();
     });
     (window as any).__galleryBeforeSwapAdded = true;
   }
@@ -522,11 +550,12 @@ Add the following `<script>` block after the closing `</style>` tag:
 
 Key implementation details:
 - **Lifecycle pattern** matches `index.astro`: guards against duplicate listeners with `window.__galleryListenerAdded` flag, uses `astro:page-load` and `astro:before-swap`.
+- **`AbortController` for cleanup** — all per-instance event listeners (`resize` on `window`, `mouseenter`/`mouseleave` on container) are attached with `{ signal }` from a shared `AbortController`. On navigation away (`astro:before-swap`) or re-init, `abort()` removes all listeners in one call. This prevents the memory leak where `resize` handlers would accumulate on every `/galeria` visit.
+- **`cleanupGallery()`** is a single function that kills tweens, clears the debounce timer, and aborts the controller. Called both from `astro:before-swap` and at the top of `initGallery()` (defensive, in case page-load fires without a preceding before-swap).
 - **`redistributeColumns`** moves real DOM nodes (not clones) from hidden columns into visible ones, then rebuilds the duplicate set for looping. This preserves Astro's optimized `<img>` elements.
 - **`createLoopTweens`** reads `data-col-direction` and `data-col-speed` from each column div.
 - **Hover** uses `gsap.to(tween, { timeScale: ... })` for smooth deceleration/acceleration.
 - **Resize** is debounced at 200ms, kills all tweens, clears transforms, redistributes, and re-creates.
-- **Cleanup** on `astro:before-swap` kills all tweens and clears the resize timer.
 - **Reduced motion** is respected — if `prefers-reduced-motion: reduce` is active, the gallery shows as a static grid with no animation.
 
 - [ ] **Step 2: Verify the gallery animates**
