@@ -40,7 +40,7 @@ allImages.forEach((img, i) => {
 <Layout title="Galeria — Nulo Cake" description="Galeria artystycznych tortów na zamówienie. Torty weselne, urodzinowe i okolicznościowe.">
   <Navigation />
   <main class="gallery-page" id="gallery-page">
-    <div class="gallery-container" id="gallery-container">
+    <div class="gallery-container" id="gallery-container" style={`gap: ${IMAGE_GAP};`}>
       {columns.map((colImages, colIndex) => (
         <div
           class="gallery-column"
@@ -48,33 +48,37 @@ allImages.forEach((img, i) => {
           data-col-direction={colIndex % 2 === 0 ? 'up' : 'down'}
           data-col-speed={COLUMN_SPEEDS[colIndex]}
         >
-          <div class="gallery-column-inner" style={`gap: ${IMAGE_GAP};`}>
-            {/* First set */}
-            {colImages.map((img, imgIndex) => (
-              <div class="gallery-image-wrapper">
-                <Image
-                  src={img.src}
-                  alt={`Tort ${colIndex + 1}-${imgIndex + 1}`}
-                  widths={[300, 500]}
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                  loading="lazy"
-                  class="gallery-image"
-                />
-              </div>
-            ))}
+          <div class="gallery-column-inner">
+            {/* Original set */}
+            <div class="gallery-set-original" style={`gap: ${IMAGE_GAP}; padding-bottom: ${IMAGE_GAP};`}>
+              {colImages.map((img, imgIndex) => (
+                <div class="gallery-image-wrapper">
+                  <Image
+                    src={img.src}
+                    alt={`Tort ${colIndex + 1}-${imgIndex + 1}`}
+                    widths={[300, 500]}
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    loading="lazy"
+                    class="gallery-image"
+                  />
+                </div>
+              ))}
+            </div>
             {/* Duplicated set for seamless loop */}
-            {colImages.map((img, imgIndex) => (
-              <div class="gallery-image-wrapper" aria-hidden="true">
-                <Image
-                  src={img.src}
-                  alt=""
-                  widths={[300, 500]}
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                  loading="lazy"
-                  class="gallery-image"
-                />
-              </div>
-            ))}
+            <div class="gallery-set-duplicate" aria-hidden="true" style={`gap: ${IMAGE_GAP}; padding-bottom: ${IMAGE_GAP};`}>
+              {colImages.map((img) => (
+                <div class="gallery-image-wrapper" aria-hidden="true">
+                  <Image
+                    src={img.src}
+                    alt=""
+                    widths={[300, 500]}
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    loading="lazy"
+                    class="gallery-image"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       ))}
@@ -86,16 +90,18 @@ allImages.forEach((img, i) => {
 <style>
   .gallery-page {
     width: 100%;
-    height: 100dvh;
-    overflow: hidden;
+    min-height: 100dvh;
     position: relative;
+    padding-top: max(7rem, 18vh);
+    padding-bottom: 4rem;
   }
 
   .gallery-container {
     display: flex;
     width: 100%;
-    height: 100%;
-    gap: 0;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 4rem;
   }
 
   .gallery-column {
@@ -113,7 +119,14 @@ allImages.forEach((img, i) => {
   .gallery-column-inner {
     display: flex;
     flex-direction: column;
+    gap: 0;
     will-change: transform;
+  }
+
+  .gallery-set-original,
+  .gallery-set-duplicate {
+    display: flex;
+    flex-direction: column;
   }
 
   .gallery-image-wrapper {
@@ -127,18 +140,29 @@ allImages.forEach((img, i) => {
     height: auto;
     object-fit: cover;
   }
+
+  @media (max-width: 768px) {
+    .gallery-page {
+      padding-top: max(6rem, 15vh);
+      padding-bottom: 3rem;
+    }
+
+    .gallery-container {
+      padding: 0 1.5rem;
+    }
+  }
 </style>
 
 <script>
   import gsap from 'gsap';
   import {
-    COLUMN_SPEEDS,
     BREAKPOINTS,
     HOVER_TRANSITION_DURATION,
   } from '../config/gallery';
 
   let activeTweens: gsap.core.Tween[] = [];
   let resizeTimer: ReturnType<typeof setTimeout> | null = null;
+  let imageLoadTimer: ReturnType<typeof setTimeout> | null = null;
   let cleanupController: AbortController | null = null;
 
   /**
@@ -159,58 +183,71 @@ allImages.forEach((img, i) => {
     allColumns: HTMLElement[],
     visibleCount: number
   ): void {
-    // Collect all image wrappers from hidden columns
+    // Collect all image wrappers from hidden columns' original sets
     const hiddenImages: HTMLElement[] = [];
     for (let i = visibleCount; i < allColumns.length; i++) {
-      const inner = allColumns[i].querySelector('.gallery-column-inner');
-      if (!inner) continue;
-      // Only take the first-half (non-duplicate) images
+      const orig = allColumns[i].querySelector('.gallery-set-original');
+      if (!orig) continue;
       const wrappers = Array.from(
-        inner.querySelectorAll('.gallery-image-wrapper:not([aria-hidden])')
+        orig.querySelectorAll('.gallery-image-wrapper')
       ) as HTMLElement[];
       hiddenImages.push(...wrappers);
+
+      // Clean up the duplicate set of hidden columns
+      const dupe = allColumns[i].querySelector('.gallery-set-duplicate');
+      if (dupe) dupe.innerHTML = '';
     }
 
-    // Round-robin distribute hidden images into visible columns
-    const visibleInners = allColumns
+    // Round-robin distribute hidden images into visible columns' original sets
+    const visibleOriginals = allColumns
       .slice(0, visibleCount)
-      .map((col) => col.querySelector('.gallery-column-inner')!);
+      .map((col) => col.querySelector('.gallery-set-original')!);
 
     hiddenImages.forEach((wrapper, i) => {
-      const targetInner = visibleInners[i % visibleCount];
-      // Insert before the first aria-hidden duplicate
-      const firstDupe = targetInner.querySelector('[aria-hidden]');
-      if (firstDupe) {
-        targetInner.insertBefore(wrapper, firstDupe);
-      } else {
-        targetInner.appendChild(wrapper);
-      }
+      const targetOriginal = visibleOriginals[i % visibleCount];
+      targetOriginal.appendChild(wrapper);
     });
 
     // Rebuild the duplicate set in each visible column
-    visibleInners.forEach((inner) => {
-      // Remove old duplicates
-      inner
-        .querySelectorAll('[aria-hidden]')
-        .forEach((el) => el.remove());
+    allColumns.slice(0, visibleCount).forEach((col) => {
+      const orig = col.querySelector('.gallery-set-original') as HTMLElement;
+      const dupe = col.querySelector('.gallery-set-duplicate') as HTMLElement;
+      if (!orig || !dupe) return;
 
-      // Clone the current images as new duplicates
-      const originals = Array.from(
-        inner.querySelectorAll('.gallery-image-wrapper')
-      );
-      originals.forEach((orig) => {
-        const clone = orig.cloneNode(true) as HTMLElement;
+      // Remove old duplicates
+      dupe.innerHTML = '';
+
+      // Clone the current original images as new duplicates
+      const originals = Array.from(orig.querySelectorAll('.gallery-image-wrapper'));
+      originals.forEach((origWrapper) => {
+        const clone = origWrapper.cloneNode(true) as HTMLElement;
         clone.setAttribute('aria-hidden', 'true');
         // Clear alt on cloned images
         const img = clone.querySelector('img');
         if (img) img.alt = '';
-        inner.appendChild(clone);
+        dupe.appendChild(clone);
       });
     });
 
     // Toggle visibility
     allColumns.forEach((col, i) => {
       col.classList.toggle('is-hidden', i >= visibleCount);
+    });
+  }
+
+  /**
+   * Update columns' style height based on their original set height.
+   */
+  function updateColumnHeights(allColumns: HTMLElement[]): void {
+    allColumns.forEach((col) => {
+      if (col.classList.contains('is-hidden')) {
+        col.style.height = '';
+        return;
+      }
+      const originalSet = col.querySelector('.gallery-set-original') as HTMLElement;
+      if (originalSet) {
+        col.style.height = `${originalSet.offsetHeight}px`;
+      }
     });
   }
 
@@ -294,10 +331,14 @@ allImages.forEach((img, i) => {
     activeTweens.forEach((t) => t.kill());
     activeTweens = [];
 
-    // Clear debounce timer
+    // Clear debounce timers
     if (resizeTimer) {
       clearTimeout(resizeTimer);
       resizeTimer = null;
+    }
+    if (imageLoadTimer) {
+      clearTimeout(imageLoadTimer);
+      imageLoadTimer = null;
     }
 
     // Abort all event listeners (resize + hover)
@@ -332,8 +373,27 @@ allImages.forEach((img, i) => {
 
     const visibleCount = getColumnCount();
     redistributeColumns(allColumns, visibleCount);
+    updateColumnHeights(allColumns);
     createLoopTweens(allColumns);
     attachHoverListeners(container, signal);
+
+    // Watch for image loads to recompute heights as they stream in
+    const images = container.querySelectorAll('.gallery-set-original img') as NodeListOf<HTMLImageElement>;
+    
+    function triggerHeightRecalc() {
+      if (imageLoadTimer) clearTimeout(imageLoadTimer);
+      imageLoadTimer = setTimeout(() => {
+        updateColumnHeights(allColumns);
+        createLoopTweens(allColumns);
+      }, 50);
+    }
+
+    images.forEach((img) => {
+      if (!img.complete) {
+        img.addEventListener('load', triggerHeightRecalc, { signal, once: true });
+        img.addEventListener('error', triggerHeightRecalc, { signal, once: true });
+      }
+    });
 
     // Handle resize — uses signal so it's auto-removed on cleanup
     window.addEventListener('resize', () => {
@@ -343,12 +403,14 @@ allImages.forEach((img, i) => {
         // Kill old tweens
         activeTweens.forEach((t) => t.kill());
         activeTweens = [];
-        // Reset column transforms
+        // Reset column transforms & height styles
         allColumns.forEach((col) => {
+          col.style.height = '';
           const inner = col.querySelector('.gallery-column-inner') as HTMLElement;
           if (inner) gsap.set(inner, { clearProps: 'all' });
         });
         redistributeColumns(allColumns, newCount);
+        updateColumnHeights(allColumns);
         createLoopTweens(allColumns);
       }, 200);
     }, { signal });
