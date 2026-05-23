@@ -232,16 +232,28 @@ allImages.forEach((img, i) => {
 
   /**
    * Update columns' style height based on their original set height.
+   * Equalizes the height of all visible columns to the height of the shortest one.
    */
   function updateColumnHeights(allColumns: HTMLElement[]): void {
+    let minHeight = Infinity;
+
+    // Find the minimum height among all visible original sets
+    allColumns.forEach((col) => {
+      if (col.classList.contains('is-hidden')) return;
+      const originalSet = col.querySelector('.gallery-set-original') as HTMLElement;
+      if (originalSet && originalSet.offsetHeight > 0) {
+        minHeight = Math.min(minHeight, originalSet.offsetHeight);
+      }
+    });
+
+    // Apply the minimum height to all visible columns
     allColumns.forEach((col) => {
       if (col.classList.contains('is-hidden')) {
         col.style.height = '';
         return;
       }
-      const originalSet = col.querySelector('.gallery-set-original') as HTMLElement;
-      if (originalSet) {
-        col.style.height = `${originalSet.offsetHeight}px`;
+      if (minHeight !== Infinity) {
+        col.style.height = `${minHeight}px`;
       }
     });
   }
@@ -254,20 +266,37 @@ allImages.forEach((img, i) => {
     activeTweens.forEach((t) => t.kill());
     activeTweens = [];
 
+    // Find the minimum original set height among all visible columns
+    let minHeight = Infinity;
+    allColumns.forEach((col) => {
+      if (col.classList.contains('is-hidden')) return;
+      const originalSet = col.querySelector('.gallery-set-original') as HTMLElement;
+      if (originalSet && originalSet.offsetHeight > 0) {
+        minHeight = Math.min(minHeight, originalSet.offsetHeight);
+      }
+    });
+
     allColumns.forEach((col) => {
       if (col.classList.contains('is-hidden')) return;
 
       const inner = col.querySelector('.gallery-column-inner') as HTMLElement;
-      if (!inner) return;
+      const originalSet = col.querySelector('.gallery-set-original') as HTMLElement;
+      if (!inner || !originalSet) return;
 
       const direction = col.dataset.colDirection;
-      const speed = parseFloat(col.dataset.colSpeed || '30');
+      const baseSpeed = parseFloat(col.dataset.colSpeed || '30');
+
+      // Scale duration based on this column's height vs the min height (shortest column)
+      let duration = baseSpeed;
+      if (minHeight !== Infinity && minHeight > 0) {
+        duration = baseSpeed * (originalSet.offsetHeight / minHeight);
+      }
 
       if (direction === 'up') {
         // Scroll up: translate from 0% to -50%
         const tween = gsap.to(inner, {
           yPercent: -50,
-          duration: speed,
+          duration: duration,
           ease: 'none',
           repeat: -1,
         });
@@ -279,7 +308,7 @@ allImages.forEach((img, i) => {
           { yPercent: -50 },
           {
             yPercent: 0,
-            duration: speed,
+            duration: duration,
             ease: 'none',
             repeat: -1,
           }
