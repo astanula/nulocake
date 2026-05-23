@@ -3,7 +3,7 @@ import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
-import { COLUMN_SPEEDS, IMAGE_GAP, IMAGE_BORDER_RADIUS, GALLERY_PADDING_DESKTOP, GALLERY_PADDING_MOBILE } from '../config/gallery';
+import { COLUMN_SPEEDS, IMAGE_GAP, IMAGE_BORDER_RADIUS, GALLERY_PADDING_DESKTOP, GALLERY_PADDING_MOBILE, GALLERY_FADE_HEIGHT, GALLERY_FADE_MIDPOINT_RATIO } from '../config/gallery';
 
 // ── Fetch all gallery images at build time ──────────────
 const imageModules = import.meta.glob<{ default: ImageMetadata }>(
@@ -40,7 +40,7 @@ allImages.forEach((img, i) => {
 <Layout title="Galeria — Nulo Cake" description="Galeria artystycznych tortów na zamówienie. Torty weselne, urodzinowe i okolicznościowe.">
   <Navigation />
   <main class="gallery-page" id="gallery-page">
-    <div class="gallery-container" id="gallery-container" style={`gap: ${IMAGE_GAP}; --gallery-image-radius: ${IMAGE_BORDER_RADIUS}; --gallery-padding-desktop: ${GALLERY_PADDING_DESKTOP}; --gallery-padding-mobile: ${GALLERY_PADDING_MOBILE};`}>
+    <div class="gallery-container" id="gallery-container" style={`gap: ${IMAGE_GAP}; --gallery-image-radius: ${IMAGE_BORDER_RADIUS}; --gallery-padding-desktop: ${GALLERY_PADDING_DESKTOP}; --gallery-padding-mobile: ${GALLERY_PADDING_MOBILE}; --gallery-fade-height: ${GALLERY_FADE_HEIGHT}; --gallery-fade-midpoint-ratio: ${GALLERY_FADE_MIDPOINT_RATIO};`}>
       {columns.map((colImages, colIndex) => (
         <div
           class="gallery-column"
@@ -101,7 +101,29 @@ allImages.forEach((img, i) => {
     width: 100%;
     max-width: 1400px;
     margin: 0 auto;
-    padding: 0 var(--gallery-padding-desktop, 4rem);
+    --gallery-current-padding: var(--gallery-padding-desktop, 4rem);
+    padding: 0 var(--gallery-current-padding);
+    position: relative;
+
+    /* Hardware-accelerated non-linear transparency fade mask at top and bottom */
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0px,
+      calc(var(--gallery-fade-height) * var(--gallery-fade-midpoint-ratio)) ,
+      black var(--gallery-fade-height),
+      black calc(100% - var(--gallery-fade-height)),
+      calc(100% - var(--gallery-fade-height) * var(--gallery-fade-midpoint-ratio)),
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0px,
+      calc(var(--gallery-fade-height) * var(--gallery-fade-midpoint-ratio)) ,
+      black var(--gallery-fade-height),
+      black calc(100% - var(--gallery-fade-height)),
+      calc(100% - var(--gallery-fade-height) * var(--gallery-fade-midpoint-ratio)),
+      transparent 100%
+    );
   }
 
   .gallery-column {
@@ -150,7 +172,7 @@ allImages.forEach((img, i) => {
     }
 
     .gallery-container {
-      padding: 0 var(--gallery-padding-mobile, 1.5rem);
+      --gallery-current-padding: var(--gallery-padding-mobile, 1.5rem);
     }
   }
 </style>

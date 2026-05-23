@@ -29,3 +29,11 @@ export const BREAKPOINTS = {
 
 /** Duration (seconds) for smooth timeScale transitions on hover. */
 export const HOVER_TRANSITION_DURATION = 0.4;
+
+/** Height of the fade transition at the top and bottom of the gallery. */
+export const GALLERY_FADE_HEIGHT = '60px';
+
+/** Non-linear transition curve midpoint ratio. */
+export const GALLERY_FADE_MIDPOINT_RATIO = 0.3;
+
+
