@@ -52,7 +52,7 @@ allImages.forEach((img, i) => {
             {/* Original set */}
             <div class="gallery-set-original" style={`gap: ${IMAGE_GAP}; padding-bottom: ${IMAGE_GAP};`}>
               {colImages.map((img, imgIndex) => (
-                <div class="gallery-image-wrapper">
+                <div class="gallery-image-wrapper" data-original-index={imgIndex * 4 + colIndex}>
                   <Image
                     src={img.src}
                     alt={`Tort ${colIndex + 1}-${imgIndex + 1}`}
@@ -178,36 +178,32 @@ allImages.forEach((img, i) => {
   }
 
   /**
-   * Redistribute images from hidden columns into visible ones.
+   * Redistribute images into currently visible columns.
    * Moves actual DOM nodes so Astro's optimized <img> elements are preserved.
    */
   function redistributeColumns(
     allColumns: HTMLElement[],
-    visibleCount: number
+    visibleCount: number,
+    allImageWrappers: HTMLElement[]
   ): void {
-    // Collect all image wrappers from hidden columns' original sets
-    const hiddenImages: HTMLElement[] = [];
-    for (let i = visibleCount; i < allColumns.length; i++) {
-      const orig = allColumns[i].querySelector('.gallery-set-original');
-      if (!orig) continue;
-      const wrappers = Array.from(
-        orig.querySelectorAll('.gallery-image-wrapper')
-      ) as HTMLElement[];
-      hiddenImages.push(...wrappers);
-
-      // Clean up the duplicate set of hidden columns
-      const dupe = allColumns[i].querySelector('.gallery-set-duplicate');
+    // Clear all original and duplicate sets first
+    allColumns.forEach((col) => {
+      const orig = col.querySelector('.gallery-set-original');
+      if (orig) orig.innerHTML = '';
+      const dupe = col.querySelector('.gallery-set-duplicate');
       if (dupe) dupe.innerHTML = '';
-    }
+    });
 
-    // Round-robin distribute hidden images into visible columns' original sets
+    // Round-robin distribute original image wrappers to currently visible columns
     const visibleOriginals = allColumns
       .slice(0, visibleCount)
       .map((col) => col.querySelector('.gallery-set-original')!);
 
-    hiddenImages.forEach((wrapper, i) => {
+    allImageWrappers.forEach((wrapper, i) => {
       const targetOriginal = visibleOriginals[i % visibleCount];
-      targetOriginal.appendChild(wrapper);
+      if (targetOriginal) {
+        targetOriginal.appendChild(wrapper);
+      }
     });
 
     // Rebuild the duplicate set in each visible column
@@ -215,9 +211,6 @@ allImages.forEach((img, i) => {
       const orig = col.querySelector('.gallery-set-original') as HTMLElement;
       const dupe = col.querySelector('.gallery-set-duplicate') as HTMLElement;
       if (!orig || !dupe) return;
-
-      // Remove old duplicates
-      dupe.innerHTML = '';
 
       // Clone the current original images as new duplicates
       const originals = Array.from(orig.querySelectorAll('.gallery-image-wrapper'));
@@ -373,8 +366,19 @@ allImages.forEach((img, i) => {
     cleanupController = new AbortController();
     const { signal } = cleanupController;
 
+    // Collect and sort all original image wrappers before redistributing
+    const allImageWrappers = allColumns.flatMap((col) =>
+      Array.from(col.querySelectorAll('.gallery-set-original > .gallery-image-wrapper'))
+    ) as HTMLElement[];
+
+    allImageWrappers.sort((a, b) => {
+      const idxA = parseInt(a.dataset.originalIndex || '0', 10);
+      const idxB = parseInt(b.dataset.originalIndex || '0', 10);
+      return idxA - idxB;
+    });
+
     const visibleCount = getColumnCount();
-    redistributeColumns(allColumns, visibleCount);
+    redistributeColumns(allColumns, visibleCount, allImageWrappers);
     updateColumnHeights(allColumns);
     createLoopTweens(allColumns);
     attachHoverListeners(container, signal);
@@ -411,7 +415,7 @@ allImages.forEach((img, i) => {
           const inner = col.querySelector('.gallery-column-inner') as HTMLElement;
           if (inner) gsap.set(inner, { clearProps: 'all' });
         });
-        redistributeColumns(allColumns, newCount);
+        redistributeColumns(allColumns, newCount, allImageWrappers);
         updateColumnHeights(allColumns);
         createLoopTweens(allColumns);
       }, 200);
