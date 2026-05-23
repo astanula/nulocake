@@ -3,7 +3,7 @@ import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
-import { COLUMN_SPEEDS, IMAGE_GAP } from '../config/gallery';
+import { COLUMN_SPEEDS, IMAGE_GAP, IMAGE_BORDER_RADIUS } from '../config/gallery';
 
 // ── Fetch all gallery images at build time ──────────────
 const imageModules = import.meta.glob<{ default: ImageMetadata }>(
@@ -40,7 +40,7 @@ allImages.forEach((img, i) => {
 <Layout title="Galeria — Nulo Cake" description="Galeria artystycznych tortów na zamówienie. Torty weselne, urodzinowe i okolicznościowe.">
   <Navigation />
   <main class="gallery-page" id="gallery-page">
-    <div class="gallery-container" id="gallery-container" style={`gap: ${IMAGE_GAP};`}>
+    <div class="gallery-container" id="gallery-container" style={`gap: ${IMAGE_GAP}; --gallery-image-radius: ${IMAGE_BORDER_RADIUS};`}>
       {columns.map((colImages, colIndex) => (
         <div
           class="gallery-column"
@@ -132,6 +132,7 @@ allImages.forEach((img, i) => {
   .gallery-image-wrapper {
     flex-shrink: 0;
     overflow: hidden;
+    border-radius: var(--gallery-image-radius, 0px);
   }
 
   .gallery-image {
@@ -139,6 +140,7 @@ allImages.forEach((img, i) => {
     width: 100%;
     height: auto;
     object-fit: cover;
+    border-radius: inherit;
   }
 
   @media (max-width: 768px) {

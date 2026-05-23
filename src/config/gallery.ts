@@ -4,10 +4,13 @@
  */
 
 /** Duration (seconds) for one full loop cycle per column. */
-export const COLUMN_SPEEDS = [100, 100, 100, 100] as const;
+export const COLUMN_SPEEDS = [200, 220, 250, 150] as const;
 
 /** Vertical gap between images in a column. */
 export const IMAGE_GAP = '30px';
+
+/** Border radius for the gallery images. E.g. '8px', '12px', '16px' etc. */
+export const IMAGE_BORDER_RADIUS = '12px';
 
 /** Responsive breakpoints for column count. */
 export const BREAKPOINTS = {
