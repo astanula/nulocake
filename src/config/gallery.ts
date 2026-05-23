@@ -7,10 +7,16 @@
 export const COLUMN_SPEEDS = [200, 220, 250, 150] as const;
 
 /** Vertical gap between images in a column. */
-export const IMAGE_GAP = '30px';
+export const IMAGE_GAP = '24px';
 
 /** Border radius for the gallery images. E.g. '8px', '12px', '16px' etc. */
-export const IMAGE_BORDER_RADIUS = '12px';
+export const IMAGE_BORDER_RADIUS = '8px';
+
+/** Side padding for the gallery container on desktop viewports. */
+export const GALLERY_PADDING_DESKTOP = '8rem';
+
+/** Side padding for the gallery container on mobile viewports. */
+export const GALLERY_PADDING_MOBILE = '1.5rem';
 
 /** Responsive breakpoints for column count. */
 export const BREAKPOINTS = {
