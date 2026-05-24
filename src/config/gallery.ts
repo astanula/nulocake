@@ -13,7 +13,7 @@ export const IMAGE_GAP = '24px';
 export const IMAGE_BORDER_RADIUS = '8px';
 
 /** Side padding for the gallery container on desktop viewports. */
-export const GALLERY_PADDING_DESKTOP = '8rem';
+export const GALLERY_PADDING_DESKTOP = '12rem';
 
 /** Side padding for the gallery container on mobile viewports. */
 export const GALLERY_PADDING_MOBILE = '1.5rem';

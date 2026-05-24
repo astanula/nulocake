@@ -1,12 +1,19 @@
 ---
 import { ClientRouter } from 'astro:transitions';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
 
 interface Props {
   title: string;
   description?: string;
+  isSubpage?: boolean;
 }
 
-const { title, description = 'Artystyczne torty na zamówienie tworzone z pasją. Nulo Cake — jadalne dzieła sztuki.' } = Astro.props;
+const { 
+  title, 
+  description = 'Artystyczne torty na zamówienie tworzone z pasją. Nulo Cake — jadalne dzieła sztuki.',
+  isSubpage = false
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -29,10 +36,57 @@ const { title, description = 'Artystyczne torty na zamówienie tworzone z pasją
   </head>
   <body>
     <a href="#hero-scroll-container" class="skip-link">Przejdź do treści</a>
-    <slot />
+    {isSubpage ? (
+      <Navigation />
+      <div class="scroll-container">
+        <slot />
+        <Footer />
+      </div>
+    ) : (
+      <slot />
+    )}
+
+    <script>
+      function updateScrollLayout() {
+        const isSubpage = window.location.pathname !== '/' && window.location.pathname !== '';
+        if (isSubpage) {
+          document.body.classList.add('scroll-layout-active');
+        } else {
+          document.body.classList.remove('scroll-layout-active');
+        }
+      }
+
+      if (typeof document !== 'undefined') {
+        document.addEventListener('astro:page-load', updateScrollLayout);
+        document.addEventListener('astro:before-swap', () => {
+          document.body.classList.remove('scroll-layout-active');
+        });
+      }
+    </script>
   </body>
 </html>
 
 <style is:global>
   @import '../styles/global.css';
+
+  body.scroll-layout-active {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body.scroll-layout-active .nav {
+    position: relative !important;
+  }
+
+  .scroll-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    min-height: 0;
+  }
 </style>
+

@@ -1,11 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Navigation from '../components/Navigation.astro';
-import Footer from '../components/Footer.astro';
 ---
 
-<Layout title="Oferta — Nulo Cake" description="Poznaj ofertę artystycznych tortów na zamówienie. Składniki, dekoracje, cennik i sposób zamawiania.">
-  <Navigation />
+<Layout title="Oferta — Nulo Cake" description="Poznaj ofertę artystycznych tortów na zamówienie. Składniki, dekoracje, cennik i sposób zamawiania." isSubpage={true}>
   <main class="oferta-container">
     <!-- Sekcja 1: Co kryje się w środku? -->
     <section class="content-section">
@@ -115,7 +112,6 @@ import Footer from '../components/Footer.astro';
       </div>
     </section>
   </main>
-  <Footer />
 </Layout>
 
 <style>
@@ -134,7 +130,7 @@ import Footer from '../components/Footer.astro';
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    padding: max(7rem, 18vh) 2rem 4rem 4rem;
+    padding: 4rem 2rem 4rem 4rem;
   }
 
   .content-section-inner {
@@ -245,7 +241,7 @@ import Footer from '../components/Footer.astro';
 
   @media (max-width: 768px) {
     .content-section {
-      padding: max(6rem, 15vh) 1.5rem 3rem 1.5rem;
+      padding: 2rem 1.5rem 3rem 1.5rem;
       justify-content: flex-start;
       align-items: center;
     }

@@ -1,8 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
-import Navigation from '../components/Navigation.astro';
-import Footer from '../components/Footer.astro';
+
 import { COLUMN_SPEEDS, IMAGE_GAP, IMAGE_BORDER_RADIUS, GALLERY_PADDING_DESKTOP, GALLERY_PADDING_MOBILE, GALLERY_FADE_HEIGHT, GALLERY_FADE_MIDPOINT_RATIO } from '../config/gallery';
 
 // ── Fetch all gallery images at build time ──────────────
@@ -37,8 +36,7 @@ allImages.forEach((img, i) => {
 });
 ---
 
-<Layout title="Galeria — Nulo Cake" description="Galeria artystycznych tortów na zamówienie. Torty weselne, urodzinowe i okolicznościowe.">
-  <Navigation />
+<Layout title="Galeria — Nulo Cake" description="Galeria artystycznych tortów na zamówienie. Torty weselne, urodzinowe i okolicznościowe." isSubpage={true}>
   <main class="gallery-page" id="gallery-page">
     <div class="gallery-container" id="gallery-container" style={`gap: ${IMAGE_GAP}; --gallery-image-radius: ${IMAGE_BORDER_RADIUS}; --gallery-padding-desktop: ${GALLERY_PADDING_DESKTOP}; --gallery-padding-mobile: ${GALLERY_PADDING_MOBILE}; --gallery-fade-height: ${GALLERY_FADE_HEIGHT}; --gallery-fade-midpoint-ratio: ${GALLERY_FADE_MIDPOINT_RATIO};`}>
       {columns.map((colImages, colIndex) => (
@@ -84,15 +82,13 @@ allImages.forEach((img, i) => {
       ))}
     </div>
   </main>
-  <Footer />
 </Layout>
 
 <style>
   .gallery-page {
     width: 100%;
-    min-height: 100dvh;
     position: relative;
-    padding-top: max(7rem, 18vh);
+    padding-top: 4rem;
     padding-bottom: 4rem;
   }
 
@@ -167,7 +163,7 @@ allImages.forEach((img, i) => {
 
   @media (max-width: 768px) {
     .gallery-page {
-      padding-top: max(6rem, 15vh);
+      padding-top: 2rem;
       padding-bottom: 3rem;
     }
 
