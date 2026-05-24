@@ -88,7 +88,7 @@ allImages.forEach((img, i) => {
   .gallery-page {
     width: 100%;
     position: relative;
-    padding-top: 4rem;
+    padding-top: var(--gallery-top-gap, 2.5rem);
     padding-bottom: 4rem;
   }
 
@@ -101,24 +101,43 @@ allImages.forEach((img, i) => {
     padding: 0 var(--gallery-current-padding);
     position: relative;
 
-    /* Hardware-accelerated non-linear transparency fade mask at top and bottom */
+    /* Hardware-accelerated non-linear transparency fade mask at bottom only */
     mask-image: linear-gradient(
       to bottom,
-      transparent 0px,
-      calc(var(--gallery-fade-height) * var(--gallery-fade-midpoint-ratio)) ,
-      black var(--gallery-fade-height),
+      black 0px,
       black calc(100% - var(--gallery-fade-height)),
       calc(100% - var(--gallery-fade-height) * var(--gallery-fade-midpoint-ratio)),
       transparent 100%
     );
     -webkit-mask-image: linear-gradient(
       to bottom,
-      transparent 0px,
-      calc(var(--gallery-fade-height) * var(--gallery-fade-midpoint-ratio)) ,
-      black var(--gallery-fade-height),
+      black 0px,
       black calc(100% - var(--gallery-fade-height)),
       calc(100% - var(--gallery-fade-height) * var(--gallery-fade-midpoint-ratio)),
       transparent 100%
+    );
+  }
+
+  :global(body.gallery-page-active) :global(.scroll-container) {
+    --gallery-top-gap: 2.5rem;
+    --gallery-fade-height: 60px;
+    --gallery-fade-midpoint-ratio: 0.3;
+    /* Hardware-accelerated non-linear transparency fade mask at top only, offset by the gap */
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent var(--gallery-top-gap),
+      calc(var(--gallery-top-gap) + var(--gallery-fade-height) * var(--gallery-fade-midpoint-ratio)),
+      black calc(var(--gallery-top-gap) + var(--gallery-fade-height)),
+      black 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent var(--gallery-top-gap),
+      calc(var(--gallery-top-gap) + var(--gallery-fade-height) * var(--gallery-fade-midpoint-ratio)),
+      black calc(var(--gallery-top-gap) + var(--gallery-fade-height)),
+      black 100%
     );
   }
 
@@ -162,8 +181,11 @@ allImages.forEach((img, i) => {
   }
 
   @media (max-width: 768px) {
+    :global(body.gallery-page-active) :global(.scroll-container) {
+      --gallery-top-gap: 1.5rem;
+    }
+
     .gallery-page {
-      padding-top: 2rem;
       padding-bottom: 3rem;
     }
 
