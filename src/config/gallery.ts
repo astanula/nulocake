@@ -36,4 +36,19 @@ export const GALLERY_FADE_HEIGHT = '60px';
 /** Non-linear transition curve midpoint ratio. */
 export const GALLERY_FADE_MIDPOINT_RATIO = 0.3;
 
+/** Delay (ms) before floating effect triggers on hover. */
+export const FLOAT_HOVER_DELAY_MS = 1000;
+
+/** Frame scale factor when floating (1.1 = 10% bigger). */
+export const FLOAT_SCALE_AMOUNT = 1.1;
+
+/** Inner image zoom factor when floating. */
+export const FLOAT_ZOOM_AMOUNT = 1.15;
+
+/** Duration (seconds) for floating animation in/out. */
+export const FLOAT_ANIMATION_DURATION = 0.4;
+
+/** Easing function for floating animation. */
+export const FLOAT_EASE = 'power2.out';
+
 

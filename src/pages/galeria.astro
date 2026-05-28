@@ -2,7 +2,7 @@
 import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 
-import { COLUMN_SPEEDS, IMAGE_GAP, IMAGE_BORDER_RADIUS, GALLERY_PADDING_DESKTOP, GALLERY_PADDING_MOBILE, GALLERY_FADE_HEIGHT, GALLERY_FADE_MIDPOINT_RATIO } from '../config/gallery';
+import { COLUMN_SPEEDS, IMAGE_GAP, IMAGE_BORDER_RADIUS, GALLERY_PADDING_DESKTOP, GALLERY_PADDING_MOBILE, GALLERY_FADE_HEIGHT, GALLERY_FADE_MIDPOINT_RATIO, FLOAT_HOVER_DELAY_MS, FLOAT_SCALE_AMOUNT, FLOAT_ZOOM_AMOUNT, FLOAT_ANIMATION_DURATION, FLOAT_EASE } from '../config/gallery';
 
 // ── Fetch all gallery images at build time ──────────────
 const imageModules = import.meta.glob<{ default: ImageMetadata }>(
@@ -100,6 +100,7 @@ allImages.forEach((img, i) => {
     --gallery-current-padding: var(--gallery-padding-desktop, 4rem);
     padding: 0 var(--gallery-current-padding);
     position: relative;
+    overflow: clip;
 
     /* Hardware-accelerated non-linear transparency fade mask at bottom only */
     mask-image: linear-gradient(
@@ -142,10 +143,19 @@ allImages.forEach((img, i) => {
   }
 
   .gallery-column {
-    flex: 1;
-    overflow: hidden;
+    flex:1;
+    overflow: visible;
     position: relative;
     min-width: 0;
+  }
+
+  /* Columns hidden on smaller viewports get display:none via JS class */
+  .gallery-column.is-hidden {
+    display: none;
+  }
+
+  .gallery-column.is-elevated {
+    z-index: 5;
   }
 
   /* Columns hidden on smaller viewports get display:none via JS class */
@@ -167,9 +177,17 @@ allImages.forEach((img, i) => {
   }
 
   .gallery-image-wrapper {
-    flex-shrink: 0;
+    flex-shrink:0;
     overflow: hidden;
     border-radius: var(--gallery-image-radius, 0px);
+    cursor: pointer;
+    position: relative;
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  .gallery-image-wrapper.is-floating {
+    z-index: 10;
   }
 
   .gallery-image {
@@ -178,6 +196,8 @@ allImages.forEach((img, i) => {
     height: auto;
     object-fit: cover;
     border-radius: inherit;
+    will-change: transform;
+    backface-visibility: hidden;
   }
 
   @media (max-width: 768px) {
@@ -200,12 +220,22 @@ allImages.forEach((img, i) => {
   import {
     BREAKPOINTS,
     HOVER_TRANSITION_DURATION,
+    FLOAT_HOVER_DELAY_MS,
+    FLOAT_SCALE_AMOUNT,
+    FLOAT_ZOOM_AMOUNT,
+    FLOAT_ANIMATION_DURATION,
+    FLOAT_EASE,
   } from '../config/gallery';
 
   let activeTweens: gsap.core.Tween[] = [];
   let resizeTimer: ReturnType<typeof setTimeout> | null = null;
   let imageLoadTimer: ReturnType<typeof setTimeout> | null = null;
   let cleanupController: AbortController | null = null;
+
+  let activeFloatWrapper: HTMLElement | null = null;
+  let activeFloatTimeline: gsap.core.Timeline | null = null;
+  let pendingWrapper: HTMLElement | null = null;
+  let pendingTimer: ReturnType<typeof setTimeout> | null = null;
 
   /**
    * Determine how many columns should be visible based on viewport width.
@@ -215,6 +245,267 @@ allImages.forEach((img, i) => {
     if (w >= BREAKPOINTS.desktop) return 4;
     if (w >= BREAKPOINTS.tablet) return 3;
     return 2;
+  }
+
+  /**
+   * Smoothly decelerate all loop tweens to pause.
+   */
+  function pauseGallery(): void {
+    activeTweens.forEach((tween) => {
+      gsap.to(tween, {
+        timeScale: 0,
+        duration: HOVER_TRANSITION_DURATION,
+        ease: 'power2.out',
+      });
+    });
+  }
+
+  /**
+   * Smoothly accelerate all loop tweens back to normal speed.
+   */
+  function resumeGallery(): void {
+    activeTweens.forEach((tween) => {
+      gsap.to(tween, {
+        timeScale: 1,
+        duration: HOVER_TRANSITION_DURATION,
+        ease: 'power2.in',
+      });
+    });
+  }
+
+  /**
+   * Immediately kill any running float animation and restore all
+   * GSAP-applied transforms, z-indices, and classes to their default state.
+   */
+  function forceResetActiveFloat(): void {
+    if (pendingTimer) {
+      clearTimeout(pendingTimer);
+      pendingTimer = null;
+    }
+    pendingWrapper = null;
+
+    if (activeFloatTimeline) {
+      activeFloatTimeline.kill();
+      activeFloatTimeline = null;
+    }
+
+    if (activeFloatWrapper) {
+      const col = activeFloatWrapper.closest('.gallery-column') as HTMLElement;
+      const img = activeFloatWrapper.querySelector('.gallery-image') as HTMLElement;
+
+      // Clear wrapper & image inline styles
+      gsap.set(activeFloatWrapper, { clearProps: 'scale,zIndex,y' });
+      activeFloatWrapper.classList.remove('is-floating');
+      if (img) gsap.set(img, { clearProps: 'scale' });
+
+      // Reset column elevation and all sibling shifts
+      if (col) {
+        col.classList.remove('is-elevated');
+        col.style.zIndex = '';
+        const colWrappers = col.querySelectorAll('.gallery-image-wrapper');
+        gsap.set(colWrappers, { clearProps: 'y' });
+      }
+
+      activeFloatWrapper = null;
+    }
+
+    resumeGallery();
+  }
+
+  /**
+   * Activate the floating effect on the given image wrapper.
+   *
+   * Builds a reversible GSAP timeline that:
+   * 1. Pauses the gallery loop
+   * 2. Elevates the parent column's stacking context
+   * 3. Scales the wrapper + shifts it vertically to stay in view
+   * 4. Zooms the inner image
+   * 5. Shifts adjacent wrappers in the same column to maintain spacing
+   *
+   * The timeline's onReverseComplete cleans up all state.
+   */
+  function triggerFloat(wrapper: HTMLElement): void {
+    // If there's already an active float on a different element, force-reset it
+    if (activeFloatWrapper && activeFloatWrapper !== wrapper) {
+      forceResetActiveFloat();
+    }
+
+    const col = wrapper.closest('.gallery-column') as HTMLElement;
+    const img = wrapper.querySelector('.gallery-image') as HTMLElement;
+    if (!col || !img) return;
+
+    // ── Pause the gallery loop ──
+    pauseGallery();
+
+    // ── Viewport boundary shift calculation ──
+    const colRect = col.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const scaledHeight = wrapperRect.height * FLOAT_SCALE_AMOUNT;
+    const yCenter = (wrapperRect.top + wrapperRect.bottom) / 2;
+    const projectedTop = yCenter - scaledHeight / 2;
+    const projectedBottom = yCenter + scaledHeight / 2;
+
+    let offset = 0;
+    if (projectedTop < colRect.top) {
+      // Cut off at the top — shift down
+      offset = colRect.top - projectedTop;
+    } else if (projectedBottom > colRect.bottom) {
+      // Cut off at the bottom — shift up
+      offset = colRect.bottom - projectedBottom;
+    }
+
+    // ── Spacing preservation ──
+    const shiftAmount = (wrapperRect.height * (FLOAT_SCALE_AMOUNT - 1)) / 2;
+
+    // Identify siblings in the same gallery-set (original or duplicate)
+    const parentSet = wrapper.closest('.gallery-set-original, .gallery-set-duplicate') as HTMLElement;
+    if (!parentSet) return;
+    const allWrappersInSet = Array.from(parentSet.querySelectorAll('.gallery-image-wrapper')) as HTMLElement[];
+    const wrapperIndex = allWrappersInSet.indexOf(wrapper);
+
+    const above = allWrappersInSet.filter((_, i) => i < wrapperIndex);
+    const below = allWrappersInSet.filter((_, i) => i > wrapperIndex);
+
+    // ── Build the reversible timeline ──
+    activeFloatWrapper = wrapper;
+
+    // Elevate column stacking context
+    col.classList.add('is-elevated');
+    wrapper.classList.add('is-floating');
+
+    const tl = gsap.timeline({
+      defaults: {
+        duration: FLOAT_ANIMATION_DURATION,
+        ease: FLOAT_EASE,
+      },
+      onReverseComplete: () => {
+        // Cleanup after full reverse
+        col.classList.remove('is-elevated');
+        wrapper.classList.remove('is-floating');
+
+        gsap.set(wrapper, { clearProps: 'scale,zIndex,y' });
+        gsap.set(img, { clearProps: 'scale' });
+        gsap.set(allWrappersInSet, { clearProps: 'y' });
+
+        activeFloatWrapper = null;
+        activeFloatTimeline = null;
+
+        resumeGallery();
+      },
+    });
+
+    // Wrapper: scale up + apply viewport offset
+    tl.to(wrapper, { scale: FLOAT_SCALE_AMOUNT, y: offset }, 0);
+
+    // Inner image: zoom
+    tl.to(img, { scale: FLOAT_ZOOM_AMOUNT }, 0);
+
+    // Adjacent wrappers: shift to maintain spacing
+    if (above.length > 0) {
+      tl.to(above, { y: -shiftAmount + offset }, 0);
+    }
+    if (below.length > 0) {
+      tl.to(below, { y: shiftAmount + offset }, 0);
+    }
+
+    activeFloatTimeline = tl;
+  }
+
+  /**
+   * Attach delegated pointer/click listeners for the floating effect.
+   *
+   * Desktop: pointerover starts a delay timer → triggerFloat().
+   *          pointerout cancels the timer or reverses the animation.
+   * Mobile:  click toggles float immediately (no delay).
+   *
+   * Uses AbortController signal for automatic cleanup on navigation.
+   */
+  function attachFloatListeners(
+    container: HTMLElement,
+    signal: AbortSignal
+  ): void {
+    // ── Desktop: hover delay ──
+    container.addEventListener('pointerover', (e: PointerEvent) => {
+      if (e.pointerType === 'touch') return;
+
+      const wrapper = (e.target as HTMLElement).closest('.gallery-image-wrapper') as HTMLElement | null;
+      if (!wrapper || wrapper === pendingWrapper || wrapper === activeFloatWrapper) return;
+
+      // Cancel any pending timer from a previous hover
+      if (pendingTimer) {
+        clearTimeout(pendingTimer);
+        pendingTimer = null;
+      }
+
+      // If hovering a different image while one is active, reverse it
+      if (activeFloatWrapper && activeFloatWrapper !== wrapper) {
+        activeFloatTimeline?.reverse();
+      }
+
+      pendingWrapper = wrapper;
+      pendingTimer = setTimeout(() => {
+        pendingTimer = null;
+        pendingWrapper = null;
+        triggerFloat(wrapper);
+      }, FLOAT_HOVER_DELAY_MS);
+    }, { signal });
+
+    // ── Desktop: pointer leaves the container ──
+    container.addEventListener('pointerleave', (e: PointerEvent) => {
+      if (e.pointerType === 'touch') return;
+
+      if (pendingTimer) {
+        clearTimeout(pendingTimer);
+        pendingTimer = null;
+      }
+      pendingWrapper = null;
+
+      if (activeFloatWrapper) {
+        activeFloatTimeline?.reverse();
+      }
+    }, { signal });
+
+    // ── Desktop: pointer moves between wrappers within the container ──
+    container.addEventListener('pointerout', (e: PointerEvent) => {
+      if (e.pointerType === 'touch') return;
+
+      const relatedWrapper = (e.relatedTarget as HTMLElement | null)?.closest('.gallery-image-wrapper') as HTMLElement | null;
+
+      // Only cancel if pointer left the current pending/active wrapper
+      // and didn't move to another wrapper (pointerover handles that case)
+      if (!relatedWrapper) {
+        if (pendingTimer && pendingWrapper) {
+          const leavingWrapper = (e.target as HTMLElement).closest('.gallery-image-wrapper') as HTMLElement | null;
+          if (leavingWrapper === pendingWrapper) {
+            clearTimeout(pendingTimer);
+            pendingTimer = null;
+            pendingWrapper = null;
+          }
+        }
+      }
+    }, { signal });
+
+    // ── Mobile: tap to toggle ──
+    container.addEventListener('click', (e: MouseEvent) => {
+      // Only handle touch-originated clicks
+      // PointerEvent extends MouseEvent; check pointerType if available
+      const pe = e as PointerEvent;
+      if (pe.pointerType !== 'touch') return;
+
+      const wrapper = (e.target as HTMLElement).closest('.gallery-image-wrapper') as HTMLElement | null;
+      if (!wrapper) return;
+
+      e.preventDefault();
+
+      if (activeFloatWrapper === wrapper) {
+        // Tap the active image → reverse (close)
+        activeFloatTimeline?.reverse();
+      } else {
+        // Tap a new image → force-reset old, open new immediately
+        forceResetActiveFloat();
+        triggerFloat(wrapper);
+      }
+    }, { signal });
   }
 
   /**
@@ -359,38 +650,12 @@ allImages.forEach((img, i) => {
   }
 
   /**
-   * Attach hover listeners for smooth pause/resume.
-   * Uses the AbortController signal so listeners are auto-removed on cleanup.
-   */
-  function attachHoverListeners(
-    container: HTMLElement,
-    signal: AbortSignal
-  ): void {
-    container.addEventListener('mouseenter', () => {
-      activeTweens.forEach((tween) => {
-        gsap.to(tween, {
-          timeScale: 0,
-          duration: HOVER_TRANSITION_DURATION,
-          ease: 'power2.out',
-        });
-      });
-    }, { signal });
-
-    container.addEventListener('mouseleave', () => {
-      activeTweens.forEach((tween) => {
-        gsap.to(tween, {
-          timeScale: 1,
-          duration: HOVER_TRANSITION_DURATION,
-          ease: 'power2.in',
-        });
-      });
-    }, { signal });
-  }
-
-  /**
    * Clean up all gallery resources (tweens, timers, event listeners).
    */
   function cleanupGallery(): void {
+    // Reset any active float effect first
+    forceResetActiveFloat();
+
     // Kill all loop tweens
     activeTweens.forEach((t) => t.kill());
     activeTweens = [];
@@ -405,7 +670,7 @@ allImages.forEach((img, i) => {
       imageLoadTimer = null;
     }
 
-    // Abort all event listeners (resize + hover)
+    // Abort all event listeners (resize + hover + float)
     if (cleanupController) {
       cleanupController.abort();
       cleanupController = null;
@@ -450,7 +715,7 @@ allImages.forEach((img, i) => {
     redistributeColumns(allColumns, visibleCount, allImageWrappers);
     updateColumnHeights(allColumns);
     createLoopTweens(allColumns);
-    attachHoverListeners(container, signal);
+    attachFloatListeners(container, signal);
 
     // Watch for image loads to recompute heights as they stream in
     const images = container.querySelectorAll('.gallery-set-original img') as NodeListOf<HTMLImageElement>;
@@ -474,6 +739,9 @@ allImages.forEach((img, i) => {
     window.addEventListener('resize', () => {
       if (resizeTimer) clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
+        // Reset any active float before rebuilding layout
+        forceResetActiveFloat();
+
         const newCount = getColumnCount();
         // Kill old tweens
         activeTweens.forEach((t) => t.kill());
