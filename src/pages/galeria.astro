@@ -357,14 +357,12 @@ allImages.forEach((img, i) => {
     // ── Spacing preservation ──
     const shiftAmount = (wrapperRect.height * (FLOAT_SCALE_AMOUNT - 1)) / 2;
 
-    // Identify siblings in the same gallery-set (original or duplicate)
-    const parentSet = wrapper.closest('.gallery-set-original, .gallery-set-duplicate') as HTMLElement;
-    if (!parentSet) return;
-    const allWrappersInSet = Array.from(parentSet.querySelectorAll('.gallery-image-wrapper')) as HTMLElement[];
-    const wrapperIndex = allWrappersInSet.indexOf(wrapper);
+    // Identify ALL wrappers in the entire column (both original and duplicate sets)
+    const allWrappersInColumn = Array.from(col.querySelectorAll('.gallery-image-wrapper')) as HTMLElement[];
+    const wrapperIndex = allWrappersInColumn.indexOf(wrapper);
 
-    const above = allWrappersInSet.filter((_, i) => i < wrapperIndex);
-    const below = allWrappersInSet.filter((_, i) => i > wrapperIndex);
+    const above = allWrappersInColumn.filter((_, i) => i < wrapperIndex);
+    const below = allWrappersInColumn.filter((_, i) => i > wrapperIndex);
 
     // ── Build the reversible timeline ──
     activeFloatWrapper = wrapper;
@@ -385,7 +383,7 @@ allImages.forEach((img, i) => {
 
         gsap.set(wrapper, { clearProps: 'scale,zIndex,y' });
         gsap.set(img, { clearProps: 'scale' });
-        gsap.set(allWrappersInSet, { clearProps: 'y' });
+        gsap.set(allWrappersInColumn, { clearProps: 'y' });
 
         activeFloatWrapper = null;
         activeFloatTimeline = null;

@@ -37,13 +37,13 @@ export const GALLERY_FADE_HEIGHT = '60px';
 export const GALLERY_FADE_MIDPOINT_RATIO = 0.3;
 
 /** Delay (ms) before floating effect triggers on hover. */
-export const FLOAT_HOVER_DELAY_MS = 1000;
+export const FLOAT_HOVER_DELAY_MS = 250;
 
 /** Frame scale factor when floating (1.1 = 10% bigger). */
-export const FLOAT_SCALE_AMOUNT = 1.1;
+export const FLOAT_SCALE_AMOUNT = 1.3;
 
 /** Inner image zoom factor when floating. */
-export const FLOAT_ZOOM_AMOUNT = 1.15;
+export const FLOAT_ZOOM_AMOUNT = 1.1;
 
 /** Duration (seconds) for floating animation in/out. */
 export const FLOAT_ANIMATION_DURATION = 0.4;
