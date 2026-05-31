@@ -31,7 +31,7 @@ export const BREAKPOINTS = {
 export const HOVER_TRANSITION_DURATION = 0.4;
 
 /** Height of the fade transition at the top and bottom of the gallery. */
-export const GALLERY_FADE_HEIGHT = '60px';
+export const GALLERY_FADE_HEIGHT = '10px';
 
 /** Non-linear transition curve midpoint ratio. */
 export const GALLERY_FADE_MIDPOINT_RATIO = 0.3;
@@ -40,7 +40,7 @@ export const GALLERY_FADE_MIDPOINT_RATIO = 0.3;
 export const FLOAT_HOVER_DELAY_MS = 250;
 
 /** Frame scale factor when floating (1.1 = 10% bigger). */
-export const FLOAT_SCALE_AMOUNT = 1.3;
+export const FLOAT_SCALE_AMOUNT = 1.1;
 
 /** Inner image zoom factor when floating. */
 export const FLOAT_ZOOM_AMOUNT = 1.1;
