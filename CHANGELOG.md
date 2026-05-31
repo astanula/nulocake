@@ -5,6 +5,7 @@ For detailed release notes, see the corresponding file in the `.changelog/` dire
 Each version's details are stored in `.changelog/<version>.<date>.md`.
 
 - [0.12.4] - 2026-05-20: Fix limelight animation on nav click
+- [0.12.5] - 2026-05-31: Fix gallery hover boundary offset
 - [0.12.3] - 2026-05-17: Prevent duplicate listener registration
 - [0.12.2] - 2026-05-15: Fix home page animation on navigation return
 - [0.12.1] - 2026-05-13: Extract all animation constants and update E2E tests

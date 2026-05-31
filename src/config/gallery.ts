@@ -51,4 +51,8 @@ export const FLOAT_ANIMATION_DURATION = 0.4;
 /** Easing function for floating animation. */
 export const FLOAT_EASE = 'power2.out';
 
+/** Safety margin (px) from viewport/scroll boundaries for floating images. */
+export const FLOAT_SAFETY_BUFFER = 16;
+
+
 

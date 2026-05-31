@@ -225,6 +225,7 @@ allImages.forEach((img, i) => {
     FLOAT_ZOOM_AMOUNT,
     FLOAT_ANIMATION_DURATION,
     FLOAT_EASE,
+    IMAGE_GAP,
   } from '../config/gallery';
 
   let activeTweens: gsap.core.Tween[] = [];
@@ -345,13 +346,49 @@ allImages.forEach((img, i) => {
     const projectedTop = yCenter - scaledHeight / 2;
     const projectedBottom = yCenter + scaledHeight / 2;
 
+    const scrollContainer = document.querySelector('.scroll-container') as HTMLElement;
+    const scrollRect = scrollContainer
+      ? scrollContainer.getBoundingClientRect()
+      : { top: 0, bottom: window.innerHeight };
+
+    const gapVal = parseInt(IMAGE_GAP, 10) || 16;
+
+    let topGap = 40;
+    if (scrollContainer) {
+      const style = getComputedStyle(scrollContainer);
+      const topGapStr = style.getPropertyValue('--gallery-top-gap').trim() || '2.5rem';
+      const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      topGap = topGapStr.includes('rem')
+        ? parseFloat(topGapStr) * rootFontSize
+        : parseFloat(topGapStr) || 40;
+    }
+
+    const galleryContainer = document.getElementById('gallery-container');
+    const galleryRect = galleryContainer
+      ? galleryContainer.getBoundingClientRect()
+      : scrollRect;
+
+    let bottomFade = 10;
+    if (galleryContainer) {
+      const galleryStyle = getComputedStyle(galleryContainer);
+      const fadeHeightStr = galleryStyle.getPropertyValue('--gallery-fade-height').trim() || '10px';
+      bottomFade = parseFloat(fadeHeightStr) || 10;
+    }
+
+    const limitTop = Math.max(colRect.top, scrollRect.top + topGap + gapVal);
+    const limitBottom = Math.min(
+      colRect.bottom,
+      scrollRect.bottom - gapVal,
+      galleryRect.bottom - bottomFade - gapVal,
+    );
+
     let offset = 0;
-    if (projectedTop < colRect.top) {
+    if (projectedTop < limitTop) {
       // Cut off at the top — shift down
-      offset = colRect.top - projectedTop;
-    } else if (projectedBottom > colRect.bottom) {
+      offset = limitTop - projectedTop;
+    } else if (projectedBottom > limitBottom) {
       // Cut off at the bottom — shift up
-      offset = colRect.bottom - projectedBottom;
+      offset = limitBottom - projectedBottom;
     }
 
     // ── Spacing preservation ──
