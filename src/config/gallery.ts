@@ -7,7 +7,7 @@
 export const COLUMN_SPEEDS = [200, 220, 250, 150] as const;
 
 /** Vertical gap between images in a column. */
-export const IMAGE_GAP = '24px';
+export const IMAGE_GAP = '16px';
 
 /** Border radius for the gallery images. E.g. '8px', '12px', '16px' etc. */
 export const IMAGE_BORDER_RADIUS = '8px';
@@ -40,7 +40,7 @@ export const GALLERY_FADE_MIDPOINT_RATIO = 0.3;
 export const FLOAT_HOVER_DELAY_MS = 250;
 
 /** Frame scale factor when floating (1.1 = 10% bigger). */
-export const FLOAT_SCALE_AMOUNT = 1.1;
+export const FLOAT_SCALE_AMOUNT = 1.4;
 
 /** Inner image zoom factor when floating. */
 export const FLOAT_ZOOM_AMOUNT = 1.1;

@@ -469,15 +469,22 @@ allImages.forEach((img, i) => {
 
       const relatedWrapper = (e.relatedTarget as HTMLElement | null)?.closest('.gallery-image-wrapper') as HTMLElement | null;
 
-      // Only cancel if pointer left the current pending/active wrapper
+      // Only cancel/reverse if pointer left the current pending/active wrapper
       // and didn't move to another wrapper (pointerover handles that case)
       if (!relatedWrapper) {
-        if (pendingTimer && pendingWrapper) {
-          const leavingWrapper = (e.target as HTMLElement).closest('.gallery-image-wrapper') as HTMLElement | null;
-          if (leavingWrapper === pendingWrapper) {
+        const leavingWrapper = (e.target as HTMLElement).closest('.gallery-image-wrapper') as HTMLElement | null;
+
+        if (leavingWrapper) {
+          // Cancel pending float if we left the pending wrapper
+          if (pendingTimer && leavingWrapper === pendingWrapper) {
             clearTimeout(pendingTimer);
             pendingTimer = null;
             pendingWrapper = null;
+          }
+
+          // Reverse active float if we left the active wrapper
+          if (activeFloatWrapper && leavingWrapper === activeFloatWrapper) {
+            activeFloatTimeline?.reverse();
           }
         }
       }
