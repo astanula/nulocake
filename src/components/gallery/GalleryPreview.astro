@@ -2,6 +2,9 @@
 ---
 
 <dialog id="gallery-preview" class="gallery-preview" aria-modal="true" aria-label="Podgląd obrazu">
+  <div class="preview-backdrop" aria-hidden="true">
+    <img id="preview-backdrop-image" src="" alt="" decoding="async" />
+  </div>
   <div class="preview-content">
     <button id="preview-close" class="preview-close" aria-label="Zamknij podgląd (Esc)">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -11,6 +14,21 @@
     <div class="hero-stage">
       <div id="preview-spinner" class="spinner" aria-hidden="true"></div>
       <img id="preview-hero-image" src="" alt="" decoding="async" />
+    </div>
+    <div class="preview-controls">
+      <button id="preview-prev" aria-label="Poprzednie zdjęcie">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div id="preview-counter" class="preview-counter" aria-live="polite">
+        <span id="preview-current-index">1</span> / <span id="preview-total-count">1</span>
+      </div>
+      <button id="preview-next" aria-label="Następne zdjęcie">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </div>
   </div>
 </dialog>
@@ -34,6 +52,27 @@
 
   .gallery-preview::backdrop {
     background: rgba(0, 0, 0, 0.9);
+  }
+
+  .preview-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+  }
+
+  #preview-backdrop-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(40px) brightness(0.5);
+    transform: scale(1.1);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  #preview-backdrop-image.is-loaded {
+    opacity: 1;
   }
 
   .preview-content {
@@ -111,15 +150,61 @@
   @keyframes spin {
     to { transform: translate(-50%, -50%) rotate(360deg); }
   }
+
+  .preview-controls {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    z-index: 10;
+  }
+
+  .preview-controls button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .preview-controls button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .preview-controls button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .preview-counter {
+    font-variant-numeric: tabular-nums;
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
 </style>
 
 <script>
   let dialog: HTMLDialogElement | null = null;
   let heroImage: HTMLImageElement | null = null;
+  let backdropImage: HTMLImageElement | null = null;
   let spinner: HTMLElement | null = null;
   let closeBtn: HTMLButtonElement | null = null;
+  let prevBtn: HTMLButtonElement | null = null;
+  let nextBtn: HTMLButtonElement | null = null;
+  let currentIndexEl: HTMLElement | null = null;
+  let totalCountEl: HTMLElement | null = null;
   let scrollContainer: HTMLElement | null = null;
   let manifest: any[] = [];
+  let currentIndex = 0;
 
   function closePreview() {
     if (dialog && dialog.open) {
@@ -128,7 +213,9 @@
   }
 
   function handleBackdropClick(e: MouseEvent) {
-    if (e.target === dialog) {
+    // Treat clicks on the backdrop image behind the hero exactly like clicks on the dialog
+    const target = e.target as HTMLElement;
+    if (target === dialog || target.closest('.preview-backdrop')) {
       closePreview();
     }
   }
@@ -140,6 +227,10 @@
     if (heroImage) {
       heroImage.src = '';
       heroImage.classList.remove('is-loaded');
+    }
+    if (backdropImage) {
+      backdropImage.src = '';
+      backdropImage.classList.remove('is-loaded');
     }
     // Only go back if we are currently holding the history state
     if (history.state && history.state.galleryPreview) {
@@ -153,6 +244,81 @@
       if (dialog && dialog.open) {
         dialog.close();
       }
+    }
+  }
+
+  function preloadImage(index: number) {
+    if (index >= 0 && index < manifest.length) {
+      const img = new Image();
+      img.src = manifest[index].src;
+    }
+  }
+
+  async function updatePreviewState() {
+    if (!dialog || !heroImage || !spinner || !backdropImage) return;
+
+    const imageData = manifest[currentIndex];
+    if (!imageData) return;
+
+    // Update Counter
+    if (currentIndexEl) currentIndexEl.textContent = (currentIndex + 1).toString();
+    if (totalCountEl) totalCountEl.textContent = manifest.length.toString();
+
+    // Update Buttons
+    if (prevBtn) prevBtn.disabled = currentIndex === 0;
+    if (nextBtn) nextBtn.disabled = currentIndex === manifest.length - 1;
+
+    spinner.classList.add('is-visible');
+    heroImage.classList.remove('is-loaded');
+    backdropImage.classList.remove('is-loaded');
+
+    try {
+      heroImage.src = imageData.src;
+      backdropImage.src = imageData.src;
+      await Promise.all([
+        heroImage.decode().catch(() => {}),
+        backdropImage.decode().catch(() => {})
+      ]);
+    } catch (error) {
+      console.error('Image update failed', error);
+    } finally {
+      spinner.classList.remove('is-visible');
+      heroImage.classList.add('is-loaded');
+      backdropImage.classList.add('is-loaded');
+    }
+
+    // Preload adjacent images
+    preloadImage(currentIndex - 1);
+    preloadImage(currentIndex + 1);
+  }
+
+  function navigate(direction: number) {
+    if (manifest.length === 0) return;
+    const newIndex = currentIndex + direction;
+    if (newIndex >= 0 && newIndex < manifest.length) {
+      currentIndex = newIndex;
+      updatePreviewState();
+    }
+  }
+
+  function handlePrevClick() { navigate(-1); }
+  function handleNextClick() { navigate(1); }
+
+  function handleKeyDown(e: KeyboardEvent) {
+    if (!dialog || !dialog.open) return;
+    switch (e.key) {
+      case 'ArrowLeft':
+        navigate(-1);
+        break;
+      case 'ArrowRight':
+        navigate(1);
+        break;
+      case 'Home':
+        navigate(-currentIndex);
+        break;
+      case 'End':
+        navigate(manifest.length - 1 - currentIndex);
+        break;
     }
   }
 
@@ -171,9 +337,6 @@
       }
     }
 
-    const imageData = manifest[index];
-    if (!imageData) return;
-
     if (scrollContainer) {
       scrollContainer.style.overflow = 'hidden';
     }
@@ -184,18 +347,8 @@
     }
 
     dialog.showModal();
-    spinner.classList.add('is-visible');
-    heroImage.classList.remove('is-loaded');
-
-    try {
-      heroImage.src = imageData.src;
-      await heroImage.decode();
-    } catch (error) {
-      console.error('Image decode failed', error);
-    } finally {
-      spinner.classList.remove('is-visible');
-      heroImage.classList.add('is-loaded');
-    }
+    currentIndex = index;
+    updatePreviewState();
   }
 
   function handleCustomOpen(e: Event) {
@@ -208,8 +361,13 @@
   function setupPreview() {
     dialog = document.getElementById('gallery-preview') as HTMLDialogElement;
     heroImage = document.getElementById('preview-hero-image') as HTMLImageElement;
+    backdropImage = document.getElementById('preview-backdrop-image') as HTMLImageElement;
     spinner = document.getElementById('preview-spinner');
     closeBtn = document.getElementById('preview-close') as HTMLButtonElement;
+    prevBtn = document.getElementById('preview-prev') as HTMLButtonElement;
+    nextBtn = document.getElementById('preview-next') as HTMLButtonElement;
+    currentIndexEl = document.getElementById('preview-current-index');
+    totalCountEl = document.getElementById('preview-total-count');
     scrollContainer = document.querySelector('.scroll-container');
 
     if (!dialog) return;
@@ -228,6 +386,19 @@
       closeBtn.removeEventListener('click', closePreview);
       closeBtn.addEventListener('click', closePreview);
     }
+
+    if (prevBtn) {
+      prevBtn.removeEventListener('click', handlePrevClick);
+      prevBtn.addEventListener('click', handlePrevClick);
+    }
+
+    if (nextBtn) {
+      nextBtn.removeEventListener('click', handleNextClick);
+      nextBtn.addEventListener('click', handleNextClick);
+    }
+
+    window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
 
     window.removeEventListener('popstate', handlePopState);
     window.addEventListener('popstate', handlePopState);
