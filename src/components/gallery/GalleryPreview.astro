@@ -1,0 +1,238 @@
+---
+---
+
+<dialog id="gallery-preview" class="gallery-preview" aria-modal="true" aria-label="Podgląd obrazu">
+  <div class="preview-content">
+    <button id="preview-close" class="preview-close" aria-label="Zamknij podgląd (Esc)">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div class="hero-stage">
+      <div id="preview-spinner" class="spinner" aria-hidden="true"></div>
+      <img id="preview-hero-image" src="" alt="" decoding="async" />
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .gallery-preview {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw;
+    max-height: 100vh;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: white;
+    z-index: 1000;
+  }
+
+  .gallery-preview::backdrop {
+    background: rgba(0, 0, 0, 0.9);
+  }
+
+  .preview-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .preview-close {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    z-index: 10;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease;
+    opacity: 0.7;
+  }
+
+  .preview-close:hover {
+    opacity: 1;
+  }
+
+  .hero-stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #preview-hero-image {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  #preview-hero-image.is-loaded {
+    opacity: 1;
+  }
+
+  .spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .spinner.is-visible {
+    opacity: 1;
+  }
+
+  @keyframes spin {
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+</style>
+
+<script>
+  let dialog: HTMLDialogElement | null = null;
+  let heroImage: HTMLImageElement | null = null;
+  let spinner: HTMLElement | null = null;
+  let closeBtn: HTMLButtonElement | null = null;
+  let scrollContainer: HTMLElement | null = null;
+  let manifest: any[] = [];
+
+  function closePreview() {
+    if (dialog && dialog.open) {
+      dialog.close();
+    }
+  }
+
+  function handleBackdropClick(e: MouseEvent) {
+    if (e.target === dialog) {
+      closePreview();
+    }
+  }
+
+  function handleDialogClose() {
+    if (scrollContainer) {
+      scrollContainer.style.overflow = '';
+    }
+    if (heroImage) {
+      heroImage.src = '';
+      heroImage.classList.remove('is-loaded');
+    }
+    // Only go back if we are currently holding the history state
+    if (history.state && history.state.galleryPreview) {
+      history.back();
+    }
+  }
+
+  function handlePopState(e: PopStateEvent) {
+    // If the state no longer has galleryPreview, close the modal
+    if (!e.state || !e.state.galleryPreview) {
+      if (dialog && dialog.open) {
+        dialog.close();
+      }
+    }
+  }
+
+  async function openPreview(index: number) {
+    if (!dialog || !heroImage || !spinner) return;
+    
+    if (manifest.length === 0) {
+      const manifestScript = document.getElementById('gallery-manifest');
+      if (manifestScript) {
+        try {
+          manifest = JSON.parse(manifestScript.textContent || '[]');
+        } catch (e) {
+          console.error('Failed to parse gallery manifest', e);
+          return;
+        }
+      }
+    }
+
+    const imageData = manifest[index];
+    if (!imageData) return;
+
+    if (scrollContainer) {
+      scrollContainer.style.overflow = 'hidden';
+    }
+
+    // Push history state
+    if (!history.state || !history.state.galleryPreview) {
+      history.pushState({ ...history.state, galleryPreview: true }, '');
+    }
+
+    dialog.showModal();
+    spinner.classList.add('is-visible');
+    heroImage.classList.remove('is-loaded');
+
+    try {
+      heroImage.src = imageData.src;
+      await heroImage.decode();
+    } catch (error) {
+      console.error('Image decode failed', error);
+    } finally {
+      spinner.classList.remove('is-visible');
+      heroImage.classList.add('is-loaded');
+    }
+  }
+
+  function handleCustomOpen(e: Event) {
+    const customEvent = e as CustomEvent;
+    if (customEvent.detail && typeof customEvent.detail.index === 'number') {
+      openPreview(customEvent.detail.index);
+    }
+  }
+
+  function setupPreview() {
+    dialog = document.getElementById('gallery-preview') as HTMLDialogElement;
+    heroImage = document.getElementById('preview-hero-image') as HTMLImageElement;
+    spinner = document.getElementById('preview-spinner');
+    closeBtn = document.getElementById('preview-close') as HTMLButtonElement;
+    scrollContainer = document.querySelector('.scroll-container');
+
+    if (!dialog) return;
+
+    // Remove old listeners to avoid duplicates during Astro view transitions
+    window.removeEventListener('gallery:open-preview', handleCustomOpen);
+    window.addEventListener('gallery:open-preview', handleCustomOpen);
+
+    dialog.removeEventListener('close', handleDialogClose);
+    dialog.addEventListener('close', handleDialogClose);
+
+    dialog.removeEventListener('click', handleBackdropClick);
+    dialog.addEventListener('click', handleBackdropClick);
+
+    if (closeBtn) {
+      closeBtn.removeEventListener('click', closePreview);
+      closeBtn.addEventListener('click', closePreview);
+    }
+
+    window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('popstate', handlePopState);
+  }
+
+  // Set up listeners on initial load and view transition page loads
+  document.addEventListener('astro:page-load', setupPreview);
+</script>

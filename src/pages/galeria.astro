@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
+import GalleryPreview from '../components/gallery/GalleryPreview.astro';
 
 import { COLUMN_SPEEDS, IMAGE_GAP, IMAGE_BORDER_RADIUS, GALLERY_PADDING_DESKTOP, GALLERY_PADDING_MOBILE, GALLERY_FADE_HEIGHT, GALLERY_FADE_MIDPOINT_RATIO, FLOAT_HOVER_DELAY_MS, FLOAT_SCALE_AMOUNT, FLOAT_ZOOM_AMOUNT, FLOAT_ANIMATION_DURATION, FLOAT_EASE } from '../config/gallery';
 
@@ -34,6 +35,13 @@ const columns: GalleryImage[][] = [[], [], [], []];
 allImages.forEach((img, i) => {
   columns[i % 4].push(img);
 });
+
+const galleryManifest = allImages.map((img, i) => ({
+  src: img.src.src,
+  width: img.src.width,
+  height: img.src.height,
+  originalIndex: i
+}));
 ---
 
 <Layout title="Galeria — Nulo Cake" description="Galeria artystycznych tortów na zamówienie. Torty weselne, urodzinowe i okolicznościowe." isSubpage={true}>
@@ -81,6 +89,8 @@ allImages.forEach((img, i) => {
         </div>
       ))}
     </div>
+    <GalleryPreview />
+    <script type="application/json" id="gallery-manifest" set:html={JSON.stringify(galleryManifest)}></script>
   </main>
 </Layout>
 
@@ -527,26 +537,23 @@ allImages.forEach((img, i) => {
       }
     }, { signal });
 
-    // ── Mobile: tap to toggle ──
+    // ── Universal Click: Open Preview ──
     container.addEventListener('click', (e: MouseEvent) => {
-      // Only handle touch-originated clicks
-      // PointerEvent extends MouseEvent; check pointerType if available
-      const pe = e as PointerEvent;
-      if (pe.pointerType !== 'touch') return;
-
       const wrapper = (e.target as HTMLElement).closest('.gallery-image-wrapper') as HTMLElement | null;
       if (!wrapper) return;
 
       e.preventDefault();
 
-      if (activeFloatWrapper === wrapper) {
-        // Tap the active image → reverse (close)
-        activeFloatTimeline?.reverse();
-      } else {
-        // Tap a new image → force-reset old, open new immediately
+      // Clear any active float effect
+      if (activeFloatWrapper) {
         forceResetActiveFloat();
-        triggerFloat(wrapper);
       }
+
+      const indexStr = wrapper.dataset.originalIndex;
+      if (!indexStr) return;
+      const index = parseInt(indexStr, 10);
+
+      window.dispatchEvent(new CustomEvent('gallery:open-preview', { detail: { index } }));
     }, { signal });
   }
 
