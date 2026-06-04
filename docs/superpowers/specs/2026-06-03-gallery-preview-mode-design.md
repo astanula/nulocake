@@ -1,7 +1,7 @@
 # Gallery Preview Mode — Design Spec
 
 **Date:** 2026-06-03  
-**Revised:** 2026-06-04  
+**Revised:** 2026-06-04 (open/close choreography)  
 **Status:** Approved  
 **Related:** `src/pages/galeria.astro`, `src/config/gallery.ts`, `design/gallery/gallery-preview1.png`, `design/gallery/gallery-preview2.png`
 
@@ -37,7 +37,7 @@ Visual references:
 | Reduced motion | **Not applied** to preview transitions (see §12 for rationale) |
 | Scroll | **Locked** on `.scroll-container` while preview open |
 | Close | ✕, Escape, backdrop click, `history.back()` / `popstate`, `astro:before-swap` |
-| Images | High-res loaded via `img.decode()` (spinner until ready); directional preload (see §4) |
+| Images | High-res via off-DOM `decode()` then in-place `src` swap (no spinner); directional preload (see §4) |
 
 ---
 
@@ -130,14 +130,16 @@ Look up the manifest entry where `manifest[i].index === parseInt(originalIndex)`
 
 ### Loading
 
-- Spinner centered on hero until `previewSrc` is ready.
-- Use `HTMLImageElement.decode()` for jank-free rendering:
+- **No loading spinner** in preview mode. The user always sees a real image (gallery tile first, then HQ after swap). There is no empty or loading state on the hero.
+- On open, the visible hero starts as the gallery tile image; `previewSrc` fetch/decode begins at stage 0 (see §5a).
+- **In-place HQ swap:** decode `previewSrc` on an off-DOM `Image()`, then assign `heroElement.src` (and backdrop `src` when applicable) in one step after `decode()` resolves. Do not clear the hero, fade it out, or toggle visibility while waiting. The swap should be visually imperceptible (same framing; resolution change only).
   ```typescript
   const img = new Image();
   img.src = previewSrc;
   await img.decode();
-  heroElement.src = previewSrc;
+  heroElement.src = previewSrc; // hero stays visible throughout; no spinner
   ```
+- On navigation, show the best already-available source immediately (preloaded HQ or `gridSrc`), then apply the same silent in-place HQ swap when `previewSrc` finishes decoding.
 - **Directional preloading:** on open, preload `index ± 1`. On each navigation, preload the next image in the direction of travel (e.g. after navigating forward to index 5, preload index 7). Cancel stale in-flight preloads for images the user has already passed.
 - Idle preload `index ± 2` for strip thumbnails.
 
@@ -153,27 +155,88 @@ Look up the manifest entry where `manifest[i].index === parseInt(originalIndex)`
 
 ## 5. Animations (GSAP)
 
+Open and close are **staged timelines**, not a single simultaneous fade/scale. Each stage has its own configurable duration; all stages share `PREVIEW_OPEN_EASE` unless a future constant overrides a specific stage.
+
+**Scroll lock** applies immediately when preview open begins (before stage 0).
+
 ### 5a. Open animation
 
-**Duration / ease:** `PREVIEW_OPEN_DURATION`, `PREVIEW_OPEN_EASE`.
+**Source image:** The hero layer starts as the **exact image currently visible in the gallery** for the clicked tile (same `src` / rendered asset as normal gallery mode), positioned where that tile appears on screen.
 
-1. **Pause gallery loop** — call `pauseGallery()` to smoothly decelerate all column scroll tweens to `timeScale: 0`. Gallery columns freeze in place behind the overlay.
-2. Backdrop blurred image fades in from `opacity: 0` → `1` + dim overlay.
-3. Hero image enters: clicked thumbnail animates (FLIP-style) from its grid position to hero center — scale and position tween. If FLIP is too complex for v1, fallback: hero fades in + scales from `0.8` → `1`.
-4. Side peeks slide in from edges (if they exist) with slight delay.
-5. Thumb strip slides up from below.
-6. Counter and close button fade in last.
+**High-res loading:** When stage 0 begins, start fetching/decoding the hero `previewSrc` in the background. Do not block the open timeline on it. When decode completes, swap the hero `src` in place (no spinner, no fade, no layout change).
 
-**Scroll lock** applied immediately on open (before animation starts).
+#### Stage 0 — Center the gallery image
+
+Animate the gallery image so the **center of the viewport** moves from the image’s current on-screen position to the preview hero center target. Duration: `PREVIEW_OPEN_SHIFT_DURATION`.
+
+- Start high-res hero preload at the **start** of this stage (async).
+- Dialog may open at the beginning of this stage; underlying gallery remains visible until later stages obscure it.
+
+#### Stage 1 — (implicit)
+
+When stage 0 completes, the image is centered at gallery scale (not yet final preview size).
+
+#### Stage 2 — Hero size + backdrop (parallel)
+
+Run together for `PREVIEW_OPEN_HERO_BACKDROP_DURATION`:
+
+1. **Hero:** Animate width/height (or scale) from current centered size to the **computed final preview hero size** (same geometry rules as §4 hero stage).
+2. **Backdrop:** Fade blurred backdrop image and dim overlay from `opacity: 0` → `1` so content behind the overlay is no longer visible.
+
+Peek layer and chrome are still hidden or at initial “off” state during this stage.
+
+#### Stage 3 — (implicit)
+
+When stage 2 completes, hero is at final preview size and backdrop is fully visible.
+
+#### Stage 4 — Chrome layer (parallel)
+
+Run together for `PREVIEW_OPEN_CHROME_DURATION`:
+
+1. **Thumbnail strip:** Appear at very small scale (near zero), then scale up to final strip size (not a slide-in from the side).
+2. **Side peeks:** Slide up **from below the hero** into their resting positions. Use **gallery-resolution sources** (`gridSrc` from manifest) — peeks are small and semi-transparent; high-res is unnecessary for this reveal.
+3. **Controls:** Close button, prev/next arrows, and image counter fade in (`opacity: 0` → `1`).
+
+#### Stage 5 — Peek high-res preload
+
+When stage 4 completes, start preloading `previewSrc` for prev/next peek indices (and any other neighbors needed for imminent navigation). This is warm-up only; peek DOM may still show `gridSrc` until a nav transition requires HQ.
+
+#### Stage 6 — Gallery loop pause
+
+Call `pauseGallery()` when the open sequence has **fully settled** (after stage 4 completes and any non-blocking hero HQ swap has been scheduled).
+
+**Early pause (optional):** If `pauseGallery()` can run at open start with **no measurable impact** on the open timeline (no hitch, no frame delay), it may run at the beginning of stage 0 instead. Implementation should measure or profile once; default to **pause at end** if uncertain.
+
+#### Open sequence summary
+
+| Order | What happens | Duration constant |
+|-------|----------------|-------------------|
+| 0 | Gallery image shifts to viewport center; HQ hero fetch starts | `PREVIEW_OPEN_SHIFT_DURATION` |
+| 2 | Hero grows to preview size ∥ backdrop fades in | `PREVIEW_OPEN_HERO_BACKDROP_DURATION` |
+| 4 | Thumb strip scale-up ∥ peeks slide up from below hero ∥ controls fade in | `PREVIEW_OPEN_CHROME_DURATION` |
+| 5 | Begin HQ preload for peek/nav targets | (no extra duration — async) |
+| — | HQ hero swap when ready | async |
+| 6 | `pauseGallery()` if not already paused | end of timeline |
 
 ### 5b. Close animation
 
-Mirror of open:
+Close is the **reverse order** of open, with one deliberate difference: the hero does **not** animate back to the grid tile — it **fades out in place** at preview center/size.
 
-1. Hero scales down / fades out (or FLIP back to grid position).
-2. Peeks, strip, counter, close button fade out.
-3. Backdrop dims and fades.
-4. On animation complete: remove overlay, unlock scroll, restore focus, **resume gallery loop** via `resumeGallery()` (smoothly accelerates column tweens back to `timeScale: 1`).
+**Gallery resume:** Call `resumeGallery()` at the **start of the final hero fade-out** so the column scroll is already moving underneath while the hero disappears.
+
+#### Close stages (reverse of open)
+
+| Order | What happens | Duration constant |
+|-------|----------------|-------------------|
+| 1 | Controls fade out | `PREVIEW_OPEN_CHROME_DURATION` |
+| 2 | Thumb strip scales down to near-zero ∥ peeks slide down below hero | `PREVIEW_OPEN_CHROME_DURATION` |
+| 3 | Backdrop fades out ∥ hero shrinks toward pre-preview centered size (reverse of stage 2 grow) | `PREVIEW_OPEN_HERO_BACKDROP_DURATION` |
+| 4 | **`resumeGallery()`** then hero fades out in place (no travel to grid) | hero fade uses `PREVIEW_OPEN_HERO_BACKDROP_DURATION` or a dedicated fade slice within that window |
+| — | Dialog closes, scroll unlock, focus restore | on timeline complete |
+
+Stages 1–2 may be one GSAP segment mirroring open stage 4; stage 3 mirrors open stage 2. The hero fade and gallery resume overlap as specified above.
+
+**Note:** There is no “shift back to grid” on close; only opacity (and optional slight scale down) for the hero while the gallery behind is live again.
 
 ### 5c. Hero transition (nav between images)
 
@@ -256,8 +319,8 @@ Mirror of open:
 
 ### Gallery loop pause / resume
 
-- **On preview open:** `pauseGallery()` — smoothly decelerates all column scroll tweens (`timeScale → 0`). The gallery columns freeze in their current positions behind the overlay. This uses the existing `pauseGallery()` function.
-- **On preview close:** `resumeGallery()` — smoothly accelerates column tweens back to `timeScale: 1`. Gallery animation resumes from where it left off.
+- **On preview open:** Prefer `pauseGallery()` **after** the open timeline has fully settled (see §5a stage 6). Call at open start only if pause is effectively free (no visible hitch or delay to the animation).
+- **On preview close:** `resumeGallery()` at the **start of the final hero fade-out** so the gallery scroll is visible and moving under the dissolving hero.
 - If the gallery DOM does not exist (e.g. navigated away), skip gracefully.
 
 ### Click handler (new)
@@ -297,8 +360,11 @@ Mirror of open:
 | `PREVIEW_BACKDROP_DIM` | RGBA overlay color on backdrop (e.g. `'rgba(0,0,0,0.7)'`) |
 | `PREVIEW_TRANSITION_DURATION` | Hero nav master timeline (seconds) |
 | `PREVIEW_TRANSITION_EASE` | GSAP ease for hero nav |
-| `PREVIEW_OPEN_DURATION` | Open/close animation (seconds) |
-| `PREVIEW_OPEN_EASE` | GSAP ease for open/close |
+| `PREVIEW_OPEN_SHIFT_DURATION` | Stage 0: gallery image shift to viewport center (seconds) |
+| `PREVIEW_OPEN_HERO_BACKDROP_DURATION` | Stage 2: hero grow + backdrop fade (seconds) |
+| `PREVIEW_OPEN_CHROME_DURATION` | Stage 4: thumb strip, peeks, controls (seconds) |
+| `PREVIEW_OPEN_EASE` | GSAP ease for all open/close stages |
+| `PREVIEW_OPEN_DURATION` | **Deprecated** — replace with the three durations above during Phase 4 implementation |
 | `PREVIEW_MAX_WIDTH` | Cap for `getImage` preview generation |
 | `PREVIEW_SWIPE_THRESHOLD_PX` | Min horizontal swipe distance |
 | `PREVIEW_COUNTER_OPACITY` | Opacity for the image counter text |
@@ -370,7 +436,7 @@ Focus cycles within the dialog (built-in with `<dialog>`).
 - Next/prev transition direction and mirror.
 - Thumb strip shifts and scales during transition.
 - Rapid clicks do not break state.
-- High-res appears after spinner; peeks preload when navigating.
+- HQ hero swap is imperceptible (no spinner); peeks preload when navigating.
 - Close button does not overlap mobile status bar.
 
 ---
@@ -385,7 +451,7 @@ Focus cycles within the dialog (built-in with `<dialog>`).
 | Close | ✕, Escape, backdrop, history, Astro swap |
 | Motion in preview | Always full animation (rationale below) |
 | Scroll | Locked on `.scroll-container` |
-| Preview resolution | High-res on open via `img.decode()` + spinner; directional preload neighbors |
+| Preview resolution | Off-DOM `decode()` + in-place HQ swap; no spinner; directional preload neighbors |
 | Duplicate tiles | Read `data-original-index` directly from clicked wrapper |
 | Rapid navigation | Ignore until transition completes |
 | Thumb strip | Animated shift + scale with hero transition |
@@ -394,6 +460,10 @@ Focus cycles within the dialog (built-in with `<dialog>`).
 | History | Single `pushState` on open; nav within preview does not alter history |
 | Mobile float | Touch-based float toggle removed; tap always opens preview |
 | Image counter | Visible position indicator + `aria-live` for screen readers |
+| Open choreography | Staged: shift → grow+backdrop → chrome; HQ hero async; peeks use gridSrc on reveal |
+| Close choreography | Reverse stages; hero fades in place; `resumeGallery()` during final hero fade |
+| Gallery pause timing | End of open unless pause-at-start is free; resume under hero on close |
+| Loading UI | No spinner; always show an image; HQ swap in place after off-DOM decode |
 
 ### Reduced motion rationale
 

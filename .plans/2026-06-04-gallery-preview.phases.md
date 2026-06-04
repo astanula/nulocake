@@ -24,7 +24,7 @@ This plan details the implementation of a full-screen gallery preview mode based
   * [x] Step 1: Inject build-time manifest via `<script type="application/json" id="gallery-manifest">` in `src/pages/galeria.astro`.
   * [x] Step 2: Create native `<dialog>` overlay shell with basic hero image slot, close button (✕), and `aria` attributes.
   * [x] Step 3: Implement delegated click handler on `#gallery-container` to read `data-original-index` and call `.showModal()`. Update mobile touch behavior so tap opens preview directly.
-  * [x] Step 4: Implement basic high-res image decoding via `HTMLImageElement.decode()` and display it on the hero stage (with fallback spinner).
+  * [x] Step 4: Implement high-res decode via off-DOM `HTMLImageElement.decode()` and in-place `src` swap (no spinner).
   * [x] Step 5: Add basic close handling (✕, Escape, backdrop click, `history.back()` / `popstate`) and lock `.scroll-container` scroll while open.
 
 ## Phase 2: Core Navigation & Backdrop
@@ -61,16 +61,22 @@ This plan details the implementation of a full-screen gallery preview mode based
 
 ## Phase 4: Open/Close & Core Animations (GSAP)
 * **DependsOn:** Phase 3
-* **Objective:** The preview opens and closes smoothly, pausing the underlying gallery animation.
-* **Requirements Addressed:** Pause/resume gallery loop, open fade/scale animation, close fade/scale animation.
+* **Objective:** Staged open/close choreography per `2026-06-03-gallery-preview-mode-design.md` §5a–5b (replace current single-timeline fade/scale).
+* **Requirements Addressed:** Gallery image → center shift; async HQ hero; hero grow + backdrop; chrome reveal; peek HQ preload; conditional `pauseGallery()`; reverse close with in-place hero fade and early `resumeGallery()`.
 * **Relevant Configuration Constants:**
-  * `PREVIEW_OPEN_DURATION` — Open/close animation duration (seconds)
-  * `PREVIEW_OPEN_EASE` — GSAP ease for open/close
+  * `PREVIEW_OPEN_SHIFT_DURATION` — Stage 0: shift clicked gallery image to viewport center
+  * `PREVIEW_OPEN_HERO_BACKDROP_DURATION` — Stage 2: hero to final size + backdrop fade in
+  * `PREVIEW_OPEN_CHROME_DURATION` — Stage 4: thumb strip scale-up, peeks from below hero, controls fade
+  * `PREVIEW_OPEN_EASE` — GSAP ease for all open/close stages
+  * (Remove or alias `PREVIEW_OPEN_DURATION` once the three durations above exist in `src/config/gallery.ts`)
 * **Implementation Steps:**
-  * [ ] Step 1: Integrate existing `pauseGallery()` on open and `resumeGallery()` on close.
-  * [ ] Step 2: Build GSAP open animation (backdrop fade, hero scale/fade in, peeks slide, thumb strip slide up).
-  * [ ] Step 3: Build GSAP close animation (mirror of open).
-  * [ ] Step 4: Ensure animation respects `PREVIEW_OPEN_DURATION` and `PREVIEW_OPEN_EASE` from `src/config/gallery.ts`.
+  * [ ] Step 1: Add staged duration constants to `src/config/gallery.ts`; wire into preview module.
+  * [ ] Step 2: **Open stage 0** — Clone or promote clicked gallery `<img>`; GSAP shift to viewport center; start `previewSrc` fetch/decode; open dialog + scroll lock.
+  * [ ] Step 3: **Open stage 2** — Parallel hero grow to computed preview size + backdrop/dim fade `0 → 1`.
+  * [ ] Step 4: **Open stage 4** — Parallel thumb strip scale from tiny → final; peeks slide up from below hero using `gridSrc`; fade in close/arrows/counter.
+  * [ ] Step 5: **Open finish** — On stage 4 complete: preload HQ for peek/nav neighbors; in-place HQ hero swap when decode completes (no spinner); `pauseGallery()` (or confirm already paused if start-of-open pause was free).
+  * [ ] Step 6: **Close** — Reverse stage order: chrome out → backdrop/hero shrink → `resumeGallery()` at start of hero in-place fade-out → dialog close, scroll unlock, focus restore.
+  * [ ] Step 7: Remove/replace current Phase 4 GSAP (simultaneous fade/scale/slide) in `GalleryPreview.astro`.
 
 ## Phase 5: Seamless Navigation Transitions & Gestures
 * **DependsOn:** Phase 4
