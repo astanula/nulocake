@@ -12,8 +12,17 @@
       </svg>
     </button>
     <div class="hero-stage">
+      <div class="preview-peek peek-left" data-offset="-1"><img src="" alt="" /></div>
       <div id="preview-spinner" class="spinner" aria-hidden="true"></div>
       <img id="preview-hero-image" src="" alt="" decoding="async" />
+      <div class="preview-peek peek-right" data-offset="1"><img src="" alt="" /></div>
+    </div>
+    <div class="thumbnail-strip">
+      <button class="thumbnail-slot" data-offset="-2"><img src="" alt="" decoding="async" /></button>
+      <button class="thumbnail-slot" data-offset="-1"><img src="" alt="" decoding="async" /></button>
+      <button class="thumbnail-slot is-active" data-offset="0"><img src="" alt="" decoding="async" /></button>
+      <button class="thumbnail-slot" data-offset="1"><img src="" alt="" decoding="async" /></button>
+      <button class="thumbnail-slot" data-offset="2"><img src="" alt="" decoding="async" /></button>
     </div>
     <div class="preview-controls">
       <button id="preview-prev" aria-label="Poprzednie zdjęcie">
@@ -151,6 +160,79 @@
     to { transform: translate(-50%, -50%) rotate(360deg); }
   }
 
+  .preview-peek {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10vw;
+    height: 80vh;
+    cursor: pointer;
+    opacity: 0.3;
+    transition: opacity 0.3s ease;
+    overflow: hidden;
+    z-index: 5;
+    border-radius: var(--gallery-image-radius, 8px);
+  }
+
+  .preview-peek:hover {
+    opacity: 0.7;
+  }
+
+  .preview-peek img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .peek-left {
+    left: -5vw;
+  }
+
+  .peek-right {
+    right: -5vw;
+  }
+
+  .thumbnail-strip {
+    position: absolute;
+    bottom: 6.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    z-index: 10;
+  }
+
+  .thumbnail-slot {
+    background: transparent;
+    border: none;
+    padding: 0;
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+  }
+
+  .thumbnail-slot:hover {
+    opacity: 0.8;
+  }
+
+  .thumbnail-slot.is-active {
+    opacity: 1;
+    transform: scale(1.15);
+    border: 2px solid white;
+    cursor: default;
+  }
+
+  .thumbnail-slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
   .preview-controls {
     position: absolute;
     bottom: 2rem;
@@ -203,6 +285,8 @@
   let currentIndexEl: HTMLElement | null = null;
   let totalCountEl: HTMLElement | null = null;
   let scrollContainer: HTMLElement | null = null;
+  let peeks: HTMLElement[] = [];
+  let thumbnails: HTMLElement[] = [];
   let manifest: any[] = [];
   let currentIndex = 0;
 
@@ -267,6 +351,32 @@
     // Update Buttons
     if (prevBtn) prevBtn.disabled = currentIndex === 0;
     if (nextBtn) nextBtn.disabled = currentIndex === manifest.length - 1;
+
+    // Update Peeks
+    peeks.forEach(peek => {
+      const offset = parseInt(peek.dataset.offset || '0', 10);
+      const targetIndex = currentIndex + offset;
+      const img = peek.querySelector('img');
+      if (targetIndex >= 0 && targetIndex < manifest.length && img) {
+        img.src = manifest[targetIndex].src;
+        peek.style.visibility = 'visible';
+      } else {
+        peek.style.visibility = 'hidden';
+      }
+    });
+
+    // Update Thumbnails
+    thumbnails.forEach(thumb => {
+      const offset = parseInt(thumb.dataset.offset || '0', 10);
+      const targetIndex = currentIndex + offset;
+      const img = thumb.querySelector('img');
+      if (targetIndex >= 0 && targetIndex < manifest.length && img) {
+        img.src = manifest[targetIndex].src;
+        thumb.style.display = 'block';
+      } else {
+        thumb.style.display = 'none';
+      }
+    });
 
     spinner.classList.add('is-visible');
     heroImage.classList.remove('is-loaded');
@@ -369,8 +479,22 @@
     currentIndexEl = document.getElementById('preview-current-index');
     totalCountEl = document.getElementById('preview-total-count');
     scrollContainer = document.querySelector('.scroll-container');
+    peeks = Array.from(document.querySelectorAll('.preview-peek'));
+    thumbnails = Array.from(document.querySelectorAll('.thumbnail-slot'));
 
     if (!dialog) return;
+
+    peeks.forEach(peek => {
+      const offset = parseInt(peek.dataset.offset || '0', 10);
+      peek.onclick = () => navigate(offset);
+    });
+
+    thumbnails.forEach(thumb => {
+      const offset = parseInt(thumb.dataset.offset || '0', 10);
+      thumb.onclick = () => {
+        if (offset !== 0) navigate(offset);
+      };
+    });
 
     // Remove old listeners to avoid duplicates during Astro view transitions
     window.removeEventListener('gallery:open-preview', handleCustomOpen);
