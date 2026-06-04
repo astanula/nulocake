@@ -247,6 +247,7 @@ import {
   .preview-peek {
     position: absolute;
     top: 50%;
+    transform: translateY(-50%);
     height: calc(var(--peekHeightRatio) * var(--hero-height));
     width: calc(var(--peekWidthRatio) * var(--hero-width));
     margin: 0;
@@ -437,6 +438,7 @@ import {
   let centeredTileHeight = 0;
   let finalHeroWidth = 0;
   let finalHeroHeight = 0;
+  const pendingSwapTargets = new WeakMap<HTMLImageElement, string>();
 
   function computeFinalHeroSize(
     naturalW: number,
@@ -480,13 +482,18 @@ import {
   }
 
   function silentSwapSrc(img: HTMLImageElement, url: string, alt?: string): void {
-    if (!url || img.src === url) return;
+    if (!url) return;
+    pendingSwapTargets.set(img, url);
+    if (img.src === url) {
+      if (alt !== undefined) img.alt = alt;
+      return;
+    }
     const probe = new Image();
     probe.src = url;
     probe.decode()
       .catch(() => {})
       .finally(() => {
-        if (img.isConnected) {
+        if (img.isConnected && pendingSwapTargets.get(img) === url) {
           img.src = url;
           if (alt !== undefined) img.alt = alt;
         }
@@ -758,14 +765,14 @@ import {
 
     centeredTileWidth = tileRect.width;
     centeredTileHeight = tileRect.height;
-    const { centerX, centerY } = getHeroStageCenter();
-    const centeredLeft = centerX - tileRect.width / 2;
-    const centeredTop = centerY - tileRect.height / 2;
-
     const { maxW, maxH } = getHeroMaxBox();
     const final = computeFinalHeroSize(imageData.width, imageData.height, maxW, maxH);
     finalHeroWidth = final.width;
     finalHeroHeight = final.height;
+
+    const { centerX, centerY } = getHeroStageCenter();
+    const finalLeft = centerX - finalHeroWidth / 2;
+    const finalTop = centerY - finalHeroHeight / 2;
 
     const clone = createFlyClone(tileSrc, tileRect);
     gsap.set(heroImage, { opacity: 0 });
@@ -783,72 +790,64 @@ import {
       }
     });
 
+    const growDuration = PREVIEW_OPEN_SHIFT_DURATION + PREVIEW_OPEN_HERO_BACKDROP_DURATION;
+
     openTimeline.to(clone, {
-      left: centeredLeft,
-      top: centeredTop,
-      width: tileRect.width,
-      height: tileRect.height,
-      duration: PREVIEW_OPEN_SHIFT_DURATION
+      left: finalLeft,
+      top: finalTop,
+      width: finalHeroWidth,
+      height: finalHeroHeight,
+      duration: growDuration
     });
 
-    openTimeline.add(() => {
-      clearFlyClone();
-      gsap.set(heroImage, {
-        opacity: 1,
-        width: centeredTileWidth,
-        height: centeredTileHeight,
-        maxWidth: 'none',
-        maxHeight: 'none',
-        position: 'relative',
-        margin: '0 auto'
-      });
-      if (backdropLayer) gsap.set(backdropLayer, { opacity: 1 });
-    });
-
-    openTimeline.to(
-      heroImage,
-      {
-        width: finalHeroWidth,
-        height: finalHeroHeight,
-        duration: PREVIEW_OPEN_HERO_BACKDROP_DURATION
-      },
-      '+=0'
-    );
-
+    if (backdropLayer) {
+      openTimeline.to(
+        backdropLayer,
+        { opacity: 1, duration: growDuration },
+        '<'
+      );
+    }
     if (backdropImage) {
       openTimeline.to(
         backdropImage,
-        { opacity: 1, duration: PREVIEW_OPEN_HERO_BACKDROP_DURATION },
+        { opacity: 1, duration: growDuration },
         '<'
       );
     }
     if (backdropDim) {
       openTimeline.to(
         backdropDim,
-        { opacity: 1, duration: PREVIEW_OPEN_HERO_BACKDROP_DURATION },
+        { opacity: 1, duration: growDuration },
         '<'
       );
     }
 
-    const peekOffset = () => {
-      const h = heroImage?.getBoundingClientRect().height ?? centeredTileHeight;
-      return h * 0.5 + 24;
-    };
+    openTimeline.add(() => {
+      clearFlyClone();
+      gsap.set(heroImage, {
+        opacity: 1,
+        width: finalHeroWidth,
+        height: finalHeroHeight,
+        maxWidth: 'none',
+        maxHeight: 'none'
+      });
+      syncHeroPeekSizing();
+    });
 
     if (thumbStrip) {
       openTimeline.fromTo(
         thumbStrip,
         { xPercent: -50, left: '50%', scale: 0.01, transformOrigin: 'center bottom' },
-        { scale: 1, duration: PREVIEW_OPEN_CHROME_DURATION },
-        '+=0'
+        { scale: 1, duration: PREVIEW_OPEN_CHROME_DURATION }
       );
     }
 
     peeks.forEach((peek) => {
       if (peek.style.visibility === 'hidden') return;
+      const offset = finalHeroHeight * 0.5 + 24;
       openTimeline.fromTo(
         peek,
-        { opacity: 0, y: peekOffset() },
+        { opacity: 0, y: offset },
         { opacity: PREVIEW_PEEK_OPACITY, y: 0, duration: PREVIEW_OPEN_CHROME_DURATION },
         '<'
       );
@@ -949,16 +948,18 @@ import {
       }
     });
 
+    closeTimeline.addLabel('chromeOut');
+
     chromeEls.forEach((el) => {
       if (el === thumbStrip || peeks.includes(el)) return;
-      closeTimeline!.to(el, { opacity: 0, duration: PREVIEW_OPEN_CHROME_DURATION });
+      closeTimeline!.to(el, { opacity: 0, duration: PREVIEW_OPEN_CHROME_DURATION }, 'chromeOut');
     });
 
     if (thumbStrip) {
       closeTimeline.to(
         thumbStrip,
         { scale: 0.01, duration: PREVIEW_OPEN_CHROME_DURATION },
-        '<'
+        'chromeOut'
       );
     }
 
@@ -967,50 +968,46 @@ import {
       closeTimeline!.to(
         peek,
         { opacity: 0, y: peekOffset(), duration: PREVIEW_OPEN_CHROME_DURATION },
-        '<'
+        'chromeOut'
       );
     });
+
+    closeTimeline.addLabel('fadeOut', '+=0');
 
     if (backdropImage) {
       closeTimeline.to(
         backdropImage,
         { opacity: 0, duration: PREVIEW_OPEN_HERO_BACKDROP_DURATION },
-        '+=0'
+        'fadeOut'
       );
     }
     if (backdropDim) {
       closeTimeline.to(
         backdropDim,
         { opacity: 0, duration: PREVIEW_OPEN_HERO_BACKDROP_DURATION },
-        '<'
+        'fadeOut'
       );
     }
     if (backdropLayer) {
       closeTimeline.to(
         backdropLayer,
         { opacity: 0, duration: PREVIEW_OPEN_HERO_BACKDROP_DURATION },
-        '<'
+        'fadeOut'
       );
     }
 
     closeTimeline.to(
       heroImage,
       {
-        width: centeredTileWidth || finalHeroWidth,
-        height: centeredTileHeight || finalHeroHeight,
+        opacity: 0,
         duration: PREVIEW_OPEN_HERO_BACKDROP_DURATION
       },
-      '<'
+      'fadeOut'
     );
 
     closeTimeline.add(() => {
       window.dispatchEvent(new CustomEvent('gallery:preview-resume'));
-    });
-
-    closeTimeline.to(heroImage, {
-      opacity: 0,
-      duration: PREVIEW_OPEN_HERO_BACKDROP_DURATION
-    });
+    }, 'fadeOut');
   }
 
   function closePreviewImmediate(): void {
@@ -1036,10 +1033,12 @@ import {
     if (scrollContainer) scrollContainer.style.overflow = '';
 
     if (heroImage) {
+      pendingSwapTargets.delete(heroImage);
       heroImage.src = '';
       resetHeroInlineStyles();
     }
     if (backdropImage) {
+      pendingSwapTargets.delete(backdropImage);
       backdropImage.src = '';
       gsap.set(backdropImage, { opacity: 0 });
     }
