@@ -101,10 +101,16 @@ export const PREVIEW_TRANSITION_DURATION = 0.5;
 /** GSAP ease for hero nav. */
 export const PREVIEW_TRANSITION_EASE = 'power2.inOut';
 
-/** Open/close animation duration (seconds). */
-export const PREVIEW_OPEN_DURATION = 0.4;
+/** Stage 0: gallery image shift to viewport center (seconds). */
+export const PREVIEW_OPEN_SHIFT_DURATION = 0.35;
 
-/** GSAP ease for open/close. */
+/** Stage 2: hero grow + backdrop fade (seconds). */
+export const PREVIEW_OPEN_HERO_BACKDROP_DURATION = 0.4;
+
+/** Stage 4: thumb strip, peeks, controls (seconds). */
+export const PREVIEW_OPEN_CHROME_DURATION = 0.35;
+
+/** GSAP ease for all open/close stages. */
 export const PREVIEW_OPEN_EASE = 'power2.out';
 
 /** Cap for getImage preview generation. */

@@ -12,38 +12,43 @@ import {
   PREVIEW_PEEK_HEIGHT_RATIO,
   PREVIEW_BACKDROP_BLUR,
   PREVIEW_BACKDROP_DIM,
-  PREVIEW_COUNTER_OPACITY
+  PREVIEW_COUNTER_OPACITY,
+  PREVIEW_OPEN_SHIFT_DURATION,
+  PREVIEW_OPEN_HERO_BACKDROP_DURATION,
+  PREVIEW_OPEN_CHROME_DURATION,
+  PREVIEW_OPEN_EASE
 } from '../../config/gallery';
 ---
 
 <dialog id="gallery-preview" class="gallery-preview" aria-modal="true" aria-roledescription="Podgląd galerii" aria-label="Podgląd galerii">
   <div class="preview-backdrop" aria-hidden="true">
     <img id="preview-backdrop-image" src="" alt="" decoding="async" />
+    <div id="preview-backdrop-dim" class="preview-backdrop-dim"></div>
   </div>
+  <div id="preview-fly-layer" aria-hidden="true"></div>
   <div class="preview-content">
-    <button id="preview-close" type="button" class="preview-close" aria-label="Zamknij podgląd (Esc)">
+    <button id="preview-close" type="button" class="preview-close preview-chrome" aria-label="Zamknij podgląd (Esc)">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
     <div class="preview-layout">
       <div class="preview-main-row">
-        <button id="preview-prev" type="button" class="preview-arrow" aria-label="Poprzednie zdjęcie">
+        <button id="preview-prev" type="button" class="preview-arrow preview-chrome" aria-label="Poprzednie zdjęcie">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
 
         <div class="hero-peek-group">
-          <button type="button" class="preview-peek peek-left" data-offset="-1" aria-label="Poprzednie zdjęcie">
+          <button type="button" class="preview-peek peek-left preview-chrome" data-offset="-1" aria-label="Poprzednie zdjęcie">
             <img src="" alt="" />
           </button>
 
           <div class="hero-stage">
-            <div id="preview-spinner" class="spinner" aria-hidden="true"></div>
             <img id="preview-hero-image" src="" alt="" decoding="async" />
 
-            <div class="thumbnail-strip">
+            <div class="thumbnail-strip preview-chrome">
               <button type="button" class="thumbnail-slot" data-offset="-2"><img src="" alt="" decoding="async" /></button>
               <button type="button" class="thumbnail-slot" data-offset="-1"><img src="" alt="" decoding="async" /></button>
               <button type="button" class="thumbnail-slot is-active" data-offset="0"><img src="" alt="" decoding="async" /></button>
@@ -52,19 +57,19 @@ import {
             </div>
           </div>
 
-          <button type="button" class="preview-peek peek-right" data-offset="1" aria-label="Następne zdjęcie">
+          <button type="button" class="preview-peek peek-right preview-chrome" data-offset="1" aria-label="Następne zdjęcie">
             <img src="" alt="" />
           </button>
         </div>
 
-        <button id="preview-next" type="button" class="preview-arrow" aria-label="Następne zdjęcie">
+        <button id="preview-next" type="button" class="preview-arrow preview-chrome" aria-label="Następne zdjęcie">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
       </div>
 
-      <div id="preview-counter" class="preview-counter" aria-live="polite">
+      <div id="preview-counter" class="preview-counter preview-chrome" aria-live="polite">
         <span class="sr-only" id="preview-sr-counter">Zdjęcie 1 z 1</span>
         <span aria-hidden="true"><span id="preview-current-index">1</span> / <span id="preview-total-count">1</span></span>
       </div>
@@ -104,14 +109,16 @@ import {
   }
 
   .gallery-preview::backdrop {
-    background: var(--backdropDim);
+    background: transparent;
   }
 
   .preview-backdrop {
     position: absolute;
     inset: 0;
-    z-index: -1;
+    z-index: 0;
     overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
   }
 
   #preview-backdrop-image {
@@ -121,11 +128,28 @@ import {
     filter: blur(var(--backdropBlur)) brightness(0.5);
     transform: scale(1.1);
     opacity: 0;
-    transition: opacity 0.3s ease;
   }
 
-  #preview-backdrop-image.is-loaded {
-    opacity: 1;
+  .preview-backdrop-dim {
+    position: absolute;
+    inset: 0;
+    background: var(--backdropDim);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #preview-fly-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  #preview-fly-layer img {
+    position: fixed;
+    object-fit: cover;
+    border-radius: var(--gallery-image-radius, 8px);
+    margin: 0;
   }
 
   .preview-content {
@@ -136,6 +160,7 @@ import {
     align-items: center;
     justify-content: center;
     position: relative;
+    z-index: 2;
   }
 
   .preview-close {
@@ -151,8 +176,7 @@ import {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: opacity 0.2s ease;
-    opacity: 0.7;
+    opacity: 0;
   }
 
   .preview-close:hover {
@@ -195,11 +219,14 @@ import {
     line-height: 0;
     --hero-width: 0px;
     --hero-height: 0px;
+    --peek-slide-offset: 48px;
   }
 
   .hero-stage {
     position: relative;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
     min-height: 0;
     min-width: 0;
@@ -214,48 +241,17 @@ import {
     height: auto;
     display: block;
     opacity: 0;
-    transition: opacity 0.3s ease;
     border-radius: 0;
-  }
-
-  #preview-hero-image.is-loaded {
-    opacity: 1;
-  }
-
-  .spinner {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: white;
-    animation: spin 1s ease-in-out infinite;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-  }
-
-  .spinner.is-visible {
-    opacity: 1;
-  }
-
-  @keyframes spin {
-    to { transform: translate(-50%, -50%) rotate(360deg); }
   }
 
   .preview-peek {
     position: absolute;
     top: 50%;
     height: calc(var(--peekHeightRatio) * var(--hero-height));
-    transform: translateY(-50%);
     width: calc(var(--peekWidthRatio) * var(--hero-width));
     margin: 0;
     cursor: pointer;
-    opacity: var(--peekOpacity);
-    transition: opacity 0.3s ease;
+    opacity: 0;
     overflow: hidden;
     background: transparent;
     border: none;
@@ -314,6 +310,10 @@ import {
     font-variant-numeric: tabular-nums;
     font-size: var(--counterFontSize);
     line-height: 1;
+    opacity: 0;
+  }
+
+  .preview-counter.preview-chrome.is-settled {
     opacity: var(--counterOpacity);
   }
 
@@ -321,7 +321,7 @@ import {
     position: absolute;
     bottom: 1rem;
     left: 50%;
-    transform: translateX(-50%);
+    transform-origin: center bottom;
     display: flex;
     gap: 1rem;
     justify-content: center;
@@ -339,7 +339,6 @@ import {
     overflow: hidden;
     cursor: pointer;
     opacity: var(--thumbSideOpacity);
-    transition: all 0.3s ease;
   }
 
   .thumbnail-slot:hover {
@@ -370,9 +369,9 @@ import {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
     align-self: center;
     margin: 0 1.5rem;
+    opacity: 0;
   }
 
   .preview-arrow:hover:not(:disabled) {
@@ -386,189 +385,291 @@ import {
 </style>
 
 <script>
+  import gsap from 'gsap';
+  import {
+    PREVIEW_OPEN_SHIFT_DURATION,
+    PREVIEW_OPEN_HERO_BACKDROP_DURATION,
+    PREVIEW_OPEN_CHROME_DURATION,
+    PREVIEW_OPEN_EASE,
+    PREVIEW_PEEK_OPACITY
+  } from '../../config/gallery';
+
+  type ManifestEntry = {
+    src: string;
+    peekSrc?: string;
+    thumbSrc?: string;
+    gridSrc?: string;
+    alt: string;
+    width: number;
+    height: number;
+    originalIndex: number;
+  };
+
   let dialog: HTMLDialogElement | null = null;
   let heroImage: HTMLImageElement | null = null;
   let backdropImage: HTMLImageElement | null = null;
-  let spinner: HTMLElement | null = null;
+  let backdropDim: HTMLElement | null = null;
+  let backdropLayer: HTMLElement | null = null;
+  let flyLayer: HTMLElement | null = null;
   let closeBtn: HTMLButtonElement | null = null;
   let prevBtn: HTMLButtonElement | null = null;
   let nextBtn: HTMLButtonElement | null = null;
   let currentIndexEl: HTMLElement | null = null;
   let totalCountEl: HTMLElement | null = null;
   let scrollContainer: HTMLElement | null = null;
+  let previewLayout: HTMLElement | null = null;
+  let heroStage: HTMLElement | null = null;
+  let thumbStrip: HTMLElement | null = null;
   let peeks: HTMLElement[] = [];
   let thumbnails: HTMLElement[] = [];
+  let chromeEls: HTMLElement[] = [];
   let heroPeekGroup: HTMLElement | null = null;
   let heroResizeObserver: ResizeObserver | null = null;
-  let manifest: any[] = [];
+  let manifest: ManifestEntry[] = [];
   let currentIndex = 0;
   let lastActiveElement: HTMLElement | null = null;
   let isSwapping = false;
+  let isChoreographyActive = false;
+  let openTimeline: gsap.core.Timeline | null = null;
+  let closeTimeline: gsap.core.Timeline | null = null;
+  let flyClone: HTMLImageElement | null = null;
+  let centeredTileWidth = 0;
+  let centeredTileHeight = 0;
+  let finalHeroWidth = 0;
+  let finalHeroHeight = 0;
 
-  function closePreview() {
-    if (dialog && dialog.open) {
-      dialog.close();
+  function computeFinalHeroSize(
+    naturalW: number,
+    naturalH: number,
+    maxW: number,
+    maxH: number
+  ): { width: number; height: number } {
+    if (naturalW <= 0 || naturalH <= 0) {
+      return { width: maxW, height: maxH };
+    }
+    const scale = Math.min(maxW / naturalW, maxH / naturalH, 1);
+    return {
+      width: Math.round(naturalW * scale),
+      height: Math.round(naturalH * scale)
+    };
+  }
+
+  function getHeroMaxBox(): { maxW: number; maxH: number } {
+    const maxH = previewLayout
+      ? parseFloat(getComputedStyle(previewLayout).getPropertyValue('--hero-max-height')) || window.innerHeight * 0.7
+      : window.innerHeight * 0.7;
+    const stageW = heroStage?.clientWidth ?? window.innerWidth;
+    const maxW = Math.min(window.innerWidth * 0.7, stageW);
+    return { maxW, maxH };
+  }
+
+  function getTileRect(opener: HTMLElement): DOMRect | null {
+    const img = opener.querySelector('.gallery-image') as HTMLImageElement | null;
+    return img?.getBoundingClientRect() ?? null;
+  }
+
+  function getHeroStageCenter(): { centerX: number; centerY: number } {
+    const rect = heroStage?.getBoundingClientRect();
+    if (!rect) {
+      return { centerX: window.innerWidth / 2, centerY: window.innerHeight / 2 };
+    }
+    return {
+      centerX: rect.left + rect.width / 2,
+      centerY: rect.top + rect.height / 2
+    };
+  }
+
+  function silentSwapSrc(img: HTMLImageElement, url: string, alt?: string): void {
+    if (!url || img.src === url) return;
+    const probe = new Image();
+    probe.src = url;
+    probe.decode()
+      .catch(() => {})
+      .finally(() => {
+        if (img.isConnected) {
+          img.src = url;
+          if (alt !== undefined) img.alt = alt;
+        }
+      });
+  }
+
+  function getManifestEntry(index: number): ManifestEntry | undefined {
+    return manifest.find((m) => m.originalIndex === index) ?? manifest[index];
+  }
+
+  function ensureManifest(): boolean {
+    if (manifest.length > 0) return true;
+    const manifestScript = document.getElementById('gallery-manifest');
+    if (!manifestScript) return false;
+    try {
+      manifest = JSON.parse(manifestScript.textContent || '[]');
+      return manifest.length > 0;
+    } catch (e) {
+      console.error('Failed to parse gallery manifest', e);
+      return false;
     }
   }
 
-  function handleBackdropClick(e: MouseEvent) {
-    // Treat clicks on the backdrop image behind the hero exactly like clicks on the dialog
-    const target = e.target as HTMLElement;
-    if (target === dialog || target.closest('.preview-backdrop')) {
-      closePreview();
-    }
+  function killTimelines(): void {
+    openTimeline?.kill();
+    closeTimeline?.kill();
+    openTimeline = null;
+    closeTimeline = null;
   }
 
-  function handleDialogClose() {
-    if (scrollContainer) {
-      scrollContainer.style.overflow = '';
+  function clearFlyClone(): void {
+    if (flyClone) {
+      flyClone.remove();
+      flyClone = null;
     }
-    if (heroImage) {
-      heroImage.src = '';
-      heroImage.classList.remove('is-loaded');
-    }
-    if (backdropImage) {
-      backdropImage.src = '';
-      backdropImage.classList.remove('is-loaded');
-    }
-    // Only go back if we are currently holding the history state and not swapping pages
-    if (!isSwapping && history.state && history.state.galleryPreview) {
-      history.back();
-    }
-
-    // Restore focus to the opener element
-    if (lastActiveElement) {
-      lastActiveElement.focus();
-      lastActiveElement = null;
-    } else {
-      const wrapper = document.querySelector(`.gallery-image-wrapper[data-original-index="${currentIndex}"]`) as HTMLElement;
-      if (wrapper) {
-        wrapper.focus();
-      }
-    }
+    if (flyLayer) flyLayer.innerHTML = '';
   }
 
-  function handlePopState(e: PopStateEvent) {
-    // If the state no longer has galleryPreview, close the modal
-    if (!e.state || !e.state.galleryPreview) {
-      if (dialog && dialog.open) {
-        dialog.close();
-      }
-    }
-  }
-
-  function syncHeroPeekSizing() {
-    if (!heroImage || !heroPeekGroup) return;
-    const { width, height } = heroImage.getBoundingClientRect();
-    heroPeekGroup.style.setProperty('--hero-width', `${width}px`);
-    heroPeekGroup.style.setProperty('--hero-height', `${height}px`);
-  }
-
-  function setupHeroResizeObserver() {
-    heroResizeObserver?.disconnect();
+  function resetHeroInlineStyles(): void {
     if (!heroImage) return;
-
-    heroResizeObserver = new ResizeObserver(() => {
-      syncHeroPeekSizing();
-    });
-    heroResizeObserver.observe(heroImage);
+    gsap.set(heroImage, { clearProps: 'width,height,maxWidth,maxHeight,opacity,transform,x,y,scale' });
+    heroImage.style.opacity = '1';
   }
 
-  function preloadImage(index: number) {
-    if (index >= 0 && index < manifest.length) {
-      const img = new Image();
-      img.src = manifest[index].src;
+  function setChromeHidden(): void {
+    chromeEls.forEach((el) => gsap.set(el, { opacity: 0 }));
+    if (thumbStrip) {
+      gsap.set(thumbStrip, {
+        xPercent: -50,
+        left: '50%',
+        scale: 0.01,
+        transformOrigin: 'center bottom'
+      });
     }
+    peeks.forEach((peek) => {
+      gsap.set(peek, { opacity: 0, y: 0 });
+    });
+    if (backdropLayer) gsap.set(backdropLayer, { opacity: 0 });
+    if (backdropImage) gsap.set(backdropImage, { opacity: 0 });
+    if (backdropDim) gsap.set(backdropDim, { opacity: 0 });
   }
 
-  async function updatePreviewState() {
-    if (!dialog || !heroImage || !spinner || !backdropImage) return;
-
-    const imageData = manifest[currentIndex];
+  function applyPreviewContent(index: number): void {
+    const imageData = getManifestEntry(index);
     if (!imageData) return;
 
-    // Update Counter
-    if (currentIndexEl) currentIndexEl.textContent = (currentIndex + 1).toString();
+    const position = manifest.findIndex((m) => m.originalIndex === index);
+    const displayIndex = position >= 0 ? position + 1 : index + 1;
+
+    if (currentIndexEl) currentIndexEl.textContent = displayIndex.toString();
     if (totalCountEl) totalCountEl.textContent = manifest.length.toString();
     const srCounter = document.getElementById('preview-sr-counter');
     if (srCounter) {
-      srCounter.textContent = `Zdjęcie ${currentIndex + 1} z ${manifest.length}: ${imageData.alt}`;
+      srCounter.textContent = `Zdjęcie ${displayIndex} z ${manifest.length}: ${imageData.alt}`;
     }
 
-    // Update Buttons
-    if (prevBtn) prevBtn.disabled = currentIndex === 0;
-    if (nextBtn) nextBtn.disabled = currentIndex === manifest.length - 1;
+    if (prevBtn) prevBtn.disabled = position <= 0;
+    if (nextBtn) nextBtn.disabled = position >= manifest.length - 1;
 
-    // Update Peeks
-    peeks.forEach(peek => {
+    peeks.forEach((peek) => {
       const offset = parseInt(peek.dataset.offset || '0', 10);
-      const targetIndex = currentIndex + offset;
+      const target = position >= 0 ? manifest[position + offset] : undefined;
       const img = peek.querySelector('img');
-      if (targetIndex >= 0 && targetIndex < manifest.length && img) {
-        img.src = manifest[targetIndex].peekSrc || manifest[targetIndex].src;
-        img.alt = manifest[targetIndex].alt || '';
-        peek.setAttribute('aria-label', `${offset === -1 ? 'Poprzednie' : 'Następne'} zdjęcie: ${manifest[targetIndex].alt}`);
+      if (target && img) {
+        img.src = target.gridSrc || target.peekSrc || target.src;
+        img.alt = target.alt || '';
+        peek.setAttribute(
+          'aria-label',
+          `${offset === -1 ? 'Poprzednie' : 'Następne'} zdjęcie: ${target.alt}`
+        );
         peek.style.visibility = 'visible';
       } else {
         peek.style.visibility = 'hidden';
       }
     });
 
-    // Update Thumbnails
-    thumbnails.forEach(thumb => {
+    thumbnails.forEach((thumb) => {
       const offset = parseInt(thumb.dataset.offset || '0', 10);
-      const targetIndex = currentIndex + offset;
+      const target = position >= 0 ? manifest[position + offset] : undefined;
       const img = thumb.querySelector('img');
-      if (targetIndex >= 0 && targetIndex < manifest.length && img) {
-        img.src = manifest[targetIndex].thumbSrc || manifest[targetIndex].src;
-        img.alt = manifest[targetIndex].alt || '';
-        thumb.setAttribute('aria-label', `Pokaż zdjęcie ${targetIndex + 1} z ${manifest.length}: ${manifest[targetIndex].alt}`);
+      if (target && img) {
+        img.src = target.thumbSrc || target.gridSrc || target.src;
+        img.alt = target.alt || '';
+        const targetPos = manifest.findIndex((m) => m.originalIndex === target.originalIndex);
+        thumb.setAttribute(
+          'aria-label',
+          `Pokaż zdjęcie ${targetPos + 1} z ${manifest.length}: ${target.alt}`
+        );
         thumb.style.display = 'block';
       } else {
         thumb.style.display = 'none';
       }
     });
+  }
 
-    spinner.classList.add('is-visible');
-    heroImage.classList.remove('is-loaded');
-    backdropImage.classList.remove('is-loaded');
+  function loadHeroAndBackdrop(index: number, immediateSrc?: string): void {
+    if (!heroImage || !backdropImage) return;
+    const imageData = getManifestEntry(index);
+    if (!imageData) return;
 
-    try {
-      heroImage.src = imageData.src;
-      heroImage.alt = imageData.alt || '';
-      backdropImage.src = imageData.src;
-      await Promise.all([
-        heroImage.decode().catch(() => {}),
-        backdropImage.decode().catch(() => {})
-      ]);
-    } catch (error) {
-      console.error('Image update failed', error);
-    } finally {
-      spinner.classList.remove('is-visible');
-      heroImage.classList.add('is-loaded');
-      backdropImage.classList.add('is-loaded');
-      syncHeroPeekSizing();
+    const visibleSrc =
+      immediateSrc || imageData.gridSrc || imageData.thumbSrc || imageData.src;
+    heroImage.src = visibleSrc;
+    heroImage.alt = imageData.alt || '';
+    backdropImage.src = visibleSrc;
+    backdropImage.alt = '';
+
+    silentSwapSrc(heroImage, imageData.src, imageData.alt);
+    silentSwapSrc(backdropImage, imageData.src);
+  }
+
+  function preloadImage(index: number): void {
+    const entry = manifest.find((m) => m.originalIndex === index);
+    if (entry) {
+      const img = new Image();
+      img.src = entry.src;
     }
+  }
 
-    // Preload adjacent images
+  function syncHeroPeekSizing(): void {
+    if (!heroImage || !heroPeekGroup) return;
+    const { width, height } = heroImage.getBoundingClientRect();
+    heroPeekGroup.style.setProperty('--hero-width', `${width}px`);
+    heroPeekGroup.style.setProperty('--hero-height', `${height}px`);
+  }
+
+  function setupHeroResizeObserver(): void {
+    heroResizeObserver?.disconnect();
+    if (!heroImage) return;
+    heroResizeObserver = new ResizeObserver(() => syncHeroPeekSizing());
+    heroResizeObserver.observe(heroImage);
+  }
+
+  function updatePreviewState(): void {
+    if (!dialog || !heroImage || !backdropImage) return;
+    applyPreviewContent(currentIndex);
+    loadHeroAndBackdrop(currentIndex);
+    syncHeroPeekSizing();
     preloadImage(currentIndex - 1);
     preloadImage(currentIndex + 1);
   }
 
-  function navigate(direction: number) {
-    if (manifest.length === 0) return;
-    const newIndex = currentIndex + direction;
-    if (newIndex >= 0 && newIndex < manifest.length) {
-      currentIndex = newIndex;
+  function navigate(direction: number): void {
+    if (isChoreographyActive || manifest.length === 0) return;
+    const position = manifest.findIndex((m) => m.originalIndex === currentIndex);
+    if (position < 0) return;
+    const newPosition = position + direction;
+    if (newPosition >= 0 && newPosition < manifest.length) {
+      currentIndex = manifest[newPosition].originalIndex;
       updatePreviewState();
     }
   }
 
-  function handlePrevClick() { navigate(-1); }
-  function handleNextClick() { navigate(1); }
+  function handlePrevClick(): void {
+    navigate(-1);
+  }
 
-  function handleKeyDown(e: KeyboardEvent) {
-    if (!dialog || !dialog.open) return;
+  function handleNextClick(): void {
+    navigate(1);
+  }
+
+  function handleKeyDown(e: KeyboardEvent): void {
+    if (!dialog?.open || isChoreographyActive) return;
     switch (e.key) {
       case 'ArrowLeft':
         navigate(-1);
@@ -577,116 +678,480 @@ import {
         navigate(1);
         break;
       case 'Home':
-        navigate(-currentIndex);
+        if (manifest.length > 0) {
+          currentIndex = manifest[0].originalIndex;
+          updatePreviewState();
+        }
         break;
       case 'End':
-        navigate(manifest.length - 1 - currentIndex);
+        if (manifest.length > 0) {
+          currentIndex = manifest[manifest.length - 1].originalIndex;
+          updatePreviewState();
+        }
         break;
     }
   }
 
-  async function openPreview(index: number) {
-    if (!dialog || !heroImage || !spinner) return;
-    
+  function createFlyClone(tileSrc: string, tileRect: DOMRect): HTMLImageElement {
+    clearFlyClone();
+    flyClone = document.createElement('img');
+    flyClone.src = tileSrc;
+    flyClone.alt = '';
+    flyClone.decoding = 'async';
+    gsap.set(flyClone, {
+      position: 'fixed',
+      left: tileRect.left,
+      top: tileRect.top,
+      width: tileRect.width,
+      height: tileRect.height,
+      margin: 0,
+      zIndex: 2
+    });
+    flyLayer?.appendChild(flyClone);
+    return flyClone;
+  }
+
+  function openPreview(index: number, opener?: HTMLElement): void {
+    if (!dialog || !heroImage || !backdropImage || !flyLayer) return;
+    if (isChoreographyActive || dialog.open) return;
+    if (!ensureManifest()) return;
+
+    const imageData = getManifestEntry(index);
+    if (!imageData) return;
+
     lastActiveElement = document.activeElement as HTMLElement;
+    currentIndex = index;
 
-    if (manifest.length === 0) {
-      const manifestScript = document.getElementById('gallery-manifest');
-      if (manifestScript) {
-        try {
-          manifest = JSON.parse(manifestScript.textContent || '[]');
-        } catch (e) {
-          console.error('Failed to parse gallery manifest', e);
-          return;
-        }
-      }
-    }
+    if (scrollContainer) scrollContainer.style.overflow = 'hidden';
 
-    if (scrollContainer) {
-      scrollContainer.style.overflow = 'hidden';
-    }
-
-    // Push history state
-    if (!history.state || !history.state.galleryPreview) {
+    if (!history.state?.galleryPreview) {
       history.pushState({ ...history.state, galleryPreview: true }, '');
     }
 
+    killTimelines();
+    isChoreographyActive = true;
+    clearFlyClone();
+    resetHeroInlineStyles();
+
+    const tileImg = opener?.querySelector('.gallery-image') as HTMLImageElement | null;
+    const tileRect = opener ? getTileRect(opener) : null;
+    const tileSrc =
+      tileImg?.currentSrc || tileImg?.src || imageData.gridSrc || imageData.thumbSrc || imageData.src;
+
+    applyPreviewContent(index);
+    loadHeroAndBackdrop(index, tileSrc);
+
     dialog.showModal();
-    currentIndex = index;
-    updatePreviewState();
+    setChromeHidden();
+
+    if (!tileRect) {
+      gsap.set(heroImage, { opacity: 1 });
+      const { maxW, maxH } = getHeroMaxBox();
+      const final = computeFinalHeroSize(imageData.width, imageData.height, maxW, maxH);
+      finalHeroWidth = final.width;
+      finalHeroHeight = final.height;
+      centeredTileWidth = final.width;
+      centeredTileHeight = final.height;
+      finishOpenWithoutFly();
+      return;
+    }
+
+    centeredTileWidth = tileRect.width;
+    centeredTileHeight = tileRect.height;
+    const { centerX, centerY } = getHeroStageCenter();
+    const centeredLeft = centerX - tileRect.width / 2;
+    const centeredTop = centerY - tileRect.height / 2;
+
+    const { maxW, maxH } = getHeroMaxBox();
+    const final = computeFinalHeroSize(imageData.width, imageData.height, maxW, maxH);
+    finalHeroWidth = final.width;
+    finalHeroHeight = final.height;
+
+    const clone = createFlyClone(tileSrc, tileRect);
+    gsap.set(heroImage, { opacity: 0 });
+
+    openTimeline = gsap.timeline({
+      defaults: { ease: PREVIEW_OPEN_EASE },
+      onComplete: () => {
+        isChoreographyActive = false;
+        openTimeline = null;
+        syncHeroPeekSizing();
+        preloadImage(currentIndex - 1);
+        preloadImage(currentIndex + 1);
+        window.dispatchEvent(new CustomEvent('gallery:preview-pause'));
+        closeBtn?.focus();
+      }
+    });
+
+    openTimeline.to(clone, {
+      left: centeredLeft,
+      top: centeredTop,
+      width: tileRect.width,
+      height: tileRect.height,
+      duration: PREVIEW_OPEN_SHIFT_DURATION
+    });
+
+    openTimeline.add(() => {
+      clearFlyClone();
+      gsap.set(heroImage, {
+        opacity: 1,
+        width: centeredTileWidth,
+        height: centeredTileHeight,
+        maxWidth: 'none',
+        maxHeight: 'none',
+        position: 'relative',
+        margin: '0 auto'
+      });
+      if (backdropLayer) gsap.set(backdropLayer, { opacity: 1 });
+    });
+
+    openTimeline.to(
+      heroImage,
+      {
+        width: finalHeroWidth,
+        height: finalHeroHeight,
+        duration: PREVIEW_OPEN_HERO_BACKDROP_DURATION
+      },
+      '+=0'
+    );
+
+    if (backdropImage) {
+      openTimeline.to(
+        backdropImage,
+        { opacity: 1, duration: PREVIEW_OPEN_HERO_BACKDROP_DURATION },
+        '<'
+      );
+    }
+    if (backdropDim) {
+      openTimeline.to(
+        backdropDim,
+        { opacity: 1, duration: PREVIEW_OPEN_HERO_BACKDROP_DURATION },
+        '<'
+      );
+    }
+
+    const peekOffset = () => {
+      const h = heroImage?.getBoundingClientRect().height ?? centeredTileHeight;
+      return h * 0.5 + 24;
+    };
+
+    if (thumbStrip) {
+      openTimeline.fromTo(
+        thumbStrip,
+        { xPercent: -50, left: '50%', scale: 0.01, transformOrigin: 'center bottom' },
+        { scale: 1, duration: PREVIEW_OPEN_CHROME_DURATION },
+        '+=0'
+      );
+    }
+
+    peeks.forEach((peek) => {
+      if (peek.style.visibility === 'hidden') return;
+      openTimeline.fromTo(
+        peek,
+        { opacity: 0, y: peekOffset() },
+        { opacity: PREVIEW_PEEK_OPACITY, y: 0, duration: PREVIEW_OPEN_CHROME_DURATION },
+        '<'
+      );
+    });
+
+    chromeEls.forEach((el) => {
+      if (el === thumbStrip || peeks.includes(el)) return;
+      openTimeline.to(el, { opacity: 1, duration: PREVIEW_OPEN_CHROME_DURATION }, '<');
+    });
+
+    openTimeline.add(() => {
+      document.getElementById('preview-counter')?.classList.add('is-settled');
+    });
   }
 
-  function handleCustomOpen(e: Event) {
-    const customEvent = e as CustomEvent;
-    if (customEvent.detail && typeof customEvent.detail.index === 'number') {
-      openPreview(customEvent.detail.index);
+  function finishOpenWithoutFly(): void {
+    if (!heroImage || !backdropImage) return;
+
+    openTimeline = gsap.timeline({
+      defaults: { ease: PREVIEW_OPEN_EASE },
+      onComplete: () => {
+        isChoreographyActive = false;
+        openTimeline = null;
+        syncHeroPeekSizing();
+        preloadImage(currentIndex - 1);
+        preloadImage(currentIndex + 1);
+        window.dispatchEvent(new CustomEvent('gallery:preview-pause'));
+        closeBtn?.focus();
+      }
+    });
+
+    gsap.set(heroImage, {
+      opacity: 1,
+      width: finalHeroWidth,
+      height: finalHeroHeight,
+      maxWidth: 'none',
+      maxHeight: 'none'
+    });
+
+    if (backdropLayer) openTimeline.set(backdropLayer, { opacity: 1 });
+    openTimeline.to(backdropImage, { opacity: 1, duration: PREVIEW_OPEN_HERO_BACKDROP_DURATION });
+    if (backdropDim) {
+      openTimeline.to(backdropDim, { opacity: 1, duration: PREVIEW_OPEN_HERO_BACKDROP_DURATION }, '<');
+    }
+
+    if (thumbStrip) {
+      openTimeline.fromTo(
+        thumbStrip,
+        { xPercent: -50, left: '50%', scale: 0.01, transformOrigin: 'center bottom' },
+        { scale: 1, duration: PREVIEW_OPEN_CHROME_DURATION }
+      );
+    }
+
+    peeks.forEach((peek) => {
+      if (peek.style.visibility === 'hidden') return;
+      openTimeline.fromTo(
+        peek,
+        { opacity: 0, y: 48 },
+        { opacity: PREVIEW_PEEK_OPACITY, y: 0, duration: PREVIEW_OPEN_CHROME_DURATION },
+        '<'
+      );
+    });
+
+    chromeEls.forEach((el) => {
+      if (el === thumbStrip || peeks.includes(el)) return;
+      openTimeline.to(el, { opacity: 1, duration: PREVIEW_OPEN_CHROME_DURATION }, '<');
+    });
+
+    document.getElementById('preview-counter')?.classList.add('is-settled');
+  }
+
+  function requestClosePreview(): void {
+    if (!dialog?.open || !heroImage) return;
+    if (closeTimeline) return;
+
+    if (openTimeline) {
+      openTimeline.kill();
+      openTimeline = null;
+    }
+
+    isChoreographyActive = true;
+    clearFlyClone();
+
+    const peekOffset = () => {
+      const h = heroImage?.getBoundingClientRect().height ?? finalHeroHeight;
+      return h * 0.5 + 24;
+    };
+
+    closeTimeline = gsap.timeline({
+      defaults: { ease: PREVIEW_OPEN_EASE },
+      onComplete: () => {
+        isChoreographyActive = false;
+        closeTimeline = null;
+        resetHeroInlineStyles();
+        setChromeHidden();
+        document.getElementById('preview-counter')?.classList.remove('is-settled');
+        dialog?.close();
+      }
+    });
+
+    chromeEls.forEach((el) => {
+      if (el === thumbStrip || peeks.includes(el)) return;
+      closeTimeline!.to(el, { opacity: 0, duration: PREVIEW_OPEN_CHROME_DURATION });
+    });
+
+    if (thumbStrip) {
+      closeTimeline.to(
+        thumbStrip,
+        { scale: 0.01, duration: PREVIEW_OPEN_CHROME_DURATION },
+        '<'
+      );
+    }
+
+    peeks.forEach((peek) => {
+      if (peek.style.visibility === 'hidden') return;
+      closeTimeline!.to(
+        peek,
+        { opacity: 0, y: peekOffset(), duration: PREVIEW_OPEN_CHROME_DURATION },
+        '<'
+      );
+    });
+
+    if (backdropImage) {
+      closeTimeline.to(
+        backdropImage,
+        { opacity: 0, duration: PREVIEW_OPEN_HERO_BACKDROP_DURATION },
+        '+=0'
+      );
+    }
+    if (backdropDim) {
+      closeTimeline.to(
+        backdropDim,
+        { opacity: 0, duration: PREVIEW_OPEN_HERO_BACKDROP_DURATION },
+        '<'
+      );
+    }
+    if (backdropLayer) {
+      closeTimeline.to(
+        backdropLayer,
+        { opacity: 0, duration: PREVIEW_OPEN_HERO_BACKDROP_DURATION },
+        '<'
+      );
+    }
+
+    closeTimeline.to(
+      heroImage,
+      {
+        width: centeredTileWidth || finalHeroWidth,
+        height: centeredTileHeight || finalHeroHeight,
+        duration: PREVIEW_OPEN_HERO_BACKDROP_DURATION
+      },
+      '<'
+    );
+
+    closeTimeline.add(() => {
+      window.dispatchEvent(new CustomEvent('gallery:preview-resume'));
+    });
+
+    closeTimeline.to(heroImage, {
+      opacity: 0,
+      duration: PREVIEW_OPEN_HERO_BACKDROP_DURATION
+    });
+  }
+
+  function closePreviewImmediate(): void {
+    killTimelines();
+    clearFlyClone();
+    isChoreographyActive = false;
+    if (dialog?.open) dialog.close();
+  }
+
+  function handleBackdropClick(e: MouseEvent): void {
+    if (isChoreographyActive) return;
+    const target = e.target as HTMLElement;
+    if (target === dialog || target.closest('.preview-backdrop')) {
+      requestClosePreview();
     }
   }
 
-  function cleanupPreview() {
+  function handleDialogClose(): void {
+    killTimelines();
+    clearFlyClone();
+    isChoreographyActive = false;
+
+    if (scrollContainer) scrollContainer.style.overflow = '';
+
+    if (heroImage) {
+      heroImage.src = '';
+      resetHeroInlineStyles();
+    }
+    if (backdropImage) {
+      backdropImage.src = '';
+      gsap.set(backdropImage, { opacity: 0 });
+    }
+    if (backdropDim) gsap.set(backdropDim, { opacity: 0 });
+    if (backdropLayer) gsap.set(backdropLayer, { opacity: 0 });
+
+    setChromeHidden();
+    document.getElementById('preview-counter')?.classList.remove('is-settled');
+
+    if (!isSwapping && history.state?.galleryPreview) {
+      history.back();
+    }
+
+    if (lastActiveElement) {
+      lastActiveElement.focus();
+      lastActiveElement = null;
+    } else {
+      const wrapper = document.querySelector(
+        `.gallery-image-wrapper[data-original-index="${currentIndex}"]`
+      ) as HTMLElement;
+      wrapper?.focus();
+    }
+  }
+
+  function handlePopState(e: PopStateEvent): void {
+    if (!e.state?.galleryPreview && dialog?.open) {
+      requestClosePreview();
+    }
+  }
+
+  function handleCancel(e: Event): void {
+    e.preventDefault();
+    requestClosePreview();
+  }
+
+  function handleCustomOpen(e: Event): void {
+    const customEvent = e as CustomEvent<{ index: number; opener?: HTMLElement }>;
+    if (customEvent.detail && typeof customEvent.detail.index === 'number') {
+      openPreview(customEvent.detail.index, customEvent.detail.opener);
+    }
+  }
+
+  function cleanupPreview(): void {
     heroResizeObserver?.disconnect();
     heroResizeObserver = null;
+    killTimelines();
     window.removeEventListener('gallery:open-preview', handleCustomOpen);
     window.removeEventListener('keydown', handleKeyDown);
     window.removeEventListener('popstate', handlePopState);
     document.removeEventListener('astro:before-swap', handleBeforeSwap);
   }
 
-  function handleBeforeSwap() {
+  function handleBeforeSwap(): void {
     isSwapping = true;
-    closePreview();
-    if (scrollContainer) {
-      scrollContainer.style.overflow = '';
-    }
+    closePreviewImmediate();
+    if (scrollContainer) scrollContainer.style.overflow = '';
     cleanupPreview();
   }
 
-  function setupPreview() {
+  function setupPreview(): void {
     isSwapping = false;
     dialog = document.getElementById('gallery-preview') as HTMLDialogElement;
     heroImage = document.getElementById('preview-hero-image') as HTMLImageElement;
     backdropImage = document.getElementById('preview-backdrop-image') as HTMLImageElement;
-    spinner = document.getElementById('preview-spinner');
+    backdropDim = document.getElementById('preview-backdrop-dim');
+    backdropLayer = document.querySelector('.preview-backdrop');
+    flyLayer = document.getElementById('preview-fly-layer');
     closeBtn = document.getElementById('preview-close') as HTMLButtonElement;
     prevBtn = document.getElementById('preview-prev') as HTMLButtonElement;
     nextBtn = document.getElementById('preview-next') as HTMLButtonElement;
     currentIndexEl = document.getElementById('preview-current-index');
     totalCountEl = document.getElementById('preview-total-count');
     scrollContainer = document.querySelector('.scroll-container');
+    previewLayout = document.querySelector('.preview-layout');
+    heroStage = document.querySelector('.hero-stage');
+    thumbStrip = document.querySelector('.thumbnail-strip');
     peeks = Array.from(document.querySelectorAll('.preview-peek'));
     thumbnails = Array.from(document.querySelectorAll('.thumbnail-slot'));
     heroPeekGroup = document.querySelector('.hero-peek-group');
+    chromeEls = Array.from(document.querySelectorAll('.preview-chrome'));
 
     if (!dialog) return;
 
     setupHeroResizeObserver();
-    syncHeroPeekSizing();
 
-    peeks.forEach(peek => {
+    peeks.forEach((peek) => {
       const offset = parseInt(peek.dataset.offset || '0', 10);
       peek.onclick = () => navigate(offset);
     });
 
-    thumbnails.forEach(thumb => {
+    thumbnails.forEach((thumb) => {
       const offset = parseInt(thumb.dataset.offset || '0', 10);
       thumb.onclick = () => {
         if (offset !== 0) navigate(offset);
       };
     });
 
-    // Remove old listeners to avoid duplicates during Astro view transitions
     window.removeEventListener('gallery:open-preview', handleCustomOpen);
     window.addEventListener('gallery:open-preview', handleCustomOpen);
 
     dialog.removeEventListener('close', handleDialogClose);
     dialog.addEventListener('close', handleDialogClose);
 
+    dialog.removeEventListener('cancel', handleCancel);
+    dialog.addEventListener('cancel', handleCancel);
+
     dialog.removeEventListener('click', handleBackdropClick);
     dialog.addEventListener('click', handleBackdropClick);
 
     if (closeBtn) {
-      closeBtn.removeEventListener('click', closePreview);
-      closeBtn.addEventListener('click', closePreview);
+      closeBtn.removeEventListener('click', requestClosePreview);
+      closeBtn.addEventListener('click', requestClosePreview);
     }
 
     if (prevBtn) {
@@ -709,6 +1174,5 @@ import {
     document.addEventListener('astro:before-swap', handleBeforeSwap);
   }
 
-  // Set up listeners on initial load and view transition page loads
   document.addEventListener('astro:page-load', setupPreview);
 </script>

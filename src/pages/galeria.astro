@@ -589,7 +589,7 @@ const galleryManifest = await Promise.all(
       if (!indexStr) return;
       const index = parseInt(indexStr, 10);
 
-      window.dispatchEvent(new CustomEvent('gallery:open-preview', { detail: { index } }));
+      window.dispatchEvent(new CustomEvent('gallery:open-preview', { detail: { index, opener: wrapper } }));
     }, { signal });
 
     // ── Keyboard Accessibility: Open Preview on Enter/Space ──
@@ -609,7 +609,7 @@ const galleryManifest = await Promise.all(
         if (!indexStr) return;
         const index = parseInt(indexStr, 10);
 
-        window.dispatchEvent(new CustomEvent('gallery:open-preview', { detail: { index } }));
+        window.dispatchEvent(new CustomEvent('gallery:open-preview', { detail: { index, opener: wrapper } }));
       }
     }, { signal });
   }
@@ -825,6 +825,9 @@ const galleryManifest = await Promise.all(
     updateColumnHeights(allColumns);
     createLoopTweens(allColumns);
     attachFloatListeners(container, signal);
+
+    window.addEventListener('gallery:preview-pause', () => pauseGallery(), { signal });
+    window.addEventListener('gallery:preview-resume', () => resumeGallery(), { signal });
 
     // Watch for image loads to recompute heights as they stream in
     const images = container.querySelectorAll('.gallery-set-original img') as NodeListOf<HTMLImageElement>;
