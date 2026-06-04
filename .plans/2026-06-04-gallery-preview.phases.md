@@ -4,9 +4,9 @@ This plan details the implementation of a full-screen gallery preview mode based
 
 ## Execution Progress Checklist
 
-- [ ] Phase 1: Basic Preview & Dialog
-- [ ] Phase 2: Core Navigation & Backdrop
-- [ ] Phase 3: Thumbnail Strip & Peeks
+- [x] Phase 1: Basic Preview & Dialog
+- [x] Phase 2: Core Navigation & Backdrop
+- [x] Phase 3: Thumbnail Strip & Peeks
 - [ ] Phase 4: Open/Close & Core Animations (GSAP)
 - [ ] Phase 5: Seamless Navigation Transitions & Gestures
 - [ ] Phase 6: Testing & Final Verification
