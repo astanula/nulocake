@@ -114,6 +114,7 @@ Look up the manifest entry where `manifest[i].index === parseInt(originalIndex)`
 ### Side peeks
 
 - Behind hero (layer 2); vertically aligned with hero center.
+- **Flush against hero edges** — zero gap between peek and hero. Peeks are positioned so their inner edge touches the hero's outer edge exactly (no margin/padding/gap between them).
 - Visible width ≈ `PREVIEW_PEEK_WIDTH_RATIO` of hero width; center crop via clip + `object-position: center`.
 - Opacity: `PREVIEW_PEEK_OPACITY`.
 - Click navigates prev/next (same as arrows).
@@ -156,11 +157,12 @@ Look up the manifest entry where `manifest[i].index === parseInt(originalIndex)`
 
 **Duration / ease:** `PREVIEW_OPEN_DURATION`, `PREVIEW_OPEN_EASE`.
 
-1. Backdrop blurred image fades in from `opacity: 0` → `1` + dim overlay.
-2. Hero image enters: clicked thumbnail animates (FLIP-style) from its grid position to hero center — scale and position tween. If FLIP is too complex for v1, fallback: hero fades in + scales from `0.8` → `1`.
-3. Side peeks slide in from edges (if they exist) with slight delay.
-4. Thumb strip slides up from below.
-5. Counter and close button fade in last.
+1. **Pause gallery loop** — call `pauseGallery()` to smoothly decelerate all column scroll tweens to `timeScale: 0`. Gallery columns freeze in place behind the overlay.
+2. Backdrop blurred image fades in from `opacity: 0` → `1` + dim overlay.
+3. Hero image enters: clicked thumbnail animates (FLIP-style) from its grid position to hero center — scale and position tween. If FLIP is too complex for v1, fallback: hero fades in + scales from `0.8` → `1`.
+4. Side peeks slide in from edges (if they exist) with slight delay.
+5. Thumb strip slides up from below.
+6. Counter and close button fade in last.
 
 **Scroll lock** applied immediately on open (before animation starts).
 
@@ -171,7 +173,7 @@ Mirror of open:
 1. Hero scales down / fades out (or FLIP back to grid position).
 2. Peeks, strip, counter, close button fade out.
 3. Backdrop dims and fades.
-4. On animation complete: remove overlay, unlock scroll, restore focus.
+4. On animation complete: remove overlay, unlock scroll, restore focus, **resume gallery loop** via `resumeGallery()` (smoothly accelerates column tweens back to `timeScale: 1`).
 
 ### 5c. Hero transition (nav between images)
 
@@ -251,6 +253,12 @@ Mirror of open:
 ---
 
 ## 7. Integration with Existing Gallery Script
+
+### Gallery loop pause / resume
+
+- **On preview open:** `pauseGallery()` — smoothly decelerates all column scroll tweens (`timeScale → 0`). The gallery columns freeze in their current positions behind the overlay. This uses the existing `pauseGallery()` function.
+- **On preview close:** `resumeGallery()` — smoothly accelerates column tweens back to `timeScale: 1`. Gallery animation resumes from where it left off.
+- If the gallery DOM does not exist (e.g. navigated away), skip gracefully.
 
 ### Click handler (new)
 
