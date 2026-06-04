@@ -1,4 +1,16 @@
 ---
+import {
+  PREVIEW_MARGIN_TOP,
+  PREVIEW_MARGIN_BOTTOM,
+  PREVIEW_THUMB_SIZE,
+  PREVIEW_THUMB_ACTIVE_SCALE,
+  PREVIEW_THUMB_SIDE_OPACITY,
+  PREVIEW_PEEK_OPACITY,
+  PREVIEW_PEEK_WIDTH_RATIO,
+  PREVIEW_BACKDROP_BLUR,
+  PREVIEW_BACKDROP_DIM,
+  PREVIEW_COUNTER_OPACITY
+} from '../../config/gallery';
 ---
 
 <dialog id="gallery-preview" class="gallery-preview" aria-modal="true" aria-label="Podgląd obrazu">
@@ -11,43 +23,57 @@
         <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
-    <div class="preview-grid">
-      <!-- Row 1: Peeks & Hero -->
-      <div class="preview-peek peek-left" data-offset="-1"><img src="" alt="" /></div>
-      <div class="hero-stage">
-        <div id="preview-spinner" class="spinner" aria-hidden="true"></div>
-        <img id="preview-hero-image" src="" alt="" decoding="async" />
-      </div>
-      <div class="preview-peek peek-right" data-offset="1"><img src="" alt="" /></div>
+    <div class="preview-layout">
+      <div class="preview-main-row">
+        <button id="preview-prev" class="preview-arrow" aria-label="Poprzednie zdjęcie">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
 
-      <!-- Row 2: Counter -->
+        <div class="preview-peek peek-left" data-offset="-1"><img src="" alt="" /></div>
+        
+        <div class="hero-stage">
+          <div id="preview-spinner" class="spinner" aria-hidden="true"></div>
+          <img id="preview-hero-image" src="" alt="" decoding="async" />
+          
+          <div class="thumbnail-strip">
+            <button class="thumbnail-slot" data-offset="-2"><img src="" alt="" decoding="async" /></button>
+            <button class="thumbnail-slot" data-offset="-1"><img src="" alt="" decoding="async" /></button>
+            <button class="thumbnail-slot is-active" data-offset="0"><img src="" alt="" decoding="async" /></button>
+            <button class="thumbnail-slot" data-offset="1"><img src="" alt="" decoding="async" /></button>
+            <button class="thumbnail-slot" data-offset="2"><img src="" alt="" decoding="async" /></button>
+          </div>
+        </div>
+        
+        <div class="preview-peek peek-right" data-offset="1"><img src="" alt="" /></div>
+
+        <button id="preview-next" class="preview-arrow" aria-label="Następne zdjęcie">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
       <div id="preview-counter" class="preview-counter" aria-live="polite">
         <span id="preview-current-index">1</span> / <span id="preview-total-count">1</span>
       </div>
-
-      <!-- Row 3: Arrows & Thumbnails -->
-      <button id="preview-prev" class="preview-arrow" aria-label="Poprzednie zdjęcie">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <div class="thumbnail-strip">
-        <button class="thumbnail-slot" data-offset="-2"><img src="" alt="" decoding="async" /></button>
-        <button class="thumbnail-slot" data-offset="-1"><img src="" alt="" decoding="async" /></button>
-        <button class="thumbnail-slot is-active" data-offset="0"><img src="" alt="" decoding="async" /></button>
-        <button class="thumbnail-slot" data-offset="1"><img src="" alt="" decoding="async" /></button>
-        <button class="thumbnail-slot" data-offset="2"><img src="" alt="" decoding="async" /></button>
-      </div>
-      <button id="preview-next" class="preview-arrow" aria-label="Następne zdjęcie">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
     </div>
   </div>
 </dialog>
 
-<style>
+<style define:vars={{
+  marginTop: PREVIEW_MARGIN_TOP,
+  marginBottom: PREVIEW_MARGIN_BOTTOM,
+  thumbSize: PREVIEW_THUMB_SIZE,
+  thumbActiveScale: PREVIEW_THUMB_ACTIVE_SCALE,
+  thumbSideOpacity: PREVIEW_THUMB_SIDE_OPACITY,
+  peekOpacity: PREVIEW_PEEK_OPACITY,
+  peekWidthRatio: PREVIEW_PEEK_WIDTH_RATIO,
+  backdropBlur: PREVIEW_BACKDROP_BLUR,
+  backdropDim: PREVIEW_BACKDROP_DIM,
+  counterOpacity: PREVIEW_COUNTER_OPACITY
+}}>
   .gallery-preview {
     position: fixed;
     top: 0;
@@ -65,7 +91,7 @@
   }
 
   .gallery-preview::backdrop {
-    background: rgba(0, 0, 0, 0.9);
+    background: var(--backdropDim);
   }
 
   .preview-backdrop {
@@ -79,7 +105,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: blur(40px) brightness(0.5);
+    filter: blur(var(--backdropBlur)) brightness(0.5);
     transform: scale(1.1);
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -101,7 +127,7 @@
 
   .preview-close {
     position: absolute;
-    top: 1.5rem;
+    top: max(var(--marginTop), env(safe-area-inset-top));
     right: 1.5rem;
     background: transparent;
     border: none;
@@ -120,21 +146,24 @@
     opacity: 1;
   }
 
-  .preview-grid {
-    display: grid;
-    grid-template-columns: min-content min-content min-content;
-    grid-template-rows: min-content min-content min-content;
-    gap: var(--preview-gap-y, 1rem) var(--preview-gap-x, 2rem);
+  .preview-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
-    align-content: center;
+    gap: 1rem;
+    max-width: 100vw;
+    max-height: 100vh;
+  }
+
+  .preview-main-row {
+    display: flex;
     align-items: stretch;
-    max-width: 95vw;
-    max-height: 95vh;
+    justify-content: center;
+    gap: 0;
   }
 
   .hero-stage {
-    grid-column: 2;
-    grid-row: 1;
     position: relative;
     display: flex;
     justify-content: center;
@@ -143,13 +172,13 @@
 
   #preview-hero-image {
     max-width: 70vw;
-    max-height: 65vh;
+    max-height: calc(100vh - var(--marginTop) - var(--marginBottom));
     width: auto;
     height: auto;
     display: block;
     opacity: 0;
     transition: opacity 0.3s ease;
-    border-radius: var(--gallery-image-radius, 8px);
+    border-radius: 0;
   }
 
   #preview-hero-image.is-loaded {
@@ -181,14 +210,24 @@
   }
 
   .preview-peek {
-    width: var(--peek-width, 6vw);
+    position: relative;
+    width: calc(100vw * var(--peekWidthRatio));
     min-width: 40px;
     max-width: 100px;
     cursor: pointer;
-    opacity: 0.3;
+    opacity: var(--peekOpacity);
     transition: opacity 0.3s ease;
     overflow: hidden;
-    border-radius: var(--gallery-image-radius, 8px);
+  }
+
+  .peek-left {
+    border-top-left-radius: var(--gallery-image-radius, 8px);
+    border-bottom-left-radius: var(--gallery-image-radius, 8px);
+  }
+
+  .peek-right {
+    border-top-right-radius: var(--gallery-image-radius, 8px);
+    border-bottom-right-radius: var(--gallery-image-radius, 8px);
   }
 
   .preview-peek:hover {
@@ -196,49 +235,43 @@
   }
 
   .preview-peek img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
 
-  .peek-left {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .peek-right {
-    grid-column: 3;
-    grid-row: 1;
-  }
-
   .preview-counter {
-    grid-column: 2;
-    grid-row: 2;
-    justify-self: center;
     font-variant-numeric: tabular-nums;
     font-size: 0.9rem;
-    opacity: 0.8;
+    opacity: var(--counterOpacity);
+    margin-top: 0.5rem;
   }
 
   .thumbnail-strip {
-    grid-column: 2;
-    grid-row: 3;
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     gap: 1rem;
     justify-content: center;
     align-items: center;
+    z-index: 10;
   }
 
   .thumbnail-slot {
     background: transparent;
     border: none;
     padding: 0;
-    width: 60px;
-    height: 60px;
+    width: var(--thumbSize);
+    height: var(--thumbSize);
     border-radius: 8px;
     overflow: hidden;
     cursor: pointer;
-    opacity: 0.5;
+    opacity: var(--thumbSideOpacity);
     transition: all 0.3s ease;
   }
 
@@ -248,7 +281,7 @@
 
   .thumbnail-slot.is-active {
     opacity: 1;
-    transform: scale(1.15);
+    transform: scale(var(--thumbActiveScale));
     border: 2px solid white;
     cursor: default;
   }
@@ -271,8 +304,8 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    justify-self: center;
     align-self: center;
+    margin: 0 1.5rem;
   }
 
   .preview-arrow:hover:not(:disabled) {
@@ -282,16 +315,6 @@
   .preview-arrow:disabled {
     opacity: 0.3;
     cursor: not-allowed;
-  }
-
-  #preview-prev {
-    grid-column: 1;
-    grid-row: 3;
-  }
-
-  #preview-next {
-    grid-column: 3;
-    grid-row: 3;
   }
 </style>
 

@@ -54,5 +54,55 @@ export const FLOAT_EASE = 'power2.out';
 /** Safety margin (px) from viewport/scroll boundaries for floating images. */
 export const FLOAT_SAFETY_BUFFER = 16;
 
+// --- Gallery Preview Mode Configuration ---
 
+/** Hero top inset. */
+export const PREVIEW_MARGIN_TOP = '2rem';
 
+/** Hero bottom inset (above thumb rail). */
+export const PREVIEW_MARGIN_BOTTOM = '6rem';
+
+/** Thumb cell size. */
+export const PREVIEW_THUMB_SIZE = '60px';
+
+/** Center thumb vs side size scale. */
+export const PREVIEW_THUMB_ACTIVE_SCALE = 1.15;
+
+/** Non-center thumbs in strip opacity. */
+export const PREVIEW_THUMB_SIDE_OPACITY = 0.5;
+
+/** Side peeks + outgoing end opacity. */
+export const PREVIEW_PEEK_OPACITY = 0.3;
+
+/** Peek visible width vs hero. */
+export const PREVIEW_PEEK_WIDTH_RATIO = 0.1;
+
+/** Hero image width scale during outgoing tween. */
+export const PREVIEW_OUTGOING_IMAGE_SCALE = 0.7;
+
+/** Backdrop image blur radius. */
+export const PREVIEW_BACKDROP_BLUR = '40px';
+
+/** RGBA overlay color on backdrop. */
+export const PREVIEW_BACKDROP_DIM = 'rgba(0, 0, 0, 0.7)';
+
+/** Hero nav master timeline duration (seconds). */
+export const PREVIEW_TRANSITION_DURATION = 0.5;
+
+/** GSAP ease for hero nav. */
+export const PREVIEW_TRANSITION_EASE = 'power2.inOut';
+
+/** Open/close animation duration (seconds). */
+export const PREVIEW_OPEN_DURATION = 0.4;
+
+/** GSAP ease for open/close. */
+export const PREVIEW_OPEN_EASE = 'power2.out';
+
+/** Cap for getImage preview generation. */
+export const PREVIEW_MAX_WIDTH = 1920;
+
+/** Min horizontal swipe distance. */
+export const PREVIEW_SWIPE_THRESHOLD_PX = 50;
+
+/** Opacity for the image counter text. */
+export const PREVIEW_COUNTER_OPACITY = 0.8;
