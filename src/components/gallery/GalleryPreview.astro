@@ -3,11 +3,13 @@ import {
   PREVIEW_MARGIN_TOP,
   PREVIEW_MARGIN_BOTTOM,
   PREVIEW_COUNTER_GAP,
+  PREVIEW_COUNTER_FONT_SIZE,
   PREVIEW_THUMB_SIZE,
   PREVIEW_THUMB_ACTIVE_SCALE,
   PREVIEW_THUMB_SIDE_OPACITY,
   PREVIEW_PEEK_OPACITY,
   PREVIEW_PEEK_WIDTH_RATIO,
+  PREVIEW_PEEK_HEIGHT_RATIO,
   PREVIEW_BACKDROP_BLUR,
   PREVIEW_BACKDROP_DIM,
   PREVIEW_COUNTER_OPACITY
@@ -32,26 +34,28 @@ import {
           </svg>
         </button>
 
-        <button type="button" class="preview-peek peek-left" data-offset="-1" aria-label="Poprzednie zdjęcie">
-          <img src="" alt="" />
-        </button>
-        
-        <div class="hero-stage">
-          <div id="preview-spinner" class="spinner" aria-hidden="true"></div>
-          <img id="preview-hero-image" src="" alt="" decoding="async" />
-          
-          <div class="thumbnail-strip">
-            <button type="button" class="thumbnail-slot" data-offset="-2"><img src="" alt="" decoding="async" /></button>
-            <button type="button" class="thumbnail-slot" data-offset="-1"><img src="" alt="" decoding="async" /></button>
-            <button type="button" class="thumbnail-slot is-active" data-offset="0"><img src="" alt="" decoding="async" /></button>
-            <button type="button" class="thumbnail-slot" data-offset="1"><img src="" alt="" decoding="async" /></button>
-            <button type="button" class="thumbnail-slot" data-offset="2"><img src="" alt="" decoding="async" /></button>
+        <div class="hero-peek-group">
+          <button type="button" class="preview-peek peek-left" data-offset="-1" aria-label="Poprzednie zdjęcie">
+            <img src="" alt="" />
+          </button>
+
+          <div class="hero-stage">
+            <div id="preview-spinner" class="spinner" aria-hidden="true"></div>
+            <img id="preview-hero-image" src="" alt="" decoding="async" />
+
+            <div class="thumbnail-strip">
+              <button type="button" class="thumbnail-slot" data-offset="-2"><img src="" alt="" decoding="async" /></button>
+              <button type="button" class="thumbnail-slot" data-offset="-1"><img src="" alt="" decoding="async" /></button>
+              <button type="button" class="thumbnail-slot is-active" data-offset="0"><img src="" alt="" decoding="async" /></button>
+              <button type="button" class="thumbnail-slot" data-offset="1"><img src="" alt="" decoding="async" /></button>
+              <button type="button" class="thumbnail-slot" data-offset="2"><img src="" alt="" decoding="async" /></button>
+            </div>
           </div>
+
+          <button type="button" class="preview-peek peek-right" data-offset="1" aria-label="Następne zdjęcie">
+            <img src="" alt="" />
+          </button>
         </div>
-        
-        <button type="button" class="preview-peek peek-right" data-offset="1" aria-label="Następne zdjęcie">
-          <img src="" alt="" />
-        </button>
 
         <button id="preview-next" type="button" class="preview-arrow" aria-label="Następne zdjęcie">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -72,11 +76,13 @@ import {
   marginTop: PREVIEW_MARGIN_TOP,
   marginBottom: PREVIEW_MARGIN_BOTTOM,
   counterGap: PREVIEW_COUNTER_GAP,
+  counterFontSize: PREVIEW_COUNTER_FONT_SIZE,
   thumbSize: PREVIEW_THUMB_SIZE,
   thumbActiveScale: PREVIEW_THUMB_ACTIVE_SCALE,
   thumbSideOpacity: PREVIEW_THUMB_SIDE_OPACITY,
   peekOpacity: PREVIEW_PEEK_OPACITY,
   peekWidthRatio: PREVIEW_PEEK_WIDTH_RATIO,
+  peekHeightRatio: PREVIEW_PEEK_HEIGHT_RATIO,
   backdropBlur: PREVIEW_BACKDROP_BLUR,
   backdropDim: PREVIEW_BACKDROP_DIM,
   counterOpacity: PREVIEW_COUNTER_OPACITY
@@ -166,11 +172,12 @@ import {
     gap: var(--counterGap);
     max-width: 100vw;
     min-height: 0;
+    --hero-max-height: calc(100vh - var(--marginTop) - var(--marginBottom) - var(--counterGap) - var(--counterFontSize));
   }
 
   .preview-main-row {
     display: flex;
-    align-items: stretch;
+    align-items: flex-start;
     justify-content: center;
     gap: 0;
     flex: 1 1 0;
@@ -178,19 +185,31 @@ import {
     width: 100%;
   }
 
+  .hero-peek-group {
+    position: relative;
+    display: inline-block;
+    width: var(--hero-width);
+    max-width: 100%;
+    max-height: var(--hero-max-height);
+    min-height: 0;
+    line-height: 0;
+    --hero-width: 0px;
+    --hero-height: 0px;
+  }
+
   .hero-stage {
     position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    align-self: stretch;
+    display: block;
+    width: 100%;
     min-height: 0;
-    height: 100%;
+    min-width: 0;
+    max-height: var(--hero-max-height);
+    line-height: 0;
   }
 
   #preview-hero-image {
     max-width: 70vw;
-    max-height: 100%;
+    max-height: var(--hero-max-height);
     width: auto;
     height: auto;
     display: block;
@@ -228,10 +247,12 @@ import {
   }
 
   .preview-peek {
-    position: relative;
-    width: calc(100vw * var(--peekWidthRatio));
-    min-width: 40px;
-    max-width: 100px;
+    position: absolute;
+    top: 50%;
+    height: calc(var(--peekHeightRatio) * var(--hero-height));
+    transform: translateY(-50%);
+    width: calc(var(--peekWidthRatio) * var(--hero-width));
+    margin: 0;
     cursor: pointer;
     opacity: var(--peekOpacity);
     transition: opacity 0.3s ease;
@@ -239,6 +260,20 @@ import {
     background: transparent;
     border: none;
     padding: 0;
+  }
+
+  .peek-left {
+    right: 100%;
+    left: auto;
+    border-top-left-radius: var(--gallery-image-radius, 8px);
+    border-bottom-left-radius: var(--gallery-image-radius, 8px);
+  }
+
+  .peek-right {
+    left: 100%;
+    right: auto;
+    border-top-right-radius: var(--gallery-image-radius, 8px);
+    border-bottom-right-radius: var(--gallery-image-radius, 8px);
   }
 
   .sr-only {
@@ -253,14 +288,12 @@ import {
     border: 0;
   }
 
-  .peek-left {
-    border-top-left-radius: var(--gallery-image-radius, 8px);
-    border-bottom-left-radius: var(--gallery-image-radius, 8px);
+  .peek-left img {
+    object-position: right center;
   }
 
-  .peek-right {
-    border-top-right-radius: var(--gallery-image-radius, 8px);
-    border-bottom-right-radius: var(--gallery-image-radius, 8px);
+  .peek-right img {
+    object-position: left center;
   }
 
   .preview-peek:hover {
@@ -279,7 +312,7 @@ import {
   .preview-counter {
     flex-shrink: 0;
     font-variant-numeric: tabular-nums;
-    font-size: 0.9rem;
+    font-size: var(--counterFontSize);
     line-height: 1;
     opacity: var(--counterOpacity);
   }
@@ -365,6 +398,8 @@ import {
   let scrollContainer: HTMLElement | null = null;
   let peeks: HTMLElement[] = [];
   let thumbnails: HTMLElement[] = [];
+  let heroPeekGroup: HTMLElement | null = null;
+  let heroResizeObserver: ResizeObserver | null = null;
   let manifest: any[] = [];
   let currentIndex = 0;
   let lastActiveElement: HTMLElement | null = null;
@@ -420,6 +455,23 @@ import {
         dialog.close();
       }
     }
+  }
+
+  function syncHeroPeekSizing() {
+    if (!heroImage || !heroPeekGroup) return;
+    const { width, height } = heroImage.getBoundingClientRect();
+    heroPeekGroup.style.setProperty('--hero-width', `${width}px`);
+    heroPeekGroup.style.setProperty('--hero-height', `${height}px`);
+  }
+
+  function setupHeroResizeObserver() {
+    heroResizeObserver?.disconnect();
+    if (!heroImage) return;
+
+    heroResizeObserver = new ResizeObserver(() => {
+      syncHeroPeekSizing();
+    });
+    heroResizeObserver.observe(heroImage);
   }
 
   function preloadImage(index: number) {
@@ -495,6 +547,7 @@ import {
       spinner.classList.remove('is-visible');
       heroImage.classList.add('is-loaded');
       backdropImage.classList.add('is-loaded');
+      syncHeroPeekSizing();
     }
 
     // Preload adjacent images
@@ -571,6 +624,8 @@ import {
   }
 
   function cleanupPreview() {
+    heroResizeObserver?.disconnect();
+    heroResizeObserver = null;
     window.removeEventListener('gallery:open-preview', handleCustomOpen);
     window.removeEventListener('keydown', handleKeyDown);
     window.removeEventListener('popstate', handlePopState);
@@ -600,8 +655,12 @@ import {
     scrollContainer = document.querySelector('.scroll-container');
     peeks = Array.from(document.querySelectorAll('.preview-peek'));
     thumbnails = Array.from(document.querySelectorAll('.thumbnail-slot'));
+    heroPeekGroup = document.querySelector('.hero-peek-group');
 
     if (!dialog) return;
+
+    setupHeroResizeObserver();
+    syncHeroPeekSizing();
 
     peeks.forEach(peek => {
       const offset = parseInt(peek.dataset.offset || '0', 10);

@@ -65,20 +65,26 @@ export const PREVIEW_MARGIN_BOTTOM = '1.5rem';
 /** Gap between the hero image bottom edge and the counter text. */
 export const PREVIEW_COUNTER_GAP = '0.5rem';
 
+/** Font size for the image counter (e.g. "3 / 16"). */
+export const PREVIEW_COUNTER_FONT_SIZE = '0.9rem';
+
 /** Thumb cell size. */
-export const PREVIEW_THUMB_SIZE = '60px';
+export const PREVIEW_THUMB_SIZE = '50px';
 
 /** Center thumb vs side size scale. */
-export const PREVIEW_THUMB_ACTIVE_SCALE = 1.15;
+export const PREVIEW_THUMB_ACTIVE_SCALE = 1.2;
 
 /** Non-center thumbs in strip opacity. */
 export const PREVIEW_THUMB_SIDE_OPACITY = 0.5;
 
 /** Side peeks + outgoing end opacity. */
-export const PREVIEW_PEEK_OPACITY = 0.3;
+export const PREVIEW_PEEK_OPACITY = 0.2;
 
-/** Peek visible width vs hero. */
-export const PREVIEW_PEEK_WIDTH_RATIO = 0.1;
+/** Peek width as a fraction of the hero image width (0.1 = 10%, 1 = 100%). */
+export const PREVIEW_PEEK_WIDTH_RATIO = 0.2;
+
+/** Peek height as a fraction of the hero image height (0.1 = 10%, 1 = 100%). */
+export const PREVIEW_PEEK_HEIGHT_RATIO = 0.9;
 
 /** Hero image width scale during outgoing tween. */
 export const PREVIEW_OUTGOING_IMAGE_SCALE = 0.7;
