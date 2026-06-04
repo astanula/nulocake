@@ -2,6 +2,7 @@
 import {
   PREVIEW_MARGIN_TOP,
   PREVIEW_MARGIN_BOTTOM,
+  PREVIEW_COUNTER_GAP,
   PREVIEW_THUMB_SIZE,
   PREVIEW_THUMB_ACTIVE_SCALE,
   PREVIEW_THUMB_SIDE_OPACITY,
@@ -13,42 +14,46 @@ import {
 } from '../../config/gallery';
 ---
 
-<dialog id="gallery-preview" class="gallery-preview" aria-modal="true" aria-label="Podgląd obrazu">
+<dialog id="gallery-preview" class="gallery-preview" aria-modal="true" aria-roledescription="Podgląd galerii" aria-label="Podgląd galerii">
   <div class="preview-backdrop" aria-hidden="true">
     <img id="preview-backdrop-image" src="" alt="" decoding="async" />
   </div>
   <div class="preview-content">
-    <button id="preview-close" class="preview-close" aria-label="Zamknij podgląd (Esc)">
+    <button id="preview-close" type="button" class="preview-close" aria-label="Zamknij podgląd (Esc)">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
     <div class="preview-layout">
       <div class="preview-main-row">
-        <button id="preview-prev" class="preview-arrow" aria-label="Poprzednie zdjęcie">
+        <button id="preview-prev" type="button" class="preview-arrow" aria-label="Poprzednie zdjęcie">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
 
-        <div class="preview-peek peek-left" data-offset="-1"><img src="" alt="" /></div>
+        <button type="button" class="preview-peek peek-left" data-offset="-1" aria-label="Poprzednie zdjęcie">
+          <img src="" alt="" />
+        </button>
         
         <div class="hero-stage">
           <div id="preview-spinner" class="spinner" aria-hidden="true"></div>
           <img id="preview-hero-image" src="" alt="" decoding="async" />
           
           <div class="thumbnail-strip">
-            <button class="thumbnail-slot" data-offset="-2"><img src="" alt="" decoding="async" /></button>
-            <button class="thumbnail-slot" data-offset="-1"><img src="" alt="" decoding="async" /></button>
-            <button class="thumbnail-slot is-active" data-offset="0"><img src="" alt="" decoding="async" /></button>
-            <button class="thumbnail-slot" data-offset="1"><img src="" alt="" decoding="async" /></button>
-            <button class="thumbnail-slot" data-offset="2"><img src="" alt="" decoding="async" /></button>
+            <button type="button" class="thumbnail-slot" data-offset="-2"><img src="" alt="" decoding="async" /></button>
+            <button type="button" class="thumbnail-slot" data-offset="-1"><img src="" alt="" decoding="async" /></button>
+            <button type="button" class="thumbnail-slot is-active" data-offset="0"><img src="" alt="" decoding="async" /></button>
+            <button type="button" class="thumbnail-slot" data-offset="1"><img src="" alt="" decoding="async" /></button>
+            <button type="button" class="thumbnail-slot" data-offset="2"><img src="" alt="" decoding="async" /></button>
           </div>
         </div>
         
-        <div class="preview-peek peek-right" data-offset="1"><img src="" alt="" /></div>
+        <button type="button" class="preview-peek peek-right" data-offset="1" aria-label="Następne zdjęcie">
+          <img src="" alt="" />
+        </button>
 
-        <button id="preview-next" class="preview-arrow" aria-label="Następne zdjęcie">
+        <button id="preview-next" type="button" class="preview-arrow" aria-label="Następne zdjęcie">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -56,7 +61,8 @@ import {
       </div>
 
       <div id="preview-counter" class="preview-counter" aria-live="polite">
-        <span id="preview-current-index">1</span> / <span id="preview-total-count">1</span>
+        <span class="sr-only" id="preview-sr-counter">Zdjęcie 1 z 1</span>
+        <span aria-hidden="true"><span id="preview-current-index">1</span> / <span id="preview-total-count">1</span></span>
       </div>
     </div>
   </div>
@@ -65,6 +71,7 @@ import {
 <style define:vars={{
   marginTop: PREVIEW_MARGIN_TOP,
   marginBottom: PREVIEW_MARGIN_BOTTOM,
+  counterGap: PREVIEW_COUNTER_GAP,
   thumbSize: PREVIEW_THUMB_SIZE,
   thumbActiveScale: PREVIEW_THUMB_ACTIVE_SCALE,
   thumbSideOpacity: PREVIEW_THUMB_SIDE_OPACITY,
@@ -147,13 +154,18 @@ import {
   }
 
   .preview-layout {
+    position: absolute;
+    top: var(--marginTop);
+    bottom: var(--marginBottom);
+    left: 0;
+    right: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 1rem;
+    justify-content: flex-start;
+    gap: var(--counterGap);
     max-width: 100vw;
-    max-height: 100vh;
+    min-height: 0;
   }
 
   .preview-main-row {
@@ -161,18 +173,24 @@ import {
     align-items: stretch;
     justify-content: center;
     gap: 0;
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
   }
 
   .hero-stage {
     position: relative;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
+    align-self: stretch;
+    min-height: 0;
+    height: 100%;
   }
 
   #preview-hero-image {
     max-width: 70vw;
-    max-height: calc(100vh - var(--marginTop) - var(--marginBottom));
+    max-height: 100%;
     width: auto;
     height: auto;
     display: block;
@@ -218,6 +236,21 @@ import {
     opacity: var(--peekOpacity);
     transition: opacity 0.3s ease;
     overflow: hidden;
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .peek-left {
@@ -244,10 +277,11 @@ import {
   }
 
   .preview-counter {
+    flex-shrink: 0;
     font-variant-numeric: tabular-nums;
     font-size: 0.9rem;
+    line-height: 1;
     opacity: var(--counterOpacity);
-    margin-top: 0.5rem;
   }
 
   .thumbnail-strip {
@@ -333,6 +367,8 @@ import {
   let thumbnails: HTMLElement[] = [];
   let manifest: any[] = [];
   let currentIndex = 0;
+  let lastActiveElement: HTMLElement | null = null;
+  let isSwapping = false;
 
   function closePreview() {
     if (dialog && dialog.open) {
@@ -360,9 +396,20 @@ import {
       backdropImage.src = '';
       backdropImage.classList.remove('is-loaded');
     }
-    // Only go back if we are currently holding the history state
-    if (history.state && history.state.galleryPreview) {
+    // Only go back if we are currently holding the history state and not swapping pages
+    if (!isSwapping && history.state && history.state.galleryPreview) {
       history.back();
+    }
+
+    // Restore focus to the opener element
+    if (lastActiveElement) {
+      lastActiveElement.focus();
+      lastActiveElement = null;
+    } else {
+      const wrapper = document.querySelector(`.gallery-image-wrapper[data-original-index="${currentIndex}"]`) as HTMLElement;
+      if (wrapper) {
+        wrapper.focus();
+      }
     }
   }
 
@@ -391,6 +438,10 @@ import {
     // Update Counter
     if (currentIndexEl) currentIndexEl.textContent = (currentIndex + 1).toString();
     if (totalCountEl) totalCountEl.textContent = manifest.length.toString();
+    const srCounter = document.getElementById('preview-sr-counter');
+    if (srCounter) {
+      srCounter.textContent = `Zdjęcie ${currentIndex + 1} z ${manifest.length}: ${imageData.alt}`;
+    }
 
     // Update Buttons
     if (prevBtn) prevBtn.disabled = currentIndex === 0;
@@ -402,7 +453,9 @@ import {
       const targetIndex = currentIndex + offset;
       const img = peek.querySelector('img');
       if (targetIndex >= 0 && targetIndex < manifest.length && img) {
-        img.src = manifest[targetIndex].src;
+        img.src = manifest[targetIndex].peekSrc || manifest[targetIndex].src;
+        img.alt = manifest[targetIndex].alt || '';
+        peek.setAttribute('aria-label', `${offset === -1 ? 'Poprzednie' : 'Następne'} zdjęcie: ${manifest[targetIndex].alt}`);
         peek.style.visibility = 'visible';
       } else {
         peek.style.visibility = 'hidden';
@@ -415,7 +468,9 @@ import {
       const targetIndex = currentIndex + offset;
       const img = thumb.querySelector('img');
       if (targetIndex >= 0 && targetIndex < manifest.length && img) {
-        img.src = manifest[targetIndex].src;
+        img.src = manifest[targetIndex].thumbSrc || manifest[targetIndex].src;
+        img.alt = manifest[targetIndex].alt || '';
+        thumb.setAttribute('aria-label', `Pokaż zdjęcie ${targetIndex + 1} z ${manifest.length}: ${manifest[targetIndex].alt}`);
         thumb.style.display = 'block';
       } else {
         thumb.style.display = 'none';
@@ -428,6 +483,7 @@ import {
 
     try {
       heroImage.src = imageData.src;
+      heroImage.alt = imageData.alt || '';
       backdropImage.src = imageData.src;
       await Promise.all([
         heroImage.decode().catch(() => {}),
@@ -479,6 +535,8 @@ import {
   async function openPreview(index: number) {
     if (!dialog || !heroImage || !spinner) return;
     
+    lastActiveElement = document.activeElement as HTMLElement;
+
     if (manifest.length === 0) {
       const manifestScript = document.getElementById('gallery-manifest');
       if (manifestScript) {
@@ -512,7 +570,24 @@ import {
     }
   }
 
+  function cleanupPreview() {
+    window.removeEventListener('gallery:open-preview', handleCustomOpen);
+    window.removeEventListener('keydown', handleKeyDown);
+    window.removeEventListener('popstate', handlePopState);
+    document.removeEventListener('astro:before-swap', handleBeforeSwap);
+  }
+
+  function handleBeforeSwap() {
+    isSwapping = true;
+    closePreview();
+    if (scrollContainer) {
+      scrollContainer.style.overflow = '';
+    }
+    cleanupPreview();
+  }
+
   function setupPreview() {
+    isSwapping = false;
     dialog = document.getElementById('gallery-preview') as HTMLDialogElement;
     heroImage = document.getElementById('preview-hero-image') as HTMLImageElement;
     backdropImage = document.getElementById('preview-backdrop-image') as HTMLImageElement;
@@ -570,6 +645,9 @@ import {
 
     window.removeEventListener('popstate', handlePopState);
     window.addEventListener('popstate', handlePopState);
+
+    document.removeEventListener('astro:before-swap', handleBeforeSwap);
+    document.addEventListener('astro:before-swap', handleBeforeSwap);
   }
 
   // Set up listeners on initial load and view transition page loads

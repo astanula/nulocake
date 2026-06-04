@@ -1,9 +1,9 @@
 ---
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import GalleryPreview from '../components/gallery/GalleryPreview.astro';
 
-import { COLUMN_SPEEDS, IMAGE_GAP, IMAGE_BORDER_RADIUS, GALLERY_PADDING_DESKTOP, GALLERY_PADDING_MOBILE, GALLERY_FADE_HEIGHT, GALLERY_FADE_MIDPOINT_RATIO, FLOAT_HOVER_DELAY_MS, FLOAT_SCALE_AMOUNT, FLOAT_ZOOM_AMOUNT, FLOAT_ANIMATION_DURATION, FLOAT_EASE } from '../config/gallery';
+import { COLUMN_SPEEDS, IMAGE_GAP, IMAGE_BORDER_RADIUS, GALLERY_PADDING_DESKTOP, GALLERY_PADDING_MOBILE, GALLERY_FADE_HEIGHT, GALLERY_FADE_MIDPOINT_RATIO, FLOAT_HOVER_DELAY_MS, FLOAT_SCALE_AMOUNT, FLOAT_ZOOM_AMOUNT, FLOAT_ANIMATION_DURATION, FLOAT_EASE, PREVIEW_MAX_WIDTH } from '../config/gallery';
 
 // ── Fetch all gallery images at build time ──────────────
 const imageModules = import.meta.glob<{ default: ImageMetadata }>(
@@ -36,12 +36,42 @@ allImages.forEach((img, i) => {
   columns[i % 4].push(img);
 });
 
-const galleryManifest = allImages.map((img, i) => ({
-  src: img.src.src,
-  width: img.src.width,
-  height: img.src.height,
-  originalIndex: i
-}));
+const galleryManifest = await Promise.all(
+  allImages.map(async (img, i) => {
+    const colIndex = i % 4;
+    const rowIndex = Math.floor(i / 4);
+    const altText = `Tort ${colIndex + 1}-${rowIndex + 1}`;
+
+    const previewImage = await getImage({
+      src: img.src,
+      width: Math.min(img.src.width, PREVIEW_MAX_WIDTH),
+      format: 'webp'
+    });
+
+    const peekImage = await getImage({
+      src: img.src,
+      width: 300,
+      format: 'webp'
+    });
+
+    const thumbImage = await getImage({
+      src: img.src,
+      width: 120,
+      format: 'webp'
+    });
+
+    return {
+      src: previewImage.src,
+      peekSrc: peekImage.src,
+      thumbSrc: thumbImage.src,
+      gridSrc: img.src.src,
+      alt: altText,
+      width: img.src.width,
+      height: img.src.height,
+      originalIndex: i
+    };
+  })
+);
 ---
 
 <Layout title="Galeria — Nulo Cake" description="Galeria artystycznych tortów na zamówienie. Torty weselne, urodzinowe i okolicznościowe." isSubpage={true}>
@@ -58,7 +88,13 @@ const galleryManifest = allImages.map((img, i) => ({
             {/* Original set */}
             <div class="gallery-set-original" style={`gap: ${IMAGE_GAP}; padding-bottom: ${IMAGE_GAP};`}>
               {colImages.map((img, imgIndex) => (
-                <div class="gallery-image-wrapper" data-original-index={imgIndex * 4 + colIndex}>
+                <div 
+                  class="gallery-image-wrapper" 
+                  data-original-index={imgIndex * 4 + colIndex}
+                  tabindex="0"
+                  role="button"
+                  aria-label={`Otwórz podgląd dla: Tort ${colIndex + 1}-${imgIndex + 1}`}
+                >
                   <Image
                     src={img.src}
                     alt={`Tort ${colIndex + 1}-${imgIndex + 1}`}
@@ -555,6 +591,27 @@ const galleryManifest = allImages.map((img, i) => ({
 
       window.dispatchEvent(new CustomEvent('gallery:open-preview', { detail: { index } }));
     }, { signal });
+
+    // ── Keyboard Accessibility: Open Preview on Enter/Space ──
+    container.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        const wrapper = (e.target as HTMLElement).closest('.gallery-image-wrapper') as HTMLElement | null;
+        if (!wrapper) return;
+
+        e.preventDefault();
+
+        // Clear any active float effect
+        if (activeFloatWrapper) {
+          forceResetActiveFloat();
+        }
+
+        const indexStr = wrapper.dataset.originalIndex;
+        if (!indexStr) return;
+        const index = parseInt(indexStr, 10);
+
+        window.dispatchEvent(new CustomEvent('gallery:open-preview', { detail: { index } }));
+      }
+    }, { signal });
   }
 
   /**
@@ -597,6 +654,9 @@ const galleryManifest = allImages.map((img, i) => ({
       originals.forEach((origWrapper) => {
         const clone = origWrapper.cloneNode(true) as HTMLElement;
         clone.setAttribute('aria-hidden', 'true');
+        clone.removeAttribute('tabindex');
+        clone.removeAttribute('role');
+        clone.removeAttribute('aria-label');
         // Clear alt on cloned images
         const img = clone.querySelector('img');
         if (img) img.alt = '';

@@ -57,10 +57,13 @@ export const FLOAT_SAFETY_BUFFER = 16;
 // --- Gallery Preview Mode Configuration ---
 
 /** Hero top inset. */
-export const PREVIEW_MARGIN_TOP = '2rem';
+export const PREVIEW_MARGIN_TOP = '1.5rem';
 
 /** Hero bottom inset (above thumb rail). */
-export const PREVIEW_MARGIN_BOTTOM = '6rem';
+export const PREVIEW_MARGIN_BOTTOM = '1.5rem';
+
+/** Gap between the hero image bottom edge and the counter text. */
+export const PREVIEW_COUNTER_GAP = '0.5rem';
 
 /** Thumb cell size. */
 export const PREVIEW_THUMB_SIZE = '60px';
