@@ -259,6 +259,7 @@ const styleVars = [
   let arrowNextEl: HTMLButtonElement | null = null;
   let thumbEls: HTMLButtonElement[] = [];
   let previewController: AbortController | null = null;
+  let lastOpenedIndex = 0;
 
   function prefersReducedMotion(): boolean {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -326,6 +327,7 @@ const styleVars = [
     if (!state.isOpen) return;
     if (index < 0 || index >= state.total || index === state.current) return;
     render(index);
+    lastOpenedIndex = index;
     // Directional preload is added in Task 8.
   }
 
@@ -337,6 +339,49 @@ const styleVars = [
     if (sc) sc.style.overflow = 'hidden';
   }
 
+  function unlockScroll(): void {
+    const sc = document.querySelector('.scroll-container') as HTMLElement | null;
+    if (sc) sc.style.overflow = '';
+  }
+
+  function restoreFocus(): void {
+    const target = document.querySelector(
+      `.gallery-set-original .gallery-image-wrapper[data-original-index="${lastOpenedIndex}"]`
+    ) as HTMLElement | null;
+    (target ?? document.body).focus?.();
+  }
+
+  /**
+   * User-initiated close funnel (✕, Escape, backdrop). Routes through
+   * history so DOM + history stay in lockstep (spec §6).
+   */
+  function requestClose(): void {
+    if (!state.isOpen || state.isClosing) return;
+    history.back(); // → popstate → runCloseTeardown()
+  }
+
+  /**
+   * Reverse tween → dialog.close(). Called from the popstate handler.
+   */
+  function runCloseTeardown(): void {
+    if (!state.isOpen || state.isClosing || !dialog || !heroEl) return;
+    state.isClosing = true;
+
+    const finish = () => dialog!.close();
+    if (prefersReducedMotion()) {
+      gsap.set(heroEl, { opacity: 0 });
+      finish();
+    } else {
+      gsap.to(heroEl, {
+        scale: PREVIEW_OPEN_START_SCALE,
+        opacity: 0,
+        duration: PREVIEW_OPEN_DURATION,
+        ease: PREVIEW_OPEN_EASE,
+        onComplete: finish,
+      });
+    }
+  }
+
   /**
    * Open sequence (spec §5a). Runs synchronously inside the
    * `gallery:open-preview` listener so "pause first" ordering holds.
@@ -344,10 +389,11 @@ const styleVars = [
   function openPreview(index: number): void {
     if (!dialog || !heroEl || state.isOpen) return;
     state.isOpen = true;
+    lastOpenedIndex = index;
     state.isClosing = false;
 
     lockScroll();
-    // History push comes in Task 7.
+    history.pushState({ galleryPreview: true }, '', location.href);
     dialog.showModal();
     render(index);
 
@@ -428,7 +474,35 @@ const styleVars = [
       },
       { signal }
     );
-    // Close/history and teardown listeners are added in Tasks 7, 9.
+
+    // ✕ button.
+    dialog?.querySelector('.gp-close')?.addEventListener('click', () => requestClose(), { signal });
+
+    // Backdrop click (target is the dialog itself only for backdrop hits).
+    dialog?.addEventListener('click', (e: MouseEvent) => {
+      if (e.target === dialog) requestClose();
+    }, { signal });
+
+    // Escape: intercept native cancel, route through history instead.
+    dialog?.addEventListener('cancel', (e: Event) => {
+      e.preventDefault();
+      requestClose();
+    }, { signal });
+
+    // History back → tear down.
+    window.addEventListener('popstate', () => {
+      if (state.isOpen && !state.isClosing) runCloseTeardown();
+    }, { signal });
+
+    // Native close (fully closed): unlock, restore focus, resume, defensive pop.
+    dialog?.addEventListener('close', () => {
+      state.isOpen = false;
+      state.isClosing = false;
+      unlockScroll();
+      restoreFocus();
+      document.dispatchEvent(new CustomEvent('gallery:preview-closed'));
+      if (history.state?.galleryPreview) history.back();
+    }, { signal });
   }
 
   if (!(window as any).__galleryPreviewListenerAdded) {
