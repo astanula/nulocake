@@ -319,10 +319,10 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
   }
 
   /**
-   * Immediately kill any running float animation and restore all
-   * GSAP-applied transforms, z-indices, and classes to their default state.
+   * Reset float DOM/state WITHOUT resuming the loop.
+   * Used by the preview open path (the loop is about to be paused).
    */
-  function forceResetActiveFloat(): void {
+  function cancelActiveFloat(): void {
     if (pendingTimer) {
       clearTimeout(pendingTimer);
       pendingTimer = null;
@@ -338,12 +338,10 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
       const col = activeFloatWrapper.closest('.gallery-column') as HTMLElement;
       const img = activeFloatWrapper.querySelector('.gallery-image') as HTMLElement;
 
-      // Clear wrapper & image inline styles
       gsap.set(activeFloatWrapper, { clearProps: 'scale,zIndex,y' });
       activeFloatWrapper.classList.remove('is-floating');
       if (img) gsap.set(img, { clearProps: 'scale' });
 
-      // Reset column elevation and all sibling shifts
       if (col) {
         col.classList.remove('is-elevated');
         col.style.zIndex = '';
@@ -353,7 +351,14 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
 
       activeFloatWrapper = null;
     }
+  }
 
+  /**
+   * Immediately kill any running float animation, restore all state,
+   * and resume the loop. (Used by hover-out, resize, and cleanup.)
+   */
+  function forceResetActiveFloat(): void {
+    cancelActiveFloat();
     resumeGallery();
   }
 
@@ -570,28 +575,6 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
         }
       }
     }, { signal });
-
-    // ── Mobile: tap to toggle ──
-    container.addEventListener('click', (e: MouseEvent) => {
-      // Only handle touch-originated clicks
-      // PointerEvent extends MouseEvent; check pointerType if available
-      const pe = e as PointerEvent;
-      if (pe.pointerType !== 'touch') return;
-
-      const wrapper = (e.target as HTMLElement).closest('.gallery-image-wrapper') as HTMLElement | null;
-      if (!wrapper) return;
-
-      e.preventDefault();
-
-      if (activeFloatWrapper === wrapper) {
-        // Tap the active image → reverse (close)
-        activeFloatTimeline?.reverse();
-      } else {
-        // Tap a new image → force-reset old, open new immediately
-        forceResetActiveFloat();
-        triggerFloat(wrapper);
-      }
-    }, { signal });
   }
 
   /**
@@ -802,6 +785,57 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
     updateColumnHeights(allColumns);
     createLoopTweens(allColumns);
     attachFloatListeners(container, signal);
+
+    // ── Preview: unified click handler (all pointer types) ──
+    const previewManifest = (() => {
+      const el = document.getElementById('gallery-manifest');
+      if (!el?.textContent) return [] as { index: number; previewSrc: string }[];
+      try {
+        return JSON.parse(el.textContent) as { index: number; previewSrc: string }[];
+      } catch {
+        return [] as { index: number; previewSrc: string }[];
+      }
+    })();
+
+    container.addEventListener(
+      'click',
+      (e: MouseEvent) => {
+        const wrapper = (e.target as HTMLElement).closest(
+          '.gallery-image-wrapper'
+        ) as HTMLElement | null;
+        if (!wrapper) return;
+
+        const raw = wrapper.dataset.originalIndex;
+        const index = raw != null ? parseInt(raw, 10) : NaN;
+        // Guard: duplicates only get the attribute at runtime; ignore if unresolved.
+        if (Number.isNaN(index)) return;
+
+        e.preventDefault();
+
+        // Resume-free float cancel, then pause FIRST (synchronously).
+        cancelActiveFloat();
+        pauseGallery();
+
+        // Kick off HQ decode for the clicked index immediately (spec §4 Loading).
+        const entry = previewManifest.find((m) => m.index === index);
+        if (entry) {
+          const pre = new Image();
+          pre.src = entry.previewSrc;
+        }
+
+        document.dispatchEvent(
+          new CustomEvent('gallery:open-preview', { detail: { index } })
+        );
+      },
+      { signal }
+    );
+
+    // ── Preview: resume the loop once the preview is fully closed ──
+    document.addEventListener(
+      'gallery:preview-closed',
+      () => resumeGallery(),
+      { signal }
+    );
 
     // Watch for image loads to recompute heights as they stream in
     const images = container.querySelectorAll('.gallery-set-original img') as NodeListOf<HTMLImageElement>;
