@@ -146,11 +146,13 @@ const styleVars = [
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    /* Fallbacks until the ResizeObserver (Task 3) writes real frame geometry. */
+    /* Fallbacks until the ResizeObserver writes real frame geometry. */
     --gp-frame-left: 0px;
     --gp-frame-right: 0px;
     --gp-frame-width: 0px;
     --gp-frame-height: 0px;
+    --gp-peek-w: calc(var(--gp-frame-width) * var(--gp-peek-width-ratio));
+    --gp-arrow-size: 2.75rem;
   }
 
   .gp-hero-stack {
@@ -247,9 +249,12 @@ const styleVars = [
   }
   .gp-arrow:hover { background: var(--color-surface-container-high); }
   .gp-arrow:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
-  /* Temporary fallback positioning; Task 3 replaces these with frame-relative calc(). */
-  .gp-arrow-prev { left: var(--gp-inline-inset); }
-  .gp-arrow-next { right: var(--gp-inline-inset); }
+  .gp-arrow-prev {
+    left: max(0px, calc(var(--gp-frame-left) - var(--gp-peek-w) - var(--gp-arrow-gap) - var(--gp-arrow-size)));
+  }
+  .gp-arrow-next {
+    right: max(0px, calc(var(--gp-frame-right) - var(--gp-peek-w) - var(--gp-arrow-gap) - var(--gp-arrow-size)));
+  }
   .gp-arrow.is-disabled { opacity: 0.25; pointer-events: none; }
 
   .gp-strip {
@@ -330,6 +335,9 @@ const styleVars = [
   let arrowPrevEl: HTMLButtonElement | null = null;
   let arrowNextEl: HTMLButtonElement | null = null;
   let thumbEls: HTMLButtonElement[] = [];
+  let stageEl: HTMLElement | null = null;
+  let heroFrameEl: HTMLElement | null = null;
+  let frameObserver: ResizeObserver | null = null;
   let previewController: AbortController | null = null;
   let lastOpenedIndex = 0;
   let heroSwapToken = 0;
@@ -369,6 +377,16 @@ const styleVars = [
     if (token === heroSwapToken && state.current === index && heroEl) {
       heroEl.src = entry.previewSrc;
     }
+  }
+
+  function updateFrameVars(): void {
+    if (!stageEl || !heroFrameEl) return;
+    const stageRect = stageEl.getBoundingClientRect();
+    const frameRect = heroFrameEl.getBoundingClientRect();
+    stageEl.style.setProperty('--gp-frame-left', `${frameRect.left - stageRect.left}px`);
+    stageEl.style.setProperty('--gp-frame-right', `${stageRect.right - frameRect.right}px`);
+    stageEl.style.setProperty('--gp-frame-width', `${frameRect.width}px`);
+    stageEl.style.setProperty('--gp-frame-height', `${frameRect.height}px`);
   }
 
   /**
@@ -500,6 +518,12 @@ const styleVars = [
     dialog.showModal();
     render(index);
 
+    frameObserver?.disconnect();
+    frameObserver = new ResizeObserver(() => updateFrameVars());
+    if (heroFrameEl) frameObserver.observe(heroFrameEl);
+    if (stageEl) frameObserver.observe(stageEl);
+    updateFrameVars();
+
     // Chrome is already at final state via CSS; only the hero animates.
     if (prefersReducedMotion()) {
       gsap.set(heroEl, { scale: 1, opacity: 1 });
@@ -530,6 +554,8 @@ const styleVars = [
     state.total = state.manifest.length;
 
     heroEl = dialog.querySelector('.gp-hero');
+    stageEl = dialog.querySelector('.gp-stage');
+    heroFrameEl = dialog.querySelector('.gp-hero-frame');
     counterFractionEl = dialog.querySelector('.gp-counter-fraction');
     counterSrEl = dialog.querySelector('.gp-counter-sr');
     peekPrevEl = dialog.querySelector('.gp-peek-prev');
@@ -602,6 +628,8 @@ const styleVars = [
 
     // Native close (fully closed): unlock, restore focus, resume, defensive pop.
     dialog?.addEventListener('close', () => {
+      frameObserver?.disconnect();
+      frameObserver = null;
       state.isOpen = false;
       state.isClosing = false;
       unlockScroll();
@@ -627,6 +655,8 @@ const styleVars = [
       }
       // Pop any dangling preview history entry so a later Back doesn't misfire.
       if (history.state?.galleryPreview) history.back();
+      frameObserver?.disconnect();
+      frameObserver = null;
       previewController?.abort();
       previewController = null;
     });
