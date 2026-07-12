@@ -57,11 +57,14 @@ export const FLOAT_SAFETY_BUFFER = 16;
 // ── Gallery preview mode ────────────────────────────────
 // Layout & chrome (CSS strings unless noted).
 
-/** Hero top inset (also min top for the close button). */
-export const PREVIEW_MARGIN_TOP = '4rem';
+/** Viewport top edge → hero top edge (also min top for the close button). */
+export const PREVIEW_MARGIN_TOP = '1.5rem';
 
-/** Hero bottom inset, above the thumbnail rail. */
+/** Hero bottom edge → viewport bottom edge (counter + its gap live inside this band). */
 export const PREVIEW_MARGIN_BOTTOM = '1.5rem';
+
+/** Minimum inline inset from viewport / safe-area edges (arrows, peeks, hero stack). */
+export const PREVIEW_MARGIN_INLINE = '1rem';
 
 /** Gap between the hero and the counter. */
 export const PREVIEW_COUNTER_GAP = '0.75rem';
@@ -72,8 +75,11 @@ export const PREVIEW_COUNTER_FONT_SIZE = '0.95rem';
 /** Opacity for the counter text (0..1). */
 export const PREVIEW_COUNTER_OPACITY = 0.7;
 
-/** Thumbnail cell size (square). */
-export const PREVIEW_THUMB_SIZE = '64px';
+/** Thumbnail cell size (square, visible image). */
+export const PREVIEW_THUMB_SIZE = '38px';
+
+/** Gap from the hero bottom edge to the overlaid thumb strip. */
+export const PREVIEW_THUMB_INSET = '0.5rem';
 
 /** Center (active) thumb scale relative to side thumbs. */
 export const PREVIEW_THUMB_ACTIVE_SCALE = 1.15;
@@ -89,6 +95,9 @@ export const PREVIEW_PEEK_WIDTH_RATIO = 0.08;
 
 /** Peek visible height as a ratio of hero height (0..1). */
 export const PREVIEW_PEEK_HEIGHT_RATIO = 0.6;
+
+/** Gap between a peek's outer edge and the arrow. */
+export const PREVIEW_ARROW_GAP = '0.5rem';
 
 /** `::backdrop` blur radius. */
 export const PREVIEW_BACKDROP_BLUR = '20px';
