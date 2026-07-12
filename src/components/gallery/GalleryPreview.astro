@@ -322,6 +322,16 @@ const styleVars = [
     if (counterEl) counterEl.setAttribute('data-sr', `Zdjęcie ${index + 1} z ${state.total}`);
   }
 
+  function goTo(index: number): void {
+    if (!state.isOpen) return;
+    if (index < 0 || index >= state.total || index === state.current) return;
+    render(index);
+    // Directional preload is added in Task 8.
+  }
+
+  function goPrev(): void { goTo(state.current - 1); }
+  function goNext(): void { goTo(state.current + 1); }
+
   function lockScroll(): void {
     const sc = document.querySelector('.scroll-container') as HTMLElement | null;
     if (sc) sc.style.overflow = 'hidden';
@@ -388,7 +398,37 @@ const styleVars = [
       },
       { signal }
     );
-    // Navigation, close/history, and teardown listeners are added in Tasks 6, 7, 9.
+
+    arrowPrevEl?.addEventListener('click', () => goPrev(), { signal });
+    arrowNextEl?.addEventListener('click', () => goNext(), { signal });
+    peekPrevEl?.addEventListener('click', () => goPrev(), { signal });
+    peekNextEl?.addEventListener('click', () => goNext(), { signal });
+
+    thumbEls.forEach((thumb) => {
+      thumb.addEventListener(
+        'click',
+        () => {
+          const idx = thumb.dataset.index;
+          if (idx != null) goTo(parseInt(idx, 10));
+        },
+        { signal }
+      );
+    });
+
+    dialog?.addEventListener(
+      'keydown',
+      (e: KeyboardEvent) => {
+        if (!state.isOpen) return;
+        switch (e.key) {
+          case 'ArrowLeft': e.preventDefault(); goPrev(); break;
+          case 'ArrowRight': e.preventDefault(); goNext(); break;
+          case 'Home': e.preventDefault(); goTo(0); break;
+          case 'End': e.preventDefault(); goTo(state.total - 1); break;
+        }
+      },
+      { signal }
+    );
+    // Close/history and teardown listeners are added in Tasks 7, 9.
   }
 
   if (!(window as any).__galleryPreviewListenerAdded) {
