@@ -1,8 +1,8 @@
 ---
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 
-import { COLUMN_SPEEDS, IMAGE_GAP, IMAGE_BORDER_RADIUS, GALLERY_PADDING_DESKTOP, GALLERY_PADDING_MOBILE, GALLERY_FADE_HEIGHT, GALLERY_FADE_MIDPOINT_RATIO, FLOAT_HOVER_DELAY_MS, FLOAT_SCALE_AMOUNT, FLOAT_ZOOM_AMOUNT, FLOAT_ANIMATION_DURATION, FLOAT_EASE } from '../config/gallery';
+import { COLUMN_SPEEDS, IMAGE_GAP, IMAGE_BORDER_RADIUS, GALLERY_PADDING_DESKTOP, GALLERY_PADDING_MOBILE, GALLERY_FADE_HEIGHT, GALLERY_FADE_MIDPOINT_RATIO, FLOAT_HOVER_DELAY_MS, FLOAT_SCALE_AMOUNT, FLOAT_ZOOM_AMOUNT, FLOAT_ANIMATION_DURATION, FLOAT_EASE, PREVIEW_MAX_WIDTH, PREVIEW_THUMB_RES, PREVIEW_PEEK_RES } from '../config/gallery';
 
 // ── Fetch all gallery images at build time ──────────────
 const imageModules = import.meta.glob<{ default: ImageMetadata }>(
@@ -34,10 +34,52 @@ const columns: GalleryImage[][] = [[], [], [], []];
 allImages.forEach((img, i) => {
   columns[i % 4].push(img);
 });
+
+// ── Build the preview manifest (sorted by data-original-index) ──
+type ManifestEntry = {
+  index: number;
+  alt: string;
+  gridSrc: string;
+  thumbSrc: string;
+  peekSrc: string;
+  previewSrc: string;
+};
+
+const manifestPromises: Promise<ManifestEntry>[] = [];
+columns.forEach((colImages, colIndex) => {
+  colImages.forEach((img, imgIndex) => {
+    const index = imgIndex * 4 + colIndex;
+    const alt = `Tort ${colIndex + 1}-${imgIndex + 1}`;
+    const src = img.src;
+    manifestPromises.push(
+      (async () => {
+        const [grid, thumb, peek, preview] = await Promise.all([
+          getImage({ src, width: 500, format: 'webp' }),
+          getImage({ src, width: PREVIEW_THUMB_RES, format: 'webp' }),
+          getImage({ src, width: PREVIEW_PEEK_RES, format: 'webp' }),
+          getImage({ src, width: Math.min(src.width, PREVIEW_MAX_WIDTH), format: 'webp' }),
+        ]);
+        return {
+          index,
+          alt,
+          gridSrc: grid.src,
+          thumbSrc: thumb.src,
+          peekSrc: peek.src,
+          previewSrc: preview.src,
+        };
+      })()
+    );
+  });
+});
+
+const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).sort(
+  (a, b) => a.index - b.index
+);
 ---
 
 <Layout title="Galeria — Nulo Cake" description="Galeria artystycznych tortów na zamówienie. Torty weselne, urodzinowe i okolicznościowe." isSubpage={true}>
   <main class="gallery-page" id="gallery-page">
+    <script type="application/json" id="gallery-manifest" set:html={JSON.stringify(galleryManifest)} is:inline></script>
     <div class="gallery-container" id="gallery-container" style={`gap: ${IMAGE_GAP}; --gallery-image-radius: ${IMAGE_BORDER_RADIUS}; --gallery-padding-desktop: ${GALLERY_PADDING_DESKTOP}; --gallery-padding-mobile: ${GALLERY_PADDING_MOBILE}; --gallery-fade-height: ${GALLERY_FADE_HEIGHT}; --gallery-fade-midpoint-ratio: ${GALLERY_FADE_MIDPOINT_RATIO};`}>
       {columns.map((colImages, colIndex) => (
         <div
