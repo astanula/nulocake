@@ -404,7 +404,7 @@ const styleVars = [
 
     // Counter (1-based): visible fraction + Polish SR announcement.
     if (counterFractionEl) counterFractionEl.textContent = `${index + 1} / ${state.total}`;
-    if (counterSrEl) counterSrEl.textContent = `Zdjęcie ${index + 1} z ${state.total}`;
+    if (counterSrEl) counterSrEl.textContent = `${index + 1} / ${state.total}`;
 
     // Peeks (prev/next), hidden at the ends.
     const prev = entryFor(index - 1);
