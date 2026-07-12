@@ -93,7 +93,7 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
             {/* Original set */}
             <div class="gallery-set-original" style={`gap: ${IMAGE_GAP}; padding-bottom: ${IMAGE_GAP};`}>
               {colImages.map((img, imgIndex) => (
-                <div class="gallery-image-wrapper" data-original-index={imgIndex * 4 + colIndex}>
+                <div class="gallery-image-wrapper" data-original-index={imgIndex * 4 + colIndex} tabindex="-1">
                   <Image
                     src={img.src}
                     alt={`Tort ${colIndex + 1}-${imgIndex + 1}`}
@@ -758,10 +758,6 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
     ) as HTMLElement[];
     if (allColumns.length === 0) return;
 
-    // Reduced motion: show static grid, no animation
-    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (motionQuery.matches) return;
-
     // Clean up any previous instance (e.g., from a prior page-load)
     cleanupGallery();
 
@@ -769,22 +765,67 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
     cleanupController = new AbortController();
     const { signal } = cleanupController;
 
-    // Collect and sort all original image wrappers before redistributing
-    const allImageWrappers = allColumns.flatMap((col) =>
-      Array.from(col.querySelectorAll('.gallery-set-original > .gallery-image-wrapper'))
-    ) as HTMLElement[];
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    allImageWrappers.sort((a, b) => {
-      const idxA = parseInt(a.dataset.originalIndex || '0', 10);
-      const idxB = parseInt(b.dataset.originalIndex || '0', 10);
-      return idxA - idxB;
-    });
+    if (!reducedMotion) {
+      // Collect and sort all original image wrappers before redistributing
+      const allImageWrappers = allColumns.flatMap((col) =>
+        Array.from(col.querySelectorAll('.gallery-set-original > .gallery-image-wrapper'))
+      ) as HTMLElement[];
 
-    const visibleCount = getColumnCount();
-    redistributeColumns(allColumns, visibleCount, allImageWrappers);
-    updateColumnHeights(allColumns);
-    createLoopTweens(allColumns);
-    attachFloatListeners(container, signal);
+      allImageWrappers.sort((a, b) => {
+        const idxA = parseInt(a.dataset.originalIndex || '0', 10);
+        const idxB = parseInt(b.dataset.originalIndex || '0', 10);
+        return idxA - idxB;
+      });
+
+      const visibleCount = getColumnCount();
+      redistributeColumns(allColumns, visibleCount, allImageWrappers);
+      updateColumnHeights(allColumns);
+      createLoopTweens(allColumns);
+      attachFloatListeners(container, signal);
+
+      // Watch for image loads to recompute heights as they stream in
+      const images = container.querySelectorAll('.gallery-set-original img') as NodeListOf<HTMLImageElement>;
+
+      function triggerHeightRecalc() {
+        if (imageLoadTimer) clearTimeout(imageLoadTimer);
+        imageLoadTimer = setTimeout(() => {
+          updateColumnHeights(allColumns);
+          createLoopTweens(allColumns);
+        }, 50);
+      }
+
+      images.forEach((img) => {
+        if (!img.complete) {
+          img.addEventListener('load', triggerHeightRecalc, { signal, once: true });
+          img.addEventListener('error', triggerHeightRecalc, { signal, once: true });
+        }
+      });
+
+      // Handle resize — uses signal so it's auto-removed on cleanup
+      window.addEventListener('resize', () => {
+        if (resizeTimer) clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          // Reset any active float before rebuilding layout
+          forceResetActiveFloat();
+
+          const newCount = getColumnCount();
+          // Kill old tweens
+          activeTweens.forEach((t) => t.kill());
+          activeTweens = [];
+          // Reset column transforms & height styles
+          allColumns.forEach((col) => {
+            col.style.height = '';
+            const inner = col.querySelector('.gallery-column-inner') as HTMLElement;
+            if (inner) gsap.set(inner, { clearProps: 'all' });
+          });
+          redistributeColumns(allColumns, newCount, allImageWrappers);
+          updateColumnHeights(allColumns);
+          createLoopTweens(allColumns);
+        }, 200);
+      }, { signal });
+    }
 
     // ── Preview: unified click handler (all pointer types) ──
     const previewManifest = (() => {
@@ -836,47 +877,6 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
       () => resumeGallery(),
       { signal }
     );
-
-    // Watch for image loads to recompute heights as they stream in
-    const images = container.querySelectorAll('.gallery-set-original img') as NodeListOf<HTMLImageElement>;
-    
-    function triggerHeightRecalc() {
-      if (imageLoadTimer) clearTimeout(imageLoadTimer);
-      imageLoadTimer = setTimeout(() => {
-        updateColumnHeights(allColumns);
-        createLoopTweens(allColumns);
-      }, 50);
-    }
-
-    images.forEach((img) => {
-      if (!img.complete) {
-        img.addEventListener('load', triggerHeightRecalc, { signal, once: true });
-        img.addEventListener('error', triggerHeightRecalc, { signal, once: true });
-      }
-    });
-
-    // Handle resize — uses signal so it's auto-removed on cleanup
-    window.addEventListener('resize', () => {
-      if (resizeTimer) clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        // Reset any active float before rebuilding layout
-        forceResetActiveFloat();
-
-        const newCount = getColumnCount();
-        // Kill old tweens
-        activeTweens.forEach((t) => t.kill());
-        activeTweens = [];
-        // Reset column transforms & height styles
-        allColumns.forEach((col) => {
-          col.style.height = '';
-          const inner = col.querySelector('.gallery-column-inner') as HTMLElement;
-          if (inner) gsap.set(inner, { clearProps: 'all' });
-        });
-        redistributeColumns(allColumns, newCount, allImageWrappers);
-        updateColumnHeights(allColumns);
-        createLoopTweens(allColumns);
-      }, 200);
-    }, { signal });
   }
 
   // ── Astro lifecycle ───────────────────────────────

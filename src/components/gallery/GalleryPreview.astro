@@ -42,7 +42,10 @@ const styleVars = [
     <span aria-hidden="true">&#10005;</span>
   </button>
 
-  <div class="gp-counter" aria-live="polite"></div>
+  <div class="gp-counter">
+    <span class="gp-counter-fraction" aria-hidden="true"></span>
+    <span class="gp-counter-sr" aria-live="polite"></span>
+  </div>
 
   <div class="gp-stage">
     <img class="gp-peek gp-peek-prev" alt="" aria-hidden="true" draggable="false" />
@@ -128,6 +131,18 @@ const styleVars = [
     opacity: var(--gp-counter-opacity);
     margin-bottom: var(--gp-counter-gap);
     flex: 0 0 auto;
+  }
+
+  .gp-counter-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
 
   .gp-stage {
@@ -252,7 +267,8 @@ const styleVars = [
 
   let dialog: HTMLDialogElement | null = null;
   let heroEl: HTMLImageElement | null = null;
-  let counterEl: HTMLElement | null = null;
+  let counterFractionEl: HTMLElement | null = null;
+  let counterSrEl: HTMLElement | null = null;
   let peekPrevEl: HTMLImageElement | null = null;
   let peekNextEl: HTMLImageElement | null = null;
   let arrowPrevEl: HTMLButtonElement | null = null;
@@ -312,8 +328,9 @@ const styleVars = [
     heroEl.src = entry.gridSrc;
     heroEl.setAttribute('aria-label', entry.alt);
 
-    // Counter (1-based).
-    if (counterEl) counterEl.textContent = `${index + 1} / ${state.total}`;
+    // Counter (1-based): visible fraction + Polish SR announcement.
+    if (counterFractionEl) counterFractionEl.textContent = `${index + 1} / ${state.total}`;
+    if (counterSrEl) counterSrEl.textContent = `Zdjęcie ${index + 1} z ${state.total}`;
 
     // Peeks (prev/next), hidden at the ends.
     const prev = entryFor(index - 1);
@@ -348,9 +365,6 @@ const styleVars = [
         if (img) img.removeAttribute('src');
       }
     });
-
-    // Announce for screen readers.
-    if (counterEl) counterEl.setAttribute('data-sr', `Zdjęcie ${index + 1} z ${state.total}`);
 
     void swapHeroHQ(index);
   }
@@ -460,7 +474,8 @@ const styleVars = [
     state.total = state.manifest.length;
 
     heroEl = dialog.querySelector('.gp-hero');
-    counterEl = dialog.querySelector('.gp-counter');
+    counterFractionEl = dialog.querySelector('.gp-counter-fraction');
+    counterSrEl = dialog.querySelector('.gp-counter-sr');
     peekPrevEl = dialog.querySelector('.gp-peek-prev');
     peekNextEl = dialog.querySelector('.gp-peek-next');
     arrowPrevEl = dialog.querySelector('.gp-arrow-prev');
