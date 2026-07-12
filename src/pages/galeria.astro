@@ -1,6 +1,7 @@
 ---
 import { Image, getImage } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
+import GalleryPreview from '../components/gallery/GalleryPreview.astro';
 
 import { COLUMN_SPEEDS, IMAGE_GAP, IMAGE_BORDER_RADIUS, GALLERY_PADDING_DESKTOP, GALLERY_PADDING_MOBILE, GALLERY_FADE_HEIGHT, GALLERY_FADE_MIDPOINT_RATIO, FLOAT_HOVER_DELAY_MS, FLOAT_SCALE_AMOUNT, FLOAT_ZOOM_AMOUNT, FLOAT_ANIMATION_DURATION, FLOAT_EASE, PREVIEW_MAX_WIDTH, PREVIEW_THUMB_RES, PREVIEW_PEEK_RES } from '../config/gallery';
 
@@ -123,6 +124,7 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
         </div>
       ))}
     </div>
+    <GalleryPreview />
   </main>
 </Layout>
 
