@@ -21,8 +21,9 @@ This spec favors simplicity throughout: minimal motion, no cloned elements, no m
 | Open | Click/tap any `.gallery-image-wrapper` → preview opens at that image's logical index |
 | Gallery pause | Happens **first**, synchronously, before anything else (before dialog opens, before any animation) |
 | Gallery resume | Happens **last**, only after the preview has fully closed |
-| Float (desktop) | Hover-only; a click cancels any active float before opening preview |
-| Float (mobile) | Tap always opens preview directly; there is no touch-based float toggle |
+| Float (desktop) | Hover-only; a click cancels any active float **without resuming the loop**, then pauses and opens preview |
+| Float (mobile) | Tap always opens preview directly; the existing touch-based float toggle handler is **removed** |
+| Reduced motion | Under `prefers-reduced-motion: reduce`, the open/close hero tween collapses to instant (final state, no scale/opacity animation) |
 | Duplicates | Read `data-original-index` directly from the clicked wrapper (originals and duplicates both carry it) |
 | Hero | Near full viewport height (portrait images); configurable top/bottom margins; opens directly at its final position and size (via one simple scale/opacity tween) |
 | Background | Real CSS blur + dim of the actual (paused) gallery behind the dialog; appears instantly, no fade |
@@ -51,6 +52,24 @@ src/pages/galeria.astro                     — manifest JSON, renders <GalleryP
 
 No cloned/flying elements are needed and no separate transition module — the reduced animation surface (one open tween, one mirrored close tween, everything else instant) fits comfortably in one component.
 
+### Script ownership & cross-script interface
+
+The gallery loop state (`activeTweens`, `pauseGallery()`, `resumeGallery()`) and the float state (`activeFloatWrapper`, `forceResetActiveFloat()`) live **privately inside `galeria.astro`'s `<script>` module** and cannot be imported by a separate component script (Astro bundles each component script independently). Ownership is therefore split, and the two scripts communicate via `CustomEvent`s on `document`:
+
+**`galeria.astro` owns** the loop, float, the delegated click handler, and pause/resume:
+- Delegated `click` on `#gallery-container` (all pointer types) reads `data-original-index`, cancels any active float **without resuming the loop** (see below), calls `pauseGallery()` synchronously, then dispatches `gallery:open-preview` with `{ detail: { index } }`.
+- Listens for `gallery:preview-closed` → calls `resumeGallery()`.
+
+**`GalleryPreview.astro` owns** the dialog, scroll lock, history, navigation, and the hero tween:
+- Listens for `gallery:open-preview` → runs the open sequence (scroll lock → history → `showModal()` → hero tween).
+- On the dialog's native `close` event (fully closed) → unlocks scroll, restores focus, and dispatches `gallery:preview-closed`.
+
+Because `pauseGallery()` and the entire open sequence run synchronously within the same click task (dispatch → synchronous listener), the "pause first" ordering guarantee is preserved with no async gap.
+
+**Resume-free float cancel:** `forceResetActiveFloat()` currently ends by calling `resumeGallery()`. The open path must clear float transforms/classes/state **without** starting a resume tween (the loop is about to be paused, and a resume tween would fight the immediate `pauseGallery()`). Add a resume-free variant (e.g. `cancelActiveFloat()`, or a `{ resume: false }` parameter) and use it from the click handler.
+
+**Remove the existing touch float toggle:** the current touch-only `click` listener in `galeria.astro` (`if (pe.pointerType !== 'touch') return; … triggerFloat / reverse`) must be **deleted**. On mobile, a tap now opens the preview via the unified all-pointer-types click handler; there is no touch float toggle to conflict with it.
+
 ### Build-time manifest
 
 Sorted by `data-original-index`. The manifest `index` field equals the `data-original-index` attribute value for that image.
@@ -76,6 +95,8 @@ Every `.gallery-image-wrapper` — both in `.gallery-set-original` and `.gallery
 
 On click, read `wrapper.dataset.originalIndex` directly. No modulo arithmetic needed. Look up the manifest entry where `manifest[i].index === parseInt(originalIndex)`.
 
+> **Caveat — duplicates get the attribute only at runtime.** Server-rendered duplicate tiles in `galeria.astro` do **not** carry `data-original-index`; they inherit it via `cloneNode(true)` when `redistributeColumns` runs. Under `prefers-reduced-motion: reduce`, `initGallery` returns early and redistribution never happens, so duplicate tiles have no index (only original tiles are clickable). The click handler must therefore guard: if the resolved index is missing / `NaN`, ignore the click (do not pause or open).
+
 ---
 
 ## 4. UI Layout
@@ -86,7 +107,7 @@ On click, read `wrapper.dataset.originalIndex` directly. No modulo arithmetic ne
 - `position: fixed; inset: 0;` full viewport, above site chrome.
 - `aria-roledescription="Podgląd galerii"`.
 - Close button: ✕ top-right, `aria-label="Zamknij podgląd"`, positioned with `top: max(PREVIEW_MARGIN_TOP, env(safe-area-inset-top))` to avoid mobile status bar overlap.
-- Focus restores to the clicked wrapper on close.
+- On close, focus restores to the **original** wrapper for the last-viewed index (`.gallery-set-original .gallery-image-wrapper[data-original-index="i"]`), not the clicked node. The clicked tile may have been a duplicate (`aria-hidden="true"`, and possibly re-cloned/removed by a resize-driven redistribution), so it is not a safe focus target. Fall back to `document.body` if no matching original exists.
 
 ### Background
 
@@ -119,6 +140,7 @@ On click, read `wrapper.dataset.originalIndex` directly. No modulo arithmetic ne
 - Click navigates prev/next (same as arrows).
 - Hidden entirely when no prev or next image exists.
 - Visible instantly when the dialog opens; no reveal animation.
+- Marked `aria-hidden="true"` (decorative duplicates of the neighbours). Navigation is exposed to assistive tech through the labelled prev/next arrows, so peeks need no separate accessible name.
 
 ### Bottom strip
 
@@ -132,6 +154,7 @@ On click, read `wrapper.dataset.originalIndex` directly. No modulo arithmetic ne
 ### Loading
 
 - No loading spinner. The user always sees a real image: the grid-resolution tile first, then the high-resolution version swapped in silently once decoded.
+  - **Note on perceived sharpness:** `gridSrc` is a small source (the grid `<Image>` uses `widths={[300, 500]}`). Shown near full viewport height, it is visibly soft until `previewSrc` decodes. There is no layout shift and no flash, but the blur → sharp transition *is* perceptible on a cold open. To minimise the window, start decoding `previewSrc` for the clicked index **immediately in the click handler** (before/parallel to the open tween), so the HQ image is usually ready by the time the ~`PREVIEW_OPEN_DURATION` tween finishes.
 - **In-place HQ swap:** decode `previewSrc` on an off-DOM `Image()`, then assign `heroElement.src` in one step after `decode()` resolves. The hero stays visible throughout — no flash, no fade, no layout change.
   ```typescript
   const img = new Image();
@@ -148,9 +171,11 @@ On click, read `wrapper.dataset.originalIndex` directly. No modulo arithmetic ne
 
 Motion is deliberately minimal: one simple tween on open, its exact mirror on close, and no animation anywhere else. Everything else in this feature (background, chrome, navigation) is either instant CSS or a plain content swap.
 
+**Reduced motion:** under `prefers-reduced-motion: reduce`, the open/close hero tween is skipped entirely — on open the hero appears at its final state (`scale: 1, opacity: 1`) instantly; on close it is hidden instantly before `dialog.close()`. All other behaviour (pause/resume, scroll lock, history, navigation) is unchanged. This mirrors the gallery's existing reduced-motion handling.
+
 ### 5a. Open sequence
 
-1. **Gallery pause** — call `pauseGallery()` synchronously as the very first action, before any other open logic runs.
+1. **Cancel float + gallery pause** *(in `galeria.astro`'s click handler)* — cancel any active float **without resuming** the loop, then call `pauseGallery()` synchronously as the very first loop action. The handler then dispatches `gallery:open-preview`; the remaining steps run in the preview's synchronous listener (same click task, so ordering holds).
 2. **Scroll lock** — lock `.scroll-container` overflow.
 3. **History** — `history.pushState({ galleryPreview: true }, '', location.href)`.
 4. **Dialog opens** — `dialog.showModal()`. The `::backdrop` blur/dim is plain CSS, so it's present the instant the dialog paints — no fade.
@@ -166,7 +191,7 @@ Exact mirror of open:
 1. **Chrome hidden instantly** — close button, arrows, counter, peeks, and thumbnail strip set to `opacity: 0` immediately.
 2. **Hero tween (reverse)** — hero animates from `scale: 1, opacity: 1` back to `scale: PREVIEW_OPEN_START_SCALE, opacity: 0` over `PREVIEW_OPEN_DURATION` / `PREVIEW_OPEN_EASE`.
 3. **Dialog closes** — `dialog.close()` once the reverse tween completes.
-4. **On the dialog's native `close` event** (fully closed): unlock scroll, call `resumeGallery()`, restore focus to the originating gallery tile (or fall back to the wrapper matching the last-viewed index).
+4. **On the dialog's native `close` event** (fully closed): unlock scroll, restore focus to the **original** wrapper for the last-viewed index, then dispatch `gallery:preview-closed`. `galeria.astro` receives that event and calls `resumeGallery()` (resume is owned by the script that owns the loop; the preview cannot call it directly).
 
 ### 5c. Navigation between images (no animation)
 
@@ -190,10 +215,12 @@ Changing the current image (via arrow, peek, thumbnail, or keyboard) updates her
 
 - **Open:** single `history.pushState({ galleryPreview: true }, '', location.href)`. Only one entry pushed per open.
 - **Navigation within preview** does not push additional history entries.
-- **Close:** ✕ / Escape / backdrop → `history.back()` if state was pushed; `popstate` with `galleryPreview` state closes preview.
+- **Single close path (`requestClose()`):** all user-initiated close triggers — ✕, backdrop click, and Escape — funnel through one `requestClose()` that calls `history.back()`. The actual teardown (reverse tween → `dialog.close()`) runs in the `popstate` handler when a `galleryPreview` state is popped. This keeps history and DOM state in lockstep.
+- **Escape must be intercepted.** A native `<dialog>` closes immediately on Escape (via the `cancel` event) *without* touching history, which would leave a dangling `galleryPreview` entry. Listen for the dialog's `cancel` event, `preventDefault()` it, and route through `requestClose()` instead.
+- **Defensive pop:** if the dialog ever reaches its `close` event while `history.state?.galleryPreview` is still the current entry (i.e. a close slipped through without going via `history.back()`), pop the leftover entry then.
 - Two presses of browser Back: first closes preview, second navigates away from `/galeria`.
 
-**`astro:before-swap`:** close preview immediately (no animation), unlock scroll, resume gallery, remove listeners.
+**`astro:before-swap`:** close preview immediately (no animation), unlock scroll, dispatch `gallery:preview-closed` (→ resume gallery), remove listeners, **and** if `history.state?.galleryPreview` is present, pop it so navigating away does not leave a dangling preview entry that would mis-fire on a later Back.
 
 ### Scroll lock
 
@@ -203,22 +230,25 @@ Changing the current image (via arrow, peek, thumbnail, or keyboard) updates her
 
 ## 7. Integration with Gallery Script
 
+> See §3 *Script ownership & cross-script interface* for the full event contract. This section covers the gallery-side responsibilities.
+
 ### Gallery loop pause / resume
 
-- `pauseGallery()` is called synchronously at the very start of the open handler — before the dialog opens, before any other setup.
-- `resumeGallery()` is called from the dialog's native `close` event handler, after the preview is fully closed.
-- If the gallery DOM does not exist (e.g. navigated away), skip gracefully.
+- `pauseGallery()` and `resumeGallery()` stay **private to `galeria.astro`** (they own `activeTweens`). They are never imported by the preview.
+- `pauseGallery()` is called synchronously inside the delegated click handler, as the first loop action, before dispatching `gallery:open-preview`.
+- `resumeGallery()` is called from a `gallery:preview-closed` listener (dispatched by the preview on the dialog's native `close`), after the preview is fully closed.
+- If the gallery DOM/tweens do not exist (e.g. navigated away, or reduced-motion where `activeTweens` is empty), these are safe no-ops.
 
-### Click handler
+### Click handler (lives in `galeria.astro`)
 
-- Delegated `click` on `#gallery-container` for all pointer types.
-- Read `wrapper.dataset.originalIndex` directly (works for both originals and duplicates).
-- Cancel any active float effect, then open the preview at that index.
+- Delegated `click` on `#gallery-container` for **all pointer types**.
+- Resolve `wrapper.dataset.originalIndex`; if missing / `NaN`, ignore the click (no pause, no open).
+- Cancel any active float **without resuming** (`cancelActiveFloat()` / resume-free variant), call `pauseGallery()`, kick off `previewSrc` decode for that index, then dispatch `gallery:open-preview` with the index.
 
 ### Float behavior
 
-- **Desktop:** hover delay triggers float (unchanged, independent feature). Click opens preview instead of toggling float.
-- **Mobile:** tap always opens preview. There is no touch-based float toggle; float is desktop-hover-only.
+- **Desktop:** hover delay triggers float (unchanged, independent feature). A click cancels the active float without resuming, then opens the preview instead of toggling float.
+- **Mobile:** tap always opens preview. **The existing touch-only `click` float-toggle listener must be removed** so it does not double-handle taps; float is desktop-hover-only.
 
 ---
 
@@ -273,7 +303,7 @@ Focus cycles within the dialog (built-in with `<dialog>`).
 
 ### Keyboard
 
-- **Escape:** close preview (native `<dialog>` behavior).
+- **Escape:** intercept the dialog's `cancel` event (`preventDefault()`) and route through the same history-based `requestClose()` as ✕/backdrop, so history stays consistent (do **not** rely on the raw native close).
 - **← / →:** prev / next image.
 - **Home / End:** first / last image.
 - **Enter / Space:** activate focused element (thumb, arrow, close).
@@ -288,6 +318,8 @@ Focus cycles within the dialog (built-in with `<dialog>`).
 - **Single image in gallery:** no peeks; both arrows disabled; strip shows one active thumb only. Counter reads "1 / 1".
 - **Open during column redistribution:** index stable via manifest, not DOM position.
 - **`decode()` failure:** fall back to setting `src` directly (visible pop-in is acceptable as graceful degradation).
+- **Reduced motion (`prefers-reduced-motion: reduce`):** the open/close hero tween is skipped (instant final state). Layout redistribution is skipped, so duplicate tiles have no `data-original-index` — only original tiles are clickable, and the click handler ignores unresolved indices. `pauseGallery()`/`resumeGallery()` are no-ops (empty `activeTweens`).
+- **Scroll-lock reflow:** locking `.scroll-container` (`overflow-y: auto` → `hidden`) can remove its scrollbar and shift the frozen gallery by the scrollbar width. It sits behind the blurred backdrop so it is not noticeable; avoid re-measuring gallery geometry while locked. Optionally compensate with `scrollbar-gutter: stable` on `.scroll-container` to prevent the shift entirely.
 
 ---
 
@@ -301,7 +333,9 @@ Focus cycles within the dialog (built-in with `<dialog>`).
 - Chrome (peeks, thumb strip, controls, counter) is present immediately on open, with no fade/scale-in.
 - Navigating between images swaps content immediately, with no transition.
 - Close mirrors open; gallery resumes scrolling only after the dialog is fully closed.
-- HQ swap is imperceptible (no spinner, no pop).
+- HQ swap causes no spinner, no flash, and no layout shift (a brief soft→sharp sharpening on cold open is acceptable).
+- Escape, ✕, and backdrop all close via history; a single browser Back closes the preview, a second Back leaves `/galeria`; navigating away via a link leaves no dangling preview history entry.
+- With `prefers-reduced-motion: reduce`: preview opens/closes instantly (no tween); clicking a duplicate tile does nothing; original tiles still open.
 
 ### Automated (future)
 
@@ -316,7 +350,9 @@ E2E coverage (open/close, navigation boundaries, history, scroll lock, pause/res
 | Implementation shape | Single self-contained component (`GalleryPreview.astro`); no separate transition module |
 | Background | Native `::backdrop` with `backdrop-filter` blurring the real paused gallery — no backdrop image, no per-slide updates |
 | Pause timing | First step of open, before dialog opens or anything animates |
-| Resume timing | Last step, fired from the dialog's native `close` event |
+| Resume timing | Last step, fired from the dialog's native `close` event (via `gallery:preview-closed`) |
+| Cross-script interface | `galeria.astro` owns loop/float/click + pause/resume; `GalleryPreview.astro` owns dialog/nav; they talk via `gallery:open-preview` / `gallery:preview-closed` CustomEvents on `document` |
+| Float cancel on open | Resume-free cancel (`cancelActiveFloat()`), then `pauseGallery()` — no competing resume tween |
 | Hero open/close | One simple scale + opacity tween, no clone, no travel, no multi-stage choreography |
 | Chrome (peeks/thumbs/controls/counter) | Instant final state on open; instant hidden on close; no animation |
 | In-preview navigation | Instant content swap; no transition, no swipe (deferred) |
@@ -324,10 +360,13 @@ E2E coverage (open/close, navigation boundaries, history, scroll lock, pause/res
 | Close triggers | ✕, Escape, backdrop, history, Astro swap |
 | Scroll | Locked on `.scroll-container` while open |
 | Preview resolution | Off-DOM `decode()` + in-place HQ swap; no spinner; directional preload of neighbors |
-| Duplicate tiles | Read `data-original-index` directly from the clicked wrapper |
+| Duplicate tiles | Read `data-original-index` directly from the clicked wrapper (present only after runtime redistribution; guard against `NaN`) |
 | Dialog | Native `<dialog>` with `.showModal()` for built-in accessibility |
-| History | Single `pushState` on open; nav within preview does not alter history |
-| Mobile float | No touch-based float toggle; tap always opens preview |
+| History | Single `pushState` on open; all closes funnel through `requestClose()` → `history.back()`; Escape intercepted via `cancel`; `before-swap` pops any dangling entry |
+| Focus restore | To the **original** wrapper for the last index (not the clicked, possibly-duplicate node) |
+| Mobile float | No touch-based float toggle; existing touch click-toggle listener removed; tap always opens preview |
+| Reduced motion | Open/close tween skipped (instant); duplicates unclickable (no index); pause/resume are no-ops |
+| Cold-open sharpness | Accept brief soft→sharp; mitigate by decoding `previewSrc` for the clicked index at click time |
 
 ---
 
