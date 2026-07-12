@@ -544,4 +544,21 @@ const styleVars = [
     document.addEventListener('astro:page-load', initPreview);
     (window as any).__galleryPreviewListenerAdded = true;
   }
+
+  if (!(window as any).__galleryPreviewBeforeSwapAdded) {
+    document.addEventListener('astro:before-swap', () => {
+      if (dialog?.open) {
+        // Immediate, no animation.
+        state.isClosing = true;
+        dialog.close();
+      } else {
+        unlockScroll();
+      }
+      // Pop any dangling preview history entry so a later Back doesn't misfire.
+      if (history.state?.galleryPreview) history.back();
+      previewController?.abort();
+      previewController = null;
+    });
+    (window as any).__galleryPreviewBeforeSwapAdded = true;
+  }
 </script>
