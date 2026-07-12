@@ -224,3 +224,175 @@ const styleVars = [
     .gp-close, .gp-arrow, .gp-thumb { transition: none; }
   }
 </style>
+
+<script>
+  import gsap from 'gsap';
+  import {
+    PREVIEW_OPEN_DURATION,
+    PREVIEW_OPEN_START_SCALE,
+    PREVIEW_OPEN_EASE,
+  } from '../../config/gallery';
+
+  type ManifestEntry = {
+    index: number;
+    alt: string;
+    gridSrc: string;
+    thumbSrc: string;
+    peekSrc: string;
+    previewSrc: string;
+  };
+
+  const state = {
+    manifest: [] as ManifestEntry[],
+    current: 0,
+    total: 0,
+    isOpen: false,
+    isClosing: false,
+  };
+
+  let dialog: HTMLDialogElement | null = null;
+  let heroEl: HTMLImageElement | null = null;
+  let counterEl: HTMLElement | null = null;
+  let peekPrevEl: HTMLImageElement | null = null;
+  let peekNextEl: HTMLImageElement | null = null;
+  let arrowPrevEl: HTMLButtonElement | null = null;
+  let arrowNextEl: HTMLButtonElement | null = null;
+  let thumbEls: HTMLButtonElement[] = [];
+  let previewController: AbortController | null = null;
+
+  function prefersReducedMotion(): boolean {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  function entryFor(index: number): ManifestEntry | undefined {
+    return state.manifest.find((e) => e.index === index);
+  }
+
+  /**
+   * Instantly render all chrome + hero for the given index.
+   * No animation — a plain content swap (spec §5c).
+   */
+  function render(index: number): void {
+    const entry = entryFor(index);
+    if (!entry || !heroEl) return;
+    state.current = index;
+
+    // Hero: show the best immediately-available source (grid res); HQ swap comes in Task 8.
+    heroEl.src = entry.gridSrc;
+    heroEl.setAttribute('aria-label', entry.alt);
+
+    // Counter (1-based).
+    if (counterEl) counterEl.textContent = `${index + 1} / ${state.total}`;
+
+    // Peeks (prev/next), hidden at the ends.
+    const prev = entryFor(index - 1);
+    const next = entryFor(index + 1);
+    if (peekPrevEl) {
+      if (prev) { peekPrevEl.src = prev.peekSrc; peekPrevEl.classList.remove('is-hidden'); }
+      else { peekPrevEl.classList.add('is-hidden'); }
+    }
+    if (peekNextEl) {
+      if (next) { peekNextEl.src = next.peekSrc; peekNextEl.classList.remove('is-hidden'); }
+      else { peekNextEl.classList.add('is-hidden'); }
+    }
+
+    // Arrows: disabled at ends.
+    arrowPrevEl?.classList.toggle('is-disabled', !prev);
+    arrowNextEl?.classList.toggle('is-disabled', !next);
+
+    // Thumb strip: slots [i-2 .. i+2].
+    thumbEls.forEach((thumb) => {
+      const slot = parseInt(thumb.dataset.slot || '0', 10);
+      const target = entryFor(index + slot);
+      const img = thumb.querySelector('img') as HTMLImageElement | null;
+      if (target && img) {
+        img.src = target.thumbSrc;
+        thumb.classList.remove('is-empty');
+        thumb.dataset.index = String(target.index);
+        thumb.setAttribute('aria-label', `Zdjęcie ${target.index + 1}`);
+        thumb.removeAttribute('disabled');
+      } else {
+        thumb.classList.add('is-empty');
+        delete thumb.dataset.index;
+        if (img) img.removeAttribute('src');
+      }
+    });
+
+    // Announce for screen readers.
+    if (counterEl) counterEl.setAttribute('data-sr', `Zdjęcie ${index + 1} z ${state.total}`);
+  }
+
+  function lockScroll(): void {
+    const sc = document.querySelector('.scroll-container') as HTMLElement | null;
+    if (sc) sc.style.overflow = 'hidden';
+  }
+
+  /**
+   * Open sequence (spec §5a). Runs synchronously inside the
+   * `gallery:open-preview` listener so "pause first" ordering holds.
+   */
+  function openPreview(index: number): void {
+    if (!dialog || !heroEl || state.isOpen) return;
+    state.isOpen = true;
+    state.isClosing = false;
+
+    lockScroll();
+    // History push comes in Task 7.
+    dialog.showModal();
+    render(index);
+
+    // Chrome is already at final state via CSS; only the hero animates.
+    if (prefersReducedMotion()) {
+      gsap.set(heroEl, { scale: 1, opacity: 1 });
+    } else {
+      gsap.fromTo(
+        heroEl,
+        { scale: PREVIEW_OPEN_START_SCALE, opacity: 0 },
+        { scale: 1, opacity: 1, duration: PREVIEW_OPEN_DURATION, ease: PREVIEW_OPEN_EASE }
+      );
+    }
+    // HQ decode/swap + preload come in Task 8.
+  }
+
+  function initPreview(): void {
+    dialog = document.getElementById('gallery-preview') as HTMLDialogElement | null;
+    if (!dialog) return;
+
+    const manifestEl = document.getElementById('gallery-manifest');
+    if (manifestEl?.textContent) {
+      try {
+        state.manifest = JSON.parse(manifestEl.textContent) as ManifestEntry[];
+      } catch {
+        state.manifest = [];
+      }
+    }
+    state.total = state.manifest.length;
+
+    heroEl = dialog.querySelector('.gp-hero');
+    counterEl = dialog.querySelector('.gp-counter');
+    peekPrevEl = dialog.querySelector('.gp-peek-prev');
+    peekNextEl = dialog.querySelector('.gp-peek-next');
+    arrowPrevEl = dialog.querySelector('.gp-arrow-prev');
+    arrowNextEl = dialog.querySelector('.gp-arrow-next');
+    thumbEls = Array.from(dialog.querySelectorAll('.gp-thumb'));
+
+    previewController?.abort();
+    previewController = new AbortController();
+    const { signal } = previewController;
+
+    document.addEventListener(
+      'gallery:open-preview',
+      (e: Event) => {
+        const detail = (e as CustomEvent<{ index: number }>).detail;
+        if (detail && Number.isInteger(detail.index)) openPreview(detail.index);
+      },
+      { signal }
+    );
+    // Navigation, close/history, and teardown listeners are added in Tasks 6, 7, 9.
+  }
+
+  if (!(window as any).__galleryPreviewListenerAdded) {
+    document.addEventListener('astro:page-load', initPreview);
+    (window as any).__galleryPreviewListenerAdded = true;
+  }
+</script>
