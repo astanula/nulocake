@@ -260,6 +260,7 @@ const styleVars = [
   let thumbEls: HTMLButtonElement[] = [];
   let previewController: AbortController | null = null;
   let lastOpenedIndex = 0;
+  let heroSwapToken = 0;
 
   function prefersReducedMotion(): boolean {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -267,6 +268,35 @@ const styleVars = [
 
   function entryFor(index: number): ManifestEntry | undefined {
     return state.manifest.find((e) => e.index === index);
+  }
+
+  function preload(index: number): void {
+    const entry = entryFor(index);
+    if (!entry) return;
+    const img = new Image();
+    img.src = entry.previewSrc;
+  }
+
+  /**
+   * Off-DOM decode of previewSrc, then in-place src swap — no flash,
+   * no spinner, no layout shift (spec §4). Race-guarded so a fast
+   * navigation cannot let a stale HQ image win.
+   */
+  async function swapHeroHQ(index: number): Promise<void> {
+    const entry = entryFor(index);
+    if (!entry || !heroEl) return;
+    const token = ++heroSwapToken;
+    const img = new Image();
+    img.src = entry.previewSrc;
+    try {
+      await img.decode();
+    } catch {
+      // decode() failure: fall back to direct src (visible pop is acceptable).
+    }
+    // Only apply if still the current image and no newer swap started.
+    if (token === heroSwapToken && state.current === index && heroEl) {
+      heroEl.src = entry.previewSrc;
+    }
   }
 
   /**
@@ -321,14 +351,17 @@ const styleVars = [
 
     // Announce for screen readers.
     if (counterEl) counterEl.setAttribute('data-sr', `Zdjęcie ${index + 1} z ${state.total}`);
+
+    void swapHeroHQ(index);
   }
 
   function goTo(index: number): void {
     if (!state.isOpen) return;
     if (index < 0 || index >= state.total || index === state.current) return;
+    const dir = index > state.current ? 1 : -1;
     render(index);
     lastOpenedIndex = index;
-    // Directional preload is added in Task 8.
+    preload(index + dir);
   }
 
   function goPrev(): void { goTo(state.current - 1); }
@@ -407,7 +440,9 @@ const styleVars = [
         { scale: 1, opacity: 1, duration: PREVIEW_OPEN_DURATION, ease: PREVIEW_OPEN_EASE }
       );
     }
-    // HQ decode/swap + preload come in Task 8.
+
+    preload(index - 1);
+    preload(index + 1);
   }
 
   function initPreview(): void {
