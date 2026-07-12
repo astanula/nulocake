@@ -2,15 +2,18 @@
 import {
   PREVIEW_MARGIN_TOP,
   PREVIEW_MARGIN_BOTTOM,
+  PREVIEW_MARGIN_INLINE,
   PREVIEW_COUNTER_GAP,
   PREVIEW_COUNTER_FONT_SIZE,
   PREVIEW_COUNTER_OPACITY,
   PREVIEW_THUMB_SIZE,
+  PREVIEW_THUMB_INSET,
   PREVIEW_THUMB_ACTIVE_SCALE,
   PREVIEW_THUMB_SIDE_OPACITY,
   PREVIEW_PEEK_OPACITY,
   PREVIEW_PEEK_WIDTH_RATIO,
   PREVIEW_PEEK_HEIGHT_RATIO,
+  PREVIEW_ARROW_GAP,
   PREVIEW_BACKDROP_BLUR,
   PREVIEW_BACKDROP_DIM,
 } from '../../config/gallery';
@@ -18,15 +21,18 @@ import {
 const styleVars = [
   `--gp-margin-top: ${PREVIEW_MARGIN_TOP}`,
   `--gp-margin-bottom: ${PREVIEW_MARGIN_BOTTOM}`,
+  `--gp-margin-inline: ${PREVIEW_MARGIN_INLINE}`,
   `--gp-counter-gap: ${PREVIEW_COUNTER_GAP}`,
   `--gp-counter-font-size: ${PREVIEW_COUNTER_FONT_SIZE}`,
   `--gp-counter-opacity: ${PREVIEW_COUNTER_OPACITY}`,
   `--gp-thumb-size: ${PREVIEW_THUMB_SIZE}`,
+  `--gp-thumb-inset: ${PREVIEW_THUMB_INSET}`,
   `--gp-thumb-active-scale: ${PREVIEW_THUMB_ACTIVE_SCALE}`,
   `--gp-thumb-side-opacity: ${PREVIEW_THUMB_SIDE_OPACITY}`,
   `--gp-peek-opacity: ${PREVIEW_PEEK_OPACITY}`,
   `--gp-peek-width-ratio: ${PREVIEW_PEEK_WIDTH_RATIO}`,
   `--gp-peek-height-ratio: ${PREVIEW_PEEK_HEIGHT_RATIO}`,
+  `--gp-arrow-gap: ${PREVIEW_ARROW_GAP}`,
   `--gp-backdrop-blur: ${PREVIEW_BACKDROP_BLUR}`,
   `--gp-backdrop-dim: ${PREVIEW_BACKDROP_DIM}`,
 ].join('; ');
@@ -42,31 +48,33 @@ const styleVars = [
     <span aria-hidden="true">&#10005;</span>
   </button>
 
-  <div class="gp-counter">
-    <span class="gp-counter-fraction" aria-hidden="true"></span>
-    <span class="gp-counter-sr" aria-live="polite"></span>
-  </div>
-
   <div class="gp-stage">
-    <img class="gp-peek gp-peek-prev" alt="" aria-hidden="true" draggable="false" />
     <button type="button" class="gp-arrow gp-arrow-prev" aria-label="Poprzednie zdjęcie">
       <span aria-hidden="true">&#8249;</span>
     </button>
 
-    <img class="gp-hero" alt="" tabindex="0" draggable="false" />
+    <div class="gp-hero-stack">
+      <div class="gp-hero-frame">
+        <img class="gp-peek gp-peek-prev" alt="" aria-hidden="true" draggable="false" />
+        <img class="gp-hero" alt="" tabindex="0" draggable="false" />
+        <img class="gp-peek gp-peek-next" alt="" aria-hidden="true" draggable="false" />
+        <div class="gp-strip">
+          <button type="button" class="gp-thumb" data-slot="-2" aria-hidden="true" tabindex="-1"><img alt="" draggable="false" /></button>
+          <button type="button" class="gp-thumb" data-slot="-1" aria-hidden="true" tabindex="-1"><img alt="" draggable="false" /></button>
+          <button type="button" class="gp-thumb gp-thumb-center" data-slot="0"><img alt="" draggable="false" /></button>
+          <button type="button" class="gp-thumb" data-slot="1" aria-hidden="true" tabindex="-1"><img alt="" draggable="false" /></button>
+          <button type="button" class="gp-thumb" data-slot="2" aria-hidden="true" tabindex="-1"><img alt="" draggable="false" /></button>
+        </div>
+      </div>
+      <div class="gp-counter">
+        <span class="gp-counter-fraction" aria-hidden="true"></span>
+        <span class="gp-counter-sr" aria-live="polite"></span>
+      </div>
+    </div>
 
     <button type="button" class="gp-arrow gp-arrow-next" aria-label="Następne zdjęcie">
       <span aria-hidden="true">&#8250;</span>
     </button>
-    <img class="gp-peek gp-peek-next" alt="" aria-hidden="true" draggable="false" />
-  </div>
-
-  <div class="gp-strip">
-    <button type="button" class="gp-thumb" data-slot="-2" aria-hidden="true" tabindex="-1"><img alt="" draggable="false" /></button>
-    <button type="button" class="gp-thumb" data-slot="-1" aria-hidden="true" tabindex="-1"><img alt="" draggable="false" /></button>
-    <button type="button" class="gp-thumb gp-thumb-center" data-slot="0"><img alt="" draggable="false" /></button>
-    <button type="button" class="gp-thumb" data-slot="1" aria-hidden="true" tabindex="-1"><img alt="" draggable="false" /></button>
-    <button type="button" class="gp-thumb" data-slot="2" aria-hidden="true" tabindex="-1"><img alt="" draggable="false" /></button>
   </div>
 </dialog>
 
@@ -100,15 +108,22 @@ const styleVars = [
   .gallery-preview[open] {
     display: flex;
     flex-direction: column;
-    padding-top: max(var(--gp-margin-top), env(safe-area-inset-top));
-    padding-bottom: var(--gp-margin-bottom);
+    --gp-top-inset: max(var(--gp-margin-top), env(safe-area-inset-top));
+    --gp-bottom-inset: max(var(--gp-margin-bottom), env(safe-area-inset-bottom));
+    --gp-inline-inset: max(var(--gp-margin-inline), env(safe-area-inset-left), env(safe-area-inset-right));
+    --gp-counter-block-size: calc(var(--gp-counter-font-size) * 1.4);
+    padding-top: var(--gp-top-inset);
+    padding-bottom: var(--gp-bottom-inset);
+    padding-inline:
+      max(var(--gp-margin-inline), env(safe-area-inset-left))
+      max(var(--gp-margin-inline), env(safe-area-inset-right));
   }
 
   .gp-close {
     position: absolute;
-    top: max(var(--gp-margin-top), env(safe-area-inset-top));
+    top: var(--gp-top-inset);
     right: 1.25rem;
-    z-index: 3;
+    z-index: 4;
     width: 2.75rem;
     height: 2.75rem;
     display: grid;
@@ -124,12 +139,63 @@ const styleVars = [
   .gp-close:hover { background: var(--color-surface-container-high); transform: scale(1.05); }
   .gp-close:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 
+  .gp-stage {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    /* Fallbacks until the ResizeObserver (Task 3) writes real frame geometry. */
+    --gp-frame-left: 0px;
+    --gp-frame-right: 0px;
+    --gp-frame-width: 0px;
+    --gp-frame-height: 0px;
+  }
+
+  .gp-hero-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 100%;
+    min-width: 0;
+    max-height: 100%;
+  }
+
+  .gp-hero-frame {
+    position: relative;
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .gp-hero {
+    display: block;
+    max-width: 100%;
+    max-height: calc(
+      100dvh
+      - var(--gp-top-inset)
+      - var(--gp-bottom-inset)
+      - var(--gp-counter-gap)
+      - var(--gp-counter-block-size)
+    );
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    position: relative;
+    z-index: 2;
+    user-select: none;
+  }
+  .gp-hero:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 4px; }
+
   .gp-counter {
+    margin-top: var(--gp-counter-gap);
+    height: var(--gp-counter-block-size);
+    line-height: var(--gp-counter-block-size);
     text-align: center;
     font-family: 'Manrope', sans-serif;
     font-size: var(--gp-counter-font-size);
     opacity: var(--gp-counter-opacity);
-    margin-bottom: var(--gp-counter-gap);
+    white-space: nowrap;
     flex: 0 0 auto;
   }
 
@@ -145,35 +211,12 @@ const styleVars = [
     border: 0;
   }
 
-  .gp-stage {
-    position: relative;
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: var(--gp-margin-bottom);
-  }
-
-  .gp-hero {
-    display: block;
-    max-width: calc(100vw - 2rem);
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    position: relative;
-    z-index: 2;
-    user-select: none;
-  }
-  .gp-hero:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 4px; }
-
   .gp-peek {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
+    width: calc(var(--gp-peek-width-ratio) * 100%);
     height: calc(var(--gp-peek-height-ratio) * 100%);
-    width: calc(var(--gp-peek-width-ratio) * 100vw);
     object-fit: cover;
     object-position: center;
     opacity: var(--gp-peek-opacity);
@@ -181,8 +224,8 @@ const styleVars = [
     cursor: pointer;
     user-select: none;
   }
-  .gp-peek-prev { left: 0; border-radius: 0 8px 8px 0; }
-  .gp-peek-next { right: 0; border-radius: 8px 0 0 8px; }
+  .gp-peek-prev { right: 100%; border-radius: 8px 0 0 8px; }
+  .gp-peek-next { left: 100%; border-radius: 0 8px 8px 0; }
   .gp-peek.is-hidden { display: none; }
 
   .gp-arrow {
@@ -204,39 +247,52 @@ const styleVars = [
   }
   .gp-arrow:hover { background: var(--color-surface-container-high); }
   .gp-arrow:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
-  .gp-arrow-prev { left: calc(var(--gp-peek-width-ratio) * 100vw + 0.5rem); }
-  .gp-arrow-next { right: calc(var(--gp-peek-width-ratio) * 100vw + 0.5rem); }
+  /* Temporary fallback positioning; Task 3 replaces these with frame-relative calc(). */
+  .gp-arrow-prev { left: var(--gp-inline-inset); }
+  .gp-arrow-next { right: var(--gp-inline-inset); }
   .gp-arrow.is-disabled { opacity: 0.25; pointer-events: none; }
 
   .gp-strip {
-    flex: 0 0 auto;
+    position: absolute;
+    left: 50%;
+    bottom: var(--gp-thumb-inset);
+    transform: translateX(-50%);
+    z-index: 3;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    height: calc(var(--gp-thumb-size) * var(--gp-thumb-active-scale));
   }
 
   .gp-thumb {
     flex: 0 0 auto;
-    width: var(--gp-thumb-size);
-    height: var(--gp-thumb-size);
+    min-width: 44px;
+    min-height: 44px;
+    display: grid;
+    place-items: center;
     padding: 0;
     border: none;
-    border-radius: 6px;
-    overflow: hidden;
-    background: var(--color-surface-container-low);
+    background: transparent;
     cursor: pointer;
     opacity: var(--gp-thumb-side-opacity);
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.2s ease;
   }
-  .gp-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .gp-thumb-center { opacity: 1; transform: scale(var(--gp-thumb-active-scale)); }
+  .gp-thumb img {
+    width: var(--gp-thumb-size);
+    height: var(--gp-thumb-size);
+    object-fit: cover;
+    border-radius: 6px;
+    display: block;
+    background: var(--color-surface-container-low);
+    transition: transform 0.2s ease;
+  }
+  .gp-thumb-center { opacity: 1; }
+  .gp-thumb-center img { transform: scale(var(--gp-thumb-active-scale)); }
   .gp-thumb.is-empty { visibility: hidden; pointer-events: none; }
   .gp-thumb:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 
   @media (prefers-reduced-motion: reduce) {
-    .gp-close, .gp-arrow, .gp-thumb { transition: none; }
+    .gp-close, .gp-arrow, .gp-thumb, .gp-thumb img { transition: none; }
   }
 </style>
 
