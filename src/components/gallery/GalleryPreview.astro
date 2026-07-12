@@ -487,6 +487,7 @@ const styleVars = [
   function runCloseTeardown(): void {
     if (!state.isOpen || state.isClosing || !dialog || !heroEl) return;
     state.isClosing = true;
+    gsap.killTweensOf(heroEl);
 
     const finish = () => dialog!.close();
     if (prefersReducedMotion()) {
@@ -508,7 +509,7 @@ const styleVars = [
    * `gallery:open-preview` listener so "pause first" ordering holds.
    */
   function openPreview(index: number): void {
-    if (!dialog || !heroEl || state.isOpen) return;
+    if (!dialog || !heroEl || state.isOpen || state.isClosing) return;
     state.isOpen = true;
     lastOpenedIndex = index;
     state.isClosing = false;
@@ -525,6 +526,7 @@ const styleVars = [
     updateFrameVars();
 
     // Chrome is already at final state via CSS; only the hero animates.
+    gsap.killTweensOf(heroEl);
     if (prefersReducedMotion()) {
       gsap.set(heroEl, { scale: 1, opacity: 1 });
     } else {
@@ -542,6 +544,17 @@ const styleVars = [
   function initPreview(): void {
     dialog = document.getElementById('gallery-preview') as HTMLDialogElement | null;
     if (!dialog) return;
+
+    // history.back() during preview close re-fires astro:page-load while the
+    // close tween is still running. Aborting listeners here drops the `close`
+    // handler before it can reset state — keep the active controller until done.
+    if (state.isClosing && dialog.open) return;
+
+    // Recover stale flags when the dialog is already closed.
+    if (!dialog.open) {
+      state.isOpen = false;
+      state.isClosing = false;
+    }
 
     const manifestEl = document.getElementById('gallery-manifest');
     if (manifestEl?.textContent) {
