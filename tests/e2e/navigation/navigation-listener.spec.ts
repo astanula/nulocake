@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/base-fixture';
-import { testConfig } from '../test-config';
+import { testConfig, navLinkSelector } from '../test-config';
 import { waitForHydration } from '../helpers/hydration';
 
 /**
@@ -22,7 +22,7 @@ test.describe('Navigation', () => {
     // Navigate: Home -> Oferta -> Home -> Oferta
     await navigateAndHydrate(page, testConfig.routes.landing);
 
-    await page.click('a.nav-link[href="/oferta"]');
+    await page.click(navLinkSelector('oferta'));
     await page.waitForURL('**/oferta');
     await waitForHydration(page);
 
@@ -34,11 +34,11 @@ test.describe('Navigation', () => {
     expect(box1!.height).toBeGreaterThan(50);
 
     // Navigate away and back
-    await page.click('a.nav-link[href="/"]');
-    await page.waitForURL('**/');
+    await page.click(navLinkSelector('landing'));
+    await page.waitForURL(`**${testConfig.routes.landing}`);
     await waitForHydration(page);
 
-    await page.click('a.nav-link[href="/oferta"]');
+    await page.click(navLinkSelector('oferta'));
     await page.waitForURL('**/oferta');
     await waitForHydration(page);
 
@@ -65,7 +65,7 @@ test.describe('Navigation', () => {
     });
 
     // Click Oferta link
-    await page.click('a.nav-link[href="/oferta"]');
+    await page.click(navLinkSelector('oferta'));
     await page.waitForURL('**/oferta');
     await waitForHydration(page);
 
@@ -74,8 +74,8 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL(/\/oferta/);
 
     // Click Home link
-    await page.click('a.nav-link[href="/"]');
-    await page.waitForURL('**/');
+    await page.click(navLinkSelector('landing'));
+    await page.waitForURL(`**${testConfig.routes.landing}`);
     await waitForHydration(page);
 
     // Verify no errors on second navigation
@@ -95,9 +95,9 @@ test.describe('Navigation', () => {
     });
 
     // Click the same link multiple times rapidly
-    await page.click('a.nav-link[href="/oferta"]');
-    await page.click('a.nav-link[href="/oferta"]');
-    await page.click('a.nav-link[href="/oferta"]');
+    await page.click(navLinkSelector('oferta'));
+    await page.click(navLinkSelector('oferta'));
+    await page.click(navLinkSelector('oferta'));
 
     // Wait for navigation to complete (should only navigate once)
     await page.waitForURL('**/oferta');
@@ -113,14 +113,14 @@ test.describe('Navigation', () => {
 
     // Click logo to go home
     await page.click('a.nav-logo');
-    await page.waitForURL('**/');
+    await page.waitForURL(`**${testConfig.routes.landing}`);
     await waitForHydration(page);
 
     // Verify we're on the home page
     await expect(page).toHaveURL(testConfig.routes.landing);
 
     // Verify the home link has active class
-    const homeLink = page.locator('a.nav-link[href="/"]');
+    const homeLink = page.locator(navLinkSelector('landing'));
     await expect(homeLink).toHaveClass(/nav-link--active/);
   });
 
@@ -190,7 +190,7 @@ test.describe('Navigation', () => {
     });
 
     // Click Oferta link to trigger the animation
-    await page.click('a.nav-link[href="/oferta"]');
+    await page.click(navLinkSelector('oferta'));
     
     // Wait for animation to start then check intermediate position
     await page.waitForTimeout(100);

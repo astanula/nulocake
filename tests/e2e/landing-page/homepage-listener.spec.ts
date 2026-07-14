@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/base-fixture';
-import { testConfig } from '../test-config';
+import { testConfig, navLinkSelector } from '../test-config';
 import { waitForHydration } from '../helpers/hydration';
 
 /**
@@ -55,25 +55,25 @@ test.describe('Homepage page-load listener accumulation fix', () => {
     expect(guardSet).toBe(true);
 
     // Navigate to Oferta
-    await page.click('a.nav-link[href="/oferta"]');
+    await page.click(navLinkSelector('oferta'));
     await page.waitForURL('**/oferta');
     await waitForHydration(page);
 
     // Navigate back to Home
-    await page.click('a.nav-link[href="/"]');
-    await page.waitForURL('**/');
+    await page.click(navLinkSelector('landing'));
+    await page.waitForURL(`**${testConfig.routes.landing}`);
     await waitForHydration(page);
 
     guardSet = await getHomePageGuardState(page);
     expect(guardSet).toBe(true);
 
     // Navigate away and back again
-    await page.click('a.nav-link[href="/o-mnie"]');
+    await page.click(navLinkSelector('oMnie'));
     await page.waitForURL('**/o-mnie');
     await waitForHydration(page);
 
-    await page.click('a.nav-link[href="/"]');
-    await page.waitForURL('**/');
+    await page.click(navLinkSelector('landing'));
+    await page.waitForURL(`**${testConfig.routes.landing}`);
     await waitForHydration(page);
 
     guardSet = await getHomePageGuardState(page);
@@ -90,24 +90,24 @@ test.describe('Homepage page-load listener accumulation fix', () => {
     await expect(hero).toHaveClass(/is-active/);
 
     // Navigate away and back
-    await page.click('a.nav-link[href="/oferta"]');
+    await page.click(navLinkSelector('oferta'));
     await page.waitForURL('**/oferta');
     await waitForHydration(page);
 
-    await page.click('a.nav-link[href="/"]');
-    await page.waitForURL('**/');
+    await page.click(navLinkSelector('landing'));
+    await page.waitForURL(`**${testConfig.routes.landing}`);
     await waitForHydration(page);
 
     // Verify hero section is still working correctly
     await expect(hero).toHaveClass(/is-active/);
 
     // Navigate away and back again
-    await page.click('a.nav-link[href="/galeria"]');
+    await page.click(navLinkSelector('galeria'));
     await page.waitForURL('**/galeria');
     await waitForHydration(page);
 
-    await page.click('a.nav-link[href="/"]');
-    await page.waitForURL('**/');
+    await page.click(navLinkSelector('landing'));
+    await page.waitForURL(`**${testConfig.routes.landing}`);
     await waitForHydration(page);
 
     // Verify hero section still works
@@ -134,8 +134,8 @@ test.describe('Homepage page-load listener accumulation fix', () => {
       await page.waitForURL(`**${route}`);
       await waitForHydration(page);
 
-      await page.click('a.nav-link[href="/"]');
-      await page.waitForURL('**/');
+      await page.click(navLinkSelector('landing'));
+      await page.waitForURL(`**${testConfig.routes.landing}`);
       await waitForHydration(page);
     }
 
@@ -156,12 +156,12 @@ test.describe('Homepage page-load listener accumulation fix', () => {
     });
 
     // Navigate away and back
-    await page.click('a.nav-link[href="/oferta"]');
+    await page.click(navLinkSelector('oferta'));
     await page.waitForURL('**/oferta');
     await waitForHydration(page);
 
-    await page.click('a.nav-link[href="/"]');
-    await page.waitForURL('**/');
+    await page.click(navLinkSelector('landing'));
+    await page.waitForURL(`**${testConfig.routes.landing}`);
     await waitForHydration(page);
 
     // Wait for initialization

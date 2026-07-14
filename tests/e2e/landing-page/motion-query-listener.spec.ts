@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/base-fixture';
-import { testConfig } from '../test-config';
+import { testConfig, navLinkSelector } from '../test-config';
 import { waitForHydration } from '../helpers/hydration';
 
 /**
@@ -55,25 +55,25 @@ test.describe('Motion query listener accumulation fix', () => {
     expect(guardSet).toBe(true);
 
     // Navigate to Oferta
-    await page.click('a.nav-link[href="/oferta"]');
+    await page.click(navLinkSelector('oferta'));
     await page.waitForURL('**/oferta');
     await waitForHydration(page);
 
     // Navigate back to Home
-    await page.click('a.nav-link[href="/"]');
-    await page.waitForURL('**/');
+    await page.click(navLinkSelector('landing'));
+    await page.waitForURL(`**${testConfig.routes.landing}`);
     await waitForHydration(page);
 
     guardSet = await getMotionQueryGuardState(page);
     expect(guardSet).toBe(true);
 
     // Navigate away and back again
-    await page.click('a.nav-link[href="/o-mnie"]');
+    await page.click(navLinkSelector('oMnie'));
     await page.waitForURL('**/o-mnie');
     await waitForHydration(page);
 
-    await page.click('a.nav-link[href="/"]');
-    await page.waitForURL('**/');
+    await page.click(navLinkSelector('landing'));
+    await page.waitForURL(`**${testConfig.routes.landing}`);
     await waitForHydration(page);
 
     guardSet = await getMotionQueryGuardState(page);
@@ -100,8 +100,8 @@ test.describe('Motion query listener accumulation fix', () => {
       await page.waitForURL(`**${route}`);
       await waitForHydration(page);
 
-      await page.click('a.nav-link[href="/"]');
-      await page.waitForURL('**/');
+      await page.click(navLinkSelector('landing'));
+      await page.waitForURL(`**${testConfig.routes.landing}`);
       await waitForHydration(page);
     }
 

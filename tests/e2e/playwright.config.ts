@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { testConfig } from './test-config';
 
 /**
  * Playwright E2E configuration for NuloCake.
@@ -14,13 +15,15 @@ const mode = (process.env.TEST_MODE ?? 'dev') as 'dev' | 'preview';
 const webServerByMode = {
   dev: {
     command: 'npm run dev',
-    port: 3000,
+    port: 4321,
   },
   preview: {
     command: 'npm run build && npm run preview',
     port: 4321,
   },
 } as const;
+
+const port = webServerByMode[mode].port;
 
 export default defineConfig({
   testDir: '.',
@@ -29,7 +32,7 @@ export default defineConfig({
   reporter: isCI ? 'html' : 'list',
 
   use: {
-    baseURL: `http://localhost:${webServerByMode[mode].port}`,
+    baseURL: `http://localhost:${port}${testConfig.basePath}`,
     trace: 'on-first-retry',
   },
 

@@ -5,6 +5,9 @@
  * Tests and fixtures import from here — never hardcode these values.
  */
 export const testConfig = {
+  /** Mirror astro.config.mjs `base` — all routes and assets live under this path */
+  basePath: '/nulocake',
+
   /** gsap.globalTimeline.timeScale() multiplier — fast-forwards all GSAP animations */
   animationTimeScale: 100,
 
@@ -14,12 +17,17 @@ export const testConfig = {
   /** Max ms to wait for Astro hydration (client-side scripts loaded) */
   hydrationTimeout: 10_000,
 
-  /** Named routes for test navigation */
+  /** Named routes for test navigation (include basePath prefix) */
   routes: {
-    landing: '/',
-    oferta: '/oferta',
-    galeria: '/galeria',
-    oMnie: '/o-mnie',
-    kontakt: '/kontakt',
+    landing: '/nulocake/',
+    oferta: '/nulocake/oferta',
+    galeria: '/nulocake/galeria',
+    oMnie: '/nulocake/o-mnie',
+    kontakt: '/nulocake/kontakt',
   },
 } as const;
+
+/** CSS selector for a nav link pointing at a configured route */
+export function navLinkSelector(route: keyof typeof testConfig.routes): string {
+  return `a.nav-link[href="${testConfig.routes[route]}"]`;
+}

@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/base-fixture';
-import { testConfig } from '../test-config';
+import { testConfig, navLinkSelector } from '../test-config';
 import { waitForHydration } from '../helpers/hydration';
 
 /**
@@ -79,12 +79,12 @@ test.describe('Homepage cleanup on leave', () => {
     await waitForBeforeSwapGuard(page);
 
     // Navigate away and back
-    await page.click('a.nav-link[href="/oferta"]');
+    await page.click(navLinkSelector('oferta'));
     await page.waitForURL('**/oferta');
     await waitForHydration(page);
 
-    await page.click('a.nav-link[href="/"]');
-    await page.waitForURL('**/');
+    await page.click(navLinkSelector('landing'));
+    await page.waitForURL(`**${testConfig.routes.landing}`);
     await waitForHydration(page);
 
     // Guard should still be true (not re-added)
@@ -104,7 +104,7 @@ test.describe('Homepage cleanup on leave', () => {
     expect(initialTriggersCount).toBeGreaterThan(0);
 
     // Navigate away from homepage
-    await page.click('a.nav-link[href="/oferta"]');
+    await page.click(navLinkSelector('oferta'));
     await page.waitForURL('**/oferta');
     await waitForHydration(page);
 
@@ -112,8 +112,8 @@ test.describe('Homepage cleanup on leave', () => {
     await page.waitForTimeout(500);
 
     // Navigate back to homepage
-    await page.click('a.nav-link[href="/"]');
-    await page.waitForURL('**/');
+    await page.click(navLinkSelector('landing'));
+    await page.waitForURL(`**${testConfig.routes.landing}`);
     await waitForHydration(page);
 
     // Wait for re-initialization
@@ -135,7 +135,7 @@ test.describe('Homepage cleanup on leave', () => {
     await page.waitForTimeout(2000);
 
     // Navigate away from homepage
-    await page.click('a.nav-link[href="/oferta"]');
+    await page.click(navLinkSelector('oferta'));
     await page.waitForURL('**/oferta');
     await waitForHydration(page);
 
@@ -143,8 +143,8 @@ test.describe('Homepage cleanup on leave', () => {
     await page.waitForTimeout(500);
 
     // Navigate back to homepage
-    await page.click('a.nav-link[href="/"]');
-    await page.waitForURL('**/');
+    await page.click(navLinkSelector('landing'));
+    await page.waitForURL(`**${testConfig.routes.landing}`);
     await waitForHydration(page);
 
     // Wait for re-initialization
@@ -171,7 +171,7 @@ test.describe('Homepage cleanup on leave', () => {
     await page.waitForTimeout(3000);
 
     // Navigate away from homepage
-    await page.click('a.nav-link[href="/oferta"]');
+    await page.click(navLinkSelector('oferta'));
     await page.waitForURL('**/oferta');
     await waitForHydration(page);
 
@@ -197,13 +197,13 @@ test.describe('Homepage cleanup on leave', () => {
     const initialClass = await heroSection.getAttribute('class');
 
     // Navigate away
-    await page.click('a.nav-link[href="/oferta"]');
+    await page.click(navLinkSelector('oferta'));
     await page.waitForURL('**/oferta');
     await waitForHydration(page);
 
     // Navigate back
-    await page.click('a.nav-link[href="/"]');
-    await page.waitForURL('**/');
+    await page.click(navLinkSelector('landing'));
+    await page.waitForURL(`**${testConfig.routes.landing}`);
     await waitForHydration(page);
     await page.waitForTimeout(2000);
 
@@ -226,20 +226,20 @@ test.describe('Homepage cleanup on leave', () => {
     // Navigate: Home -> Oferta -> Home -> Galeria -> Home
     await navigateAndHydrate(page, testConfig.routes.landing);
 
-    await page.click('a.nav-link[href="/oferta"]');
+    await page.click(navLinkSelector('oferta'));
     await page.waitForURL('**/oferta');
     await waitForHydration(page);
 
-    await page.click('a.nav-link[href="/"]');
-    await page.waitForURL('**/');
+    await page.click(navLinkSelector('landing'));
+    await page.waitForURL(`**${testConfig.routes.landing}`);
     await waitForHydration(page);
 
-    await page.click('a.nav-link[href="/galeria"]');
+    await page.click(navLinkSelector('galeria'));
     await page.waitForURL('**/galeria');
     await waitForHydration(page);
 
-    await page.click('a.nav-link[href="/"]');
-    await page.waitForURL('**/');
+    await page.click(navLinkSelector('landing'));
+    await page.waitForURL(`**${testConfig.routes.landing}`);
     await waitForHydration(page);
 
     // Verify no errors occurred during the full cycle
