@@ -27,9 +27,9 @@ Deploy the Nulo Cake Astro site to GitHub Pages from the `githubpages` branch on
 - [x] Phase 1: Astro config (`site`, `base`)
 - [x] Phase 2: `withBase` helper + internal link fixes
 - [x] Phase 3: GitHub Actions workflow
-- [ ] Phase 4: GitHub repo settings (manual)
-- [ ] Phase 5: Push and verify deployment
-- [ ] Phase 6: Establish ongoing publish workflow
+- [x] Phase 4: GitHub repo settings (manual)
+- [x] Phase 5: Push and verify deployment
+- [x] Phase 6: Establish ongoing publish workflow
 
 ---
 
@@ -212,14 +212,14 @@ main (development)  →  merge into githubpages  →  push  →  auto-deploy
 ## Verification Plan
 
 ### Manual (post-deploy)
-- [ ] Home page renders at `https://astanula.github.io/nulocake/`
+- [x] Home page renders at `https://astanula.github.io/nulocake/`
 - [ ] All nav links navigate correctly
 - [ ] GSAP scroll animations work on home page
 - [ ] Gallery page loads images
 - [ ] Favicon visible in browser tab
 
 ### Local (pre-push)
-- [ ] `npm run build` succeeds
+- [x] `npm run build` succeeds
 - [ ] `npm run preview` serves site at `http://localhost:4321/nulocake/`
 - [ ] Navigation works in preview mode
 
