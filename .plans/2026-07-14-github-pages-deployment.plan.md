@@ -24,9 +24,9 @@ Deploy the Nulo Cake Astro site to GitHub Pages from the `githubpages` branch on
 
 ## Execution Progress Checklist
 
-- [ ] Phase 1: Astro config (`site`, `base`)
-- [ ] Phase 2: `withBase` helper + internal link fixes
-- [ ] Phase 3: GitHub Actions workflow
+- [x] Phase 1: Astro config (`site`, `base`)
+- [x] Phase 2: `withBase` helper + internal link fixes
+- [x] Phase 3: GitHub Actions workflow
 - [ ] Phase 4: GitHub repo settings (manual)
 - [ ] Phase 5: Push and verify deployment
 - [ ] Phase 6: Establish ongoing publish workflow

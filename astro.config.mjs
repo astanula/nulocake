@@ -5,6 +5,8 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://astanula.github.io',
+  base: '/nulocake',
   server: {
     port: 4321,
     host: '127.0.0.1',

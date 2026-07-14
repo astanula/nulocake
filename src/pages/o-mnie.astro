@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { withBase } from '../utils/withBase';
 ---
 
 <Layout title="O mnie — Nulo Cake" description="Poznaj historię Nulo Cake. Artystyczne torty na zamówienie tworzone z pasją i sercem." isSubpage={true}>
@@ -8,7 +9,7 @@ import Layout from '../layouts/Layout.astro';
       <p class="label-md">O mnie</p>
       <h1 class="display-lg">Wkrótce</h1>
       <p class="body-lg">Ta strona jest w przygotowaniu.</p>
-      <a href="/" class="btn-secondary">Wróć na stronę główną</a>
+      <a href={withBase('')} class="btn-secondary">Wróć na stronę główną</a>
     </div>
   </main>
 </Layout>

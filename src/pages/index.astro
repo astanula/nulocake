@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
+import { withBase } from '../utils/withBase';
 ---
 
 <Layout title="Nulo Cake — Artystyczne Torty Na Zamówienie" description="Wymarzony tort na Twoją wyjątkową okazję. Artystyczne torty na zamówienie tworzone z pasją. Jadalne dzieła sztuki, które dopełnią Twoją uroczystość.">
@@ -27,8 +28,8 @@ import Footer from '../components/Footer.astro';
               Artystyczne torty na zamówienie tworzone z pasją. Jesteś w odpowiednim miejscu, aby to słodkie marzenie spełnić!
             </p>
             <div class="section-cta-group blur-in">
-              <a href="/oferta" class="btn-primary" id="cta-oferta">Sprawdź ofertę</a>
-              <a href="/galeria" class="btn-secondary" id="cta-galeria">Zobacz galerię</a>
+              <a href={withBase('oferta')} class="btn-primary" id="cta-oferta">Sprawdź ofertę</a>
+              <a href={withBase('galeria')} class="btn-secondary" id="cta-galeria">Zobacz galerię</a>
             </div>
           </div>
         </section>
@@ -44,7 +45,7 @@ import Footer from '../components/Footer.astro';
               Wierzę, że każdy tort to osobna historia. W moją pracę wkładam całe serce, traktując każde zamówienie jako w 100% indywidualny projekt. Zależy mi na tym, aby efekt końcowy nie tylko zapierał dech w piersiach unikalną dekoracją dopracowaną w każdym detalu, ale również zniewalał smakiem od pierwszego kęsa.
             </p>
             <div class="section-cta-group blur-in">
-              <a href="/o-mnie" class="btn-secondary section-link" id="cta-historia">
+              <a href={withBase('o-mnie')} class="btn-secondary section-link" id="cta-historia">
                 Poznaj moją historię
                 <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M3 8h10M9 4l4 4-4 4"/>
@@ -63,26 +64,26 @@ import Footer from '../components/Footer.astro';
             </h2>
             <div class="gallery-carousel blur-in">
               <div class="gallery-item">
-                <img src="/gallery-1.webp" alt="Artystyczny tort weselny z różowymi różami" width="400" height="400" loading="lazy" />
+                <img src={withBase('gallery-1.webp')} alt="Artystyczny tort weselny z różowymi różami" width="400" height="400" loading="lazy" />
               </div>
               <div class="gallery-item">
-                <img src="/gallery-2.webp" alt="Kolorowy tort urodzinowy z akwarelowym wzorem" width="400" height="400" loading="lazy" />
+                <img src={withBase('gallery-2.webp')} alt="Kolorowy tort urodzinowy z akwarelowym wzorem" width="400" height="400" loading="lazy" />
               </div>
               <div class="gallery-item">
-                <img src="/gallery-3.webp" alt="Elegancki minimalistyczny tort ze złotymi detalami" width="400" height="400" loading="lazy" />
+                <img src={withBase('gallery-3.webp')} alt="Elegancki minimalistyczny tort ze złotymi detalami" width="400" height="400" loading="lazy" />
               </div>
               <div class="gallery-item">
-                <img src="/gallery-4.webp" alt="Fantazyjny tort dziecięcy z figurkami" width="400" height="400" loading="lazy" />
+                <img src={withBase('gallery-4.webp')} alt="Fantazyjny tort dziecięcy z figurkami" width="400" height="400" loading="lazy" />
               </div>
               <div class="gallery-item">
-                <img src="/gallery-1.webp" alt="Artystyczny tort weselny z różowymi różami" width="400" height="400" loading="lazy" />
+                <img src={withBase('gallery-1.webp')} alt="Artystyczny tort weselny z różowymi różami" width="400" height="400" loading="lazy" />
               </div>
               <div class="gallery-item">
-                <img src="/gallery-2.webp" alt="Kolorowy tort urodzinowy z akwarelowym wzorem" width="400" height="400" loading="lazy" />
+                <img src={withBase('gallery-2.webp')} alt="Kolorowy tort urodzinowy z akwarelowym wzorem" width="400" height="400" loading="lazy" />
               </div>
             </div>
             <div class="section-cta-group blur-in">
-              <a href="/galeria" class="btn-secondary" id="cta-full-galeria">Pełna Galeria</a>
+              <a href={withBase('galeria')} class="btn-secondary" id="cta-full-galeria">Pełna Galeria</a>
             </div>
           </div>
         </section>
@@ -166,7 +167,7 @@ import Footer from '../components/Footer.astro';
               Napisz do mnie — opowiedz o swojej okazji, a ja zajmę się resztą.
             </p>
             <div class="section-cta-group blur-in">
-              <a href="/kontakt" class="btn-primary" id="cta-kontakt">Skontaktuj się i zarezerwuj termin</a>
+              <a href={withBase('kontakt')} class="btn-primary" id="cta-kontakt">Skontaktuj się i zarezerwuj termin</a>
             </div>
           </div>
         </section>
@@ -179,8 +180,8 @@ import Footer from '../components/Footer.astro';
           <!-- TEMPORARILY DISABLED VIDEO FOR PERFORMANCE
           <video
             id="hero-video"
-            src="/hero-video.mp4"
-            poster="/hero-poster.webp"
+            src={withBase('hero-video.mp4')}
+            poster={withBase('hero-poster.webp')}
             muted
             playsinline
             preload="metadata"
@@ -189,7 +190,7 @@ import Footer from '../components/Footer.astro';
             tabindex="-1"
           ></video>
           -->
-          <img src="/hero-poster.webp" alt="" class="hero-video" id="hero-video-fallback" />
+          <img src={withBase('hero-poster.webp')} alt="" class="hero-video" id="hero-video-fallback" />
           <!-- Subtle ambient glow behind the video -->
           <div class="hero-video-glow" aria-hidden="true"></div>
         </div>

@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { withBase } from '../utils/withBase';
 ---
 
 <Layout title="Oferta — Nulo Cake" description="Poznaj ofertę artystycznych tortów na zamówienie. Składniki, dekoracje, cennik i sposób zamawiania." isSubpage={true}>
@@ -12,7 +13,7 @@ import Layout from '../layouts/Layout.astro';
         <p class="body-lg section-body">Każde piętro tortu to puszysty biszkopt i aż 3 warstwy przepysznego kremu/żelki</p>
         <p class="body-lg section-body">TODO: Tabelka z kombinacjami smaków</p>
         <div class="section-cta-group">
-          <a href="/kontakt" class="btn-primary">Mam pytanie o smaki</a>
+          <a href={withBase('kontakt')} class="btn-primary">Mam pytanie o smaki</a>
         </div>
       </div>
     </section>
@@ -50,7 +51,7 @@ import Layout from '../layouts/Layout.astro';
         </ul>
         <p class="body-lg section-body">Każdy tort wyceniam indywidualnie, ponieważ stopień skomplikowania dekoracji (np. ręczne lepienie figurek) wpływa na czas mojej pracy i ostateczny koszt.</p>
         <div class="section-cta-group">
-          <a href="/kontakt" class="btn-primary">Mam pytanie o dekoracje</a>
+          <a href={withBase('kontakt')} class="btn-primary">Mam pytanie o dekoracje</a>
         </div>
       </div>
     </section>
@@ -62,7 +63,7 @@ import Layout from '../layouts/Layout.astro';
         <p class="body-lg section-body">Ceny zaczynają się od X zł za porcję. Ostateczna cena tortu zależy od liczby porcji oraz stopnia skomplikowania dekoracji.</p>
         <p class="body-lg section-body">Tabelka z rozmiarami tortów wg. ilości porcji (kolumny: ilość porcji, średnica, ilość pięter). Tu wspomnieć też jaka średnica to tort 1 piętrowy, jaka 2 piętrowy, jaka 3 piętrowy, itp. Wymienić też Bento cake w tabelce!</p>
         <div class="section-cta-group">
-          <a href="/kontakt" class="btn-primary">Zapytaj o rozmiar i cenę</a>
+          <a href={withBase('kontakt')} class="btn-primary">Zapytaj o rozmiar i cenę</a>
         </div>
       </div>
     </section>
@@ -91,7 +92,7 @@ import Layout from '../layouts/Layout.astro';
           </li>
         </ol>
         <div class="section-cta-group">
-          <a href="/kontakt" class="btn-primary">Zamów lub zadaj pytanie</a>
+          <a href={withBase('kontakt')} class="btn-primary">Zamów lub zadaj pytanie</a>
         </div>
       </div>
     </section>
@@ -107,7 +108,7 @@ import Layout from '../layouts/Layout.astro';
           <li>Zapytaj jeśli potrzebujesz czegoś innego.</li>
         </ul>
         <div class="section-cta-group">
-          <a href="/kontakt" class="btn-primary">Zapytaj o dodatkową ofertę</a>
+          <a href={withBase('kontakt')} class="btn-primary">Zapytaj o dodatkową ofertę</a>
         </div>
       </div>
     </section>
