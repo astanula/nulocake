@@ -1,3 +1,5 @@
+const basePath = '/nulocake';
+
 /**
  * Central test configuration constants.
  *
@@ -17,13 +19,13 @@ export const testConfig = {
   /** Max ms to wait for Astro hydration (client-side scripts loaded) */
   hydrationTimeout: 10_000,
 
-  /** Named routes for test navigation (include basePath prefix) */
+  /** Named routes for test navigation (include Astro base path) */
   routes: {
-    landing: '/nulocake/',
-    oferta: '/nulocake/oferta',
-    galeria: '/nulocake/galeria',
-    oMnie: '/nulocake/o-mnie',
-    kontakt: '/nulocake/kontakt',
+    landing: `${basePath}/`,
+    oferta: `${basePath}/oferta`,
+    galeria: `${basePath}/galeria`,
+    oMnie: `${basePath}/o-mnie`,
+    kontakt: `${basePath}/kontakt`,
   },
 } as const;
 
