@@ -14,7 +14,7 @@ const mode = (process.env.TEST_MODE ?? 'dev') as 'dev' | 'preview';
 const webServerByMode = {
   dev: {
     command: 'npm run dev',
-    port: 3000,
+    port: 4321,
   },
   preview: {
     command: 'npm run build && npm run preview',
