@@ -1,7 +1,7 @@
 # Contact Enquiry Form
 
 **Date:** 2026-11-09
-**Status:** Design agreed in conversation; written specification awaiting review
+**Status:** Approved by the user after written-specification review
 **Related:** `src/pages/kontakt.astro`, `src/pages/oferta.astro`, `DESIGN.md`
 
 ## 1. Purpose
