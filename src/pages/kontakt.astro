@@ -1,39 +1,60 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { withBase } from '../utils/withBase';
+import ContactForm from '../components/contact/ContactForm.astro';
 ---
 
 <Layout title="Kontakt — Nulo Cake" description="Skontaktuj się z Nulo Cake. Zamów artystyczny tort na swoją wyjątkową okazję." isSubpage={true}>
-  <main class="page-placeholder">
-    <div class="placeholder-inner">
-      <p class="label-md">Kontakt</p>
-      <h1 class="display-lg">Wkrótce</h1>
-      <p class="body-lg">Ta strona jest w przygotowaniu.</p>
-      <a href={withBase('')} class="btn-secondary">Wróć na stronę główną</a>
-    </div>
+  <main class="contact-page">
+    <section class="contact-intro" aria-labelledby="contact-heading">
+      <p class="label-md contact-label">Kontakt</p>
+      <h1 id="contact-heading" class="display-lg contact-heading">
+        Porozmawiajmy<br /><span class="accent-italic">o Twoim torcie.</span>
+      </h1>
+      <p class="body-lg">
+        Nie musisz znać wszystkich szczegółów. Napisz, czego szukasz — chętnie doradzę.
+      </p>
+    </section>
+
+    <section class="contact-form-section" aria-label="Formularz kontaktowy">
+      <ContactForm />
+    </section>
   </main>
 </Layout>
 
 <style>
-  .page-placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    padding: 2rem;
+  .contact-page {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    align-items: start;
+    gap: clamp(2.5rem, 6vw, 6rem);
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: clamp(2.5rem, 6vw, 6rem) clamp(1.5rem, 5vw, 4rem);
+    flex-shrink: 0;
   }
-  .placeholder-inner {
-    text-align: left;
-    max-width: 480px;
+
+  .contact-intro {
+    max-width: 30rem;
   }
-  .placeholder-inner .label-md {
+
+  .contact-label {
     color: var(--color-primary);
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
   }
-  .placeholder-inner .display-lg {
-    margin-bottom: 1rem;
+
+  .contact-heading {
+    margin-bottom: 1.5rem;
   }
-  .placeholder-inner .body-lg {
-    margin-bottom: 2rem;
+
+  .contact-form-section {
+    max-width: 44rem;
+  }
+
+  @media (max-width: 900px) {
+    .contact-page {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 2.5rem;
+    }
   }
 </style>

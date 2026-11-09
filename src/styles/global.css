@@ -21,6 +21,7 @@
   --color-on-surface-variant: #c4c0bf;
   --color-outline: #8e8b8a;
   --color-outline-variant: #444241;
+  --color-error: #ff6b6b;
 
   --color-primary-gradient-end: #eb9fe4;
   --color-glow: rgba(235, 101, 235, 0.08);

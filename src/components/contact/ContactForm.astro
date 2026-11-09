@@ -1,0 +1,734 @@
+---
+import { CONTACT_CHANNELS, CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config/contact';
+import { channelSupportsPrefill, channelUrl } from '../../utils/contactEnquiry';
+import { CHANNEL_ICON_PATHS } from './channelIcons';
+---
+
+<form class="contact-form" id="contact-form" data-contact-form novalidate>
+  <div class="field">
+    <label class="field-label" for="contact-email">E-mail</label>
+    <input
+      class="field-control"
+      id="contact-email"
+      name="email"
+      type="email"
+      autocomplete="email"
+      aria-describedby="contact-email-error"
+    />
+    <p class="field-error" id="contact-email-error"></p>
+  </div>
+
+  <div class="field">
+    <label class="field-label" for="contact-message">
+      Wiadomość <span class="field-optional">— opcjonalnie</span>
+    </label>
+    <textarea
+      class="field-control field-textarea"
+      id="contact-message"
+      name="message"
+      rows="5"
+      placeholder={MESSAGE_FALLBACK}
+    ></textarea>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label class="field-label" for="contact-date">
+        Termin <span class="field-optional">— opcjonalnie</span>
+      </label>
+      <input class="field-control" id="contact-date" name="date" type="date" />
+    </div>
+    <div class="field">
+      <label class="field-label" for="contact-people">
+        Liczba osób <span class="field-optional">— opcjonalnie</span>
+      </label>
+      <input
+        class="field-control"
+        id="contact-people"
+        name="people"
+        type="number"
+        min="1"
+        step="1"
+        inputmode="numeric"
+      />
+    </div>
+  </div>
+
+  <fieldset class="field" aria-describedby="contact-flavors-count">
+    <legend class="field-label">
+      Smaki kremów <span class="field-optional">— opcjonalnie</span>
+    </legend>
+    <div class="flavor-options">
+      {CREAM_FLAVORS.map((flavor) => (
+        <label class="flavor-chip">
+          <input class="flavor-input" type="checkbox" name="flavors" value={flavor} />
+          <span>{flavor}</span>
+        </label>
+      ))}
+    </div>
+    <p class="field-hint" id="contact-flavors-count" aria-live="polite" data-flavors-count>
+      Wybrano 0 z {MAX_CREAM_FLAVORS}
+    </p>
+  </fieldset>
+
+  <div class="field" role="group" aria-labelledby="contact-images-label">
+    <span class="field-label" id="contact-images-label">
+      Inspiracje <span class="field-optional">— opcjonalnie</span>
+    </span>
+    <input id="contact-images" type="file" accept="image/*" multiple hidden data-image-input />
+    <button type="button" class="btn-secondary image-trigger" data-image-trigger>Dodaj zdjęcia</button>
+    <ul class="image-list" aria-label="Wybrane zdjęcia" data-image-list></ul>
+  </div>
+
+  <div class="contact-actions">
+    <button type="submit" class="btn-primary">Wyślij e-mailem</button>
+
+    <div class="channels" role="group" aria-labelledby="contact-channels-label">
+      <span class="channels-label" id="contact-channels-label">Napisz przez:</span>
+      <ul class="channel-list">
+        {CONTACT_CHANNELS.map((channel) => {
+          const url = channelUrl(channel, MESSAGE_FALLBACK);
+          const icon = (
+            <svg class="channel-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d={CHANNEL_ICON_PATHS[channel.id]} />
+            </svg>
+          );
+          return (
+            <li>
+              {url ? (
+                <a
+                  class="channel-btn"
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-channel={channel.id}
+                  data-label={channel.label}
+                  data-prefill={String(channelSupportsPrefill(channel.id))}
+                >
+                  {icon}
+                  <span>{channel.label}</span>
+                </a>
+              ) : (
+                <button type="button" class="channel-btn" disabled>
+                  {icon}
+                  <span>{channel.label}</span>
+                  <span class="sr-only">(wkrótce)</span>
+                </button>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  </div>
+
+  <p class="field-hint channel-note" data-images-note hidden>
+    Zdjęcia inspiracji dodaj ponownie w rozmowie, jeśli piszesz przez komunikator.
+  </p>
+
+  <div class="handoff" data-handoff hidden>
+    <p class="handoff-text" id="contact-handoff-text">
+      <span data-handoff-channel></span> nie wstawi treści automatycznie. Skopiuj ją i wklej w rozmowie.
+    </p>
+    <textarea
+      class="field-control handoff-preview"
+      rows="4"
+      readonly
+      aria-labelledby="contact-handoff-text"
+      data-handoff-preview
+    ></textarea>
+    <div class="handoff-actions">
+      <button type="button" class="btn-secondary" data-handoff-copy>Kopiuj treść</button>
+      <a class="btn-primary" target="_blank" rel="noopener noreferrer" data-handoff-open>
+        Otwórz <span data-handoff-channel></span>
+      </a>
+    </div>
+    <p class="field-hint" role="status" data-handoff-status></p>
+  </div>
+
+  <p class="form-status" role="status" data-form-status></p>
+</form>
+
+<script>
+  import { CONTACT_CHANNELS, MAX_CREAM_FLAVORS, type ContactChannelId } from '../../config/contact';
+  import {
+    EMAIL_SUBMIT_EVENT,
+    channelSupportsPrefill,
+    channelUrl,
+    formatEnquiryText,
+    hasCustomContent,
+    isValidEmail,
+    type EmailSubmitDetail,
+    type EnquiryDraft,
+  } from '../../utils/contactEnquiry';
+
+  interface SelectedImage {
+    file: File;
+    url: string;
+  }
+
+  let cleanupController: AbortController | null = null;
+
+  const todayIso = () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 10);
+  };
+
+  const fileKey = (file: File) => `${file.name}:${file.size}:${file.lastModified}`;
+
+  const emailErrorText = (value: string) => {
+    if (!value.trim()) return 'Podaj adres e-mail, abym mogła odpowiedzieć.';
+    return isValidEmail(value) ? '' : 'Sprawdź adres e-mail, np. anna@example.com.';
+  };
+
+  function initContactForm() {
+    cleanupController?.abort();
+    cleanupController = null;
+
+    const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+    if (!form) return;
+
+    cleanupController = new AbortController();
+    const { signal } = cleanupController;
+    const query = <T extends Element>(selector: string) => form.querySelector<T>(selector)!;
+
+    const email = query<HTMLInputElement>('#contact-email');
+    const emailError = query<HTMLElement>('#contact-email-error');
+    const message = query<HTMLTextAreaElement>('#contact-message');
+    const date = query<HTMLInputElement>('#contact-date');
+    const people = query<HTMLInputElement>('#contact-people');
+    const flavorInputs = Array.from(form.querySelectorAll<HTMLInputElement>('input[name="flavors"]'));
+    const flavorCount = query<HTMLElement>('[data-flavors-count]');
+    const imageInput = query<HTMLInputElement>('[data-image-input]');
+    const imageTrigger = query<HTMLButtonElement>('[data-image-trigger]');
+    const imageList = query<HTMLUListElement>('[data-image-list]');
+    const imagesNote = query<HTMLElement>('[data-images-note]');
+    const channelLinks = Array.from(form.querySelectorAll<HTMLAnchorElement>('a[data-channel]'));
+    const handoff = query<HTMLElement>('[data-handoff]');
+    const handoffNames = Array.from(form.querySelectorAll<HTMLElement>('[data-handoff-channel]'));
+    const handoffPreview = query<HTMLTextAreaElement>('[data-handoff-preview]');
+    const handoffCopy = query<HTMLButtonElement>('[data-handoff-copy]');
+    const handoffOpen = query<HTMLAnchorElement>('[data-handoff-open]');
+    const handoffStatus = query<HTMLElement>('[data-handoff-status]');
+    const formStatus = query<HTMLElement>('[data-form-status]');
+
+    let images: SelectedImage[] = [];
+    let emailAttempted = false;
+
+    date.min = todayIso();
+
+    const readDraft = (): EnquiryDraft => ({
+      email: email.value.trim(),
+      message: message.value,
+      date: date.value,
+      people: people.value,
+      flavors: flavorInputs.filter((input) => input.checked).map((input) => input.value),
+      images: images.map(({ file }) => file),
+    });
+
+    const showEmailError = (text: string) => {
+      emailError.textContent = text;
+      if (text) email.setAttribute('aria-invalid', 'true');
+      else email.removeAttribute('aria-invalid');
+    };
+
+    const updateFlavors = () => {
+      const selected = flavorInputs.filter((input) => input.checked).length;
+      flavorInputs.forEach((input) => {
+        input.disabled = selected >= MAX_CREAM_FLAVORS && !input.checked;
+      });
+      flavorCount.textContent = `Wybrano ${selected} z ${MAX_CREAM_FLAVORS}`;
+    };
+
+    const refreshHandoff = () => {
+      const text = formatEnquiryText(readDraft());
+      channelLinks.forEach((link) => {
+        const channel = CONTACT_CHANNELS.find(({ id }) => id === link.dataset.channel);
+        const url = channel && channelUrl(channel, text);
+        if (url) link.href = url;
+      });
+      if (!handoff.hidden) handoffPreview.value = text;
+    };
+
+    const renderImages = () => {
+      imageList.replaceChildren(
+        ...images.map(({ file, url }, index) => {
+          const item = document.createElement('li');
+          item.className = 'image-item';
+          const thumb = document.createElement('img');
+          thumb.className = 'image-thumb';
+          thumb.src = url;
+          thumb.alt = '';
+          const name = document.createElement('span');
+          name.className = 'image-name';
+          name.textContent = file.name;
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'image-remove';
+          remove.dataset.removeIndex = String(index);
+          remove.textContent = 'Usuń';
+          remove.setAttribute('aria-label', `Usuń ${file.name}`);
+          item.append(thumb, name, remove);
+          return item;
+        }),
+      );
+      imagesNote.hidden = images.length === 0;
+    };
+
+    form.addEventListener(
+      'input',
+      () => {
+        formStatus.textContent = '';
+        if (emailAttempted) showEmailError(emailErrorText(email.value));
+        refreshHandoff();
+      },
+      { signal },
+    );
+
+    flavorInputs.forEach((input) =>
+      input.addEventListener(
+        'change',
+        () => {
+          if (flavorInputs.filter((item) => item.checked).length > MAX_CREAM_FLAVORS) input.checked = false;
+          updateFlavors();
+          refreshHandoff();
+        },
+        { signal },
+      ),
+    );
+
+    imageTrigger.addEventListener('click', () => imageInput.click(), { signal });
+
+    imageInput.addEventListener(
+      'change',
+      () => {
+        const known = new Set(images.map(({ file }) => fileKey(file)));
+        Array.from(imageInput.files ?? [])
+          .filter((file) => file.type.startsWith('image/') && !known.has(fileKey(file)))
+          .forEach((file) => {
+            known.add(fileKey(file));
+            images.push({ file, url: URL.createObjectURL(file) });
+          });
+        imageInput.value = '';
+        renderImages();
+      },
+      { signal },
+    );
+
+    imageList.addEventListener(
+      'click',
+      (event) => {
+        const button = (event.target as Element).closest<HTMLButtonElement>('[data-remove-index]');
+        if (!button) return;
+        const index = Number(button.dataset.removeIndex);
+        URL.revokeObjectURL(images[index].url);
+        images = images.filter((_, i) => i !== index);
+        renderImages();
+        const next = imageList.querySelectorAll<HTMLButtonElement>('[data-remove-index]')[Math.min(index, images.length - 1)];
+        (next ?? imageTrigger).focus();
+      },
+      { signal },
+    );
+
+    form.addEventListener(
+      'submit',
+      (event) => {
+        event.preventDefault();
+        emailAttempted = true;
+        const error = emailErrorText(email.value);
+        showEmailError(error);
+        if (error) {
+          formStatus.textContent = '';
+          email.focus();
+          return;
+        }
+
+        const draft = readDraft();
+        const handled = !form.dispatchEvent(
+          new CustomEvent<EmailSubmitDetail>(EMAIL_SUBMIT_EVENT, {
+            cancelable: true,
+            detail: { draft, text: formatEnquiryText(draft) },
+          }),
+        );
+        if (!handled) {
+          formStatus.textContent = 'Wysyłka e-mailem nie jest jeszcze dostępna. Twoje dane zostają w formularzu.';
+        }
+      },
+      { signal },
+    );
+
+    channelLinks.forEach((link) =>
+      link.addEventListener(
+        'click',
+        (event) => {
+          refreshHandoff();
+          const draft = readDraft();
+          if (channelSupportsPrefill(link.dataset.channel as ContactChannelId) || !hasCustomContent(draft)) return;
+
+          event.preventDefault();
+          handoffNames.forEach((name) => {
+            name.textContent = link.dataset.label ?? '';
+          });
+          handoffOpen.href = link.href;
+          handoffStatus.textContent = '';
+          handoff.hidden = false;
+          handoffPreview.value = formatEnquiryText(draft);
+          handoffCopy.focus();
+        },
+        { signal },
+      ),
+    );
+
+    handoffCopy.addEventListener(
+      'click',
+      async () => {
+        try {
+          await navigator.clipboard.writeText(handoffPreview.value);
+          handoffStatus.textContent = 'Skopiowano treść.';
+        } catch {
+          handoffPreview.focus();
+          handoffPreview.select();
+          handoffStatus.textContent = 'Nie udało się skopiować automatycznie. Treść jest zaznaczona — skopiuj ją ręcznie.';
+        }
+      },
+      { signal },
+    );
+
+    signal.addEventListener('abort', () => images.forEach(({ url }) => URL.revokeObjectURL(url)));
+
+    updateFlavors();
+    refreshHandoff();
+  }
+
+  document.addEventListener('astro:page-load', initContactForm);
+  document.addEventListener('astro:before-swap', () => {
+    cleanupController?.abort();
+    cleanupController = null;
+  });
+</script>
+
+<style>
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    width: 100%;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+    border: none;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
+  .field-label {
+    font-family: var(--font-family-body);
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--color-on-surface);
+    padding: 0;
+  }
+
+  legend.field-label {
+    margin-bottom: 0.5rem;
+  }
+
+  .field-optional {
+    font-weight: 400;
+    color: var(--color-outline);
+  }
+
+  .field-control {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    font-family: var(--font-family-body);
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--color-on-surface);
+    background: var(--color-surface-container-low);
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 0.125rem;
+    color-scheme: dark;
+    transition: border-color 0.2s ease;
+  }
+
+  .field-control::placeholder {
+    color: var(--color-outline);
+    opacity: 1;
+  }
+
+  .field-control:hover {
+    border-color: var(--color-outline);
+  }
+
+  .field-control:focus-visible {
+    outline: none;
+    border-color: var(--color-primary);
+  }
+
+  .field-control[aria-invalid='true'] {
+    border-color: var(--color-error);
+    box-shadow: 0 0 0 1px var(--color-error);
+  }
+
+  .field-textarea {
+    resize: vertical;
+    min-height: 8rem;
+  }
+
+  .field-error {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-error);
+  }
+
+  .field-error:empty,
+  .form-status:empty {
+    display: none;
+  }
+
+  .field-hint {
+    font-size: 0.8125rem;
+    color: var(--color-on-surface-variant);
+  }
+
+  .flavor-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .flavor-chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: var(--color-on-surface-variant);
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+  }
+
+  .flavor-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: inherit;
+  }
+
+  .flavor-chip:hover {
+    border-color: var(--color-outline);
+  }
+
+  .flavor-chip:has(:checked) {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    background: rgba(255, 170, 248, 0.08);
+  }
+
+  .flavor-chip:has(:checked)::before {
+    content: '✓';
+    margin-right: 0.4rem;
+  }
+
+  .flavor-chip:has(:focus-visible) {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+  }
+
+  .flavor-chip:has(:disabled) {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .image-trigger {
+    align-self: flex-start;
+  }
+
+  .image-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    list-style: none;
+  }
+
+  .image-list:empty {
+    display: none;
+  }
+
+  .image-list :global(.image-item) {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    background: var(--color-surface-container-low);
+    border-radius: 0.125rem;
+  }
+
+  .image-list :global(.image-thumb) {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 0.125rem;
+    flex-shrink: 0;
+  }
+
+  .image-list :global(.image-name) {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    color: var(--color-on-surface-variant);
+  }
+
+  .image-list :global(.image-remove) {
+    min-height: 44px;
+    padding: 0 0.75rem;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .contact-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.25rem 3rem;
+    margin-top: 0.5rem;
+  }
+
+  .channels {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .channels-label {
+    font-size: 0.875rem;
+    color: var(--color-on-surface-variant);
+  }
+
+  .channel-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+  }
+
+  .channel-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.5rem 0.875rem;
+    font-family: var(--font-family-body);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-on-surface);
+    text-decoration: none;
+    background: transparent;
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 0.125rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+
+  a.channel-btn:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .channel-btn:disabled {
+    color: var(--color-outline);
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .channel-icon {
+    width: 1rem;
+    height: 1rem;
+    fill: currentColor;
+    flex-shrink: 0;
+  }
+
+  .handoff {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 0.125rem;
+  }
+
+  .handoff-text {
+    font-size: 0.9375rem;
+    color: var(--color-on-surface);
+  }
+
+  .handoff-preview {
+    resize: vertical;
+  }
+
+  .handoff-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .form-status {
+    font-size: 0.9375rem;
+    color: var(--color-on-surface-variant);
+  }
+
+  @media (max-width: 640px) {
+    .field-row {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .contact-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .contact-actions > .btn-primary {
+      justify-content: center;
+    }
+
+    .channels {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .contact-form :is(.btn-primary, .btn-secondary) {
+      transition: none;
+      will-change: auto;
+    }
+
+    .contact-form :is(.btn-primary, .btn-secondary):is(:hover, :active) {
+      transform: none;
+    }
+  }
+</style>

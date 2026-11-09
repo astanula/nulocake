@@ -1,7 +1,7 @@
 # Contact Enquiry Form Implementation Plan
 
 **Date:** 2026-11-09
-**Status:** Proposed implementation plan; no implementation started
+**Status:** Implemented. Pending: Forminit email delivery; Messenger and Telegram recipients (rendered disabled until configured); E2E suite written but not yet run
 **Specification:** `docs/superpowers/specs/2026-11-09-contact-enquiry-form-design.md`
 
 ## Goal and Constraints
