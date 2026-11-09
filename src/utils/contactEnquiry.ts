@@ -25,10 +25,17 @@ export const isValidEmail = (email: string) => EMAIL_PATTERN.test(email.trim());
 
 export const effectiveMessage = (message: string) => message.trim() || MESSAGE_FALLBACK;
 
-const formatDate = (isoDate: string) => {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
-  return match ? `${match[3]}.${match[2]}.${match[1]}` : '';
+const DATE_PATTERN = /^(\d{4})\/(\d{2})\/(\d{2})$/;
+
+export const isValidDate = (value: string) => {
+  const match = DATE_PATTERN.exec(value);
+  if (!match) return false;
+  const [year, month, day] = match.slice(1).map(Number);
+  const parsed = new Date(year, month - 1, day);
+  return parsed.getFullYear() === year && parsed.getMonth() === month - 1 && parsed.getDate() === day;
 };
+
+const formatDate = (date: string) => (isValidDate(date) ? date : '');
 
 const formatPeople = (people: string) => {
   const count = Number(people);

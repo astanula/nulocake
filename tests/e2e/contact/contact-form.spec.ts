@@ -62,14 +62,15 @@ test.describe('Contact enquiry form', () => {
     await captureEmailSubmissions(page);
 
     await page.getByLabel('E-mail').fill('anna@example.com');
-    await page.locator('#contact-date').fill('2030-05-20');
+    await page.locator('#contact-date').fill('2030/05/20');
     await page.locator('#contact-people').fill('25');
+    await page.locator('.flavor-summary').click();
     await page.getByLabel(CREAM_FLAVORS[0]).check();
     await page.getByLabel(CREAM_FLAVORS[1]).check();
     await page.getByRole('button', { name: 'Wyślij e-mailem' }).click();
 
     expect(await emailSubmissions(page)).toEqual([
-      `${MESSAGE_FALLBACK}\n\nTermin: 20.05.2030\nLiczba osób: 25\nSmaki kremów: ${CREAM_FLAVORS[0]}, ${CREAM_FLAVORS[1]}`,
+      `${MESSAGE_FALLBACK}\n\nTermin: 2030/05/20\nLiczba osób: 25\nSmaki kremów: ${CREAM_FLAVORS[0]}, ${CREAM_FLAVORS[1]}`,
     ]);
   });
 
@@ -151,25 +152,167 @@ test.describe('Contact enquiry form', () => {
     await expect(page.getByRole('button', { name: /Telegram/ })).toBeDisabled();
   });
 
+  test('date and people fields show an inline label until focused or filled', async ({ page }) => {
+    await openContactPage(page);
+    const dateField = page.locator('.overlay-field:has(#contact-date)');
+    const peopleField = page.locator('.overlay-field:has(#contact-people)');
+    const people = page.locator('#contact-people');
+    const date = page.locator('#contact-date');
+
+    await expect(page.getByRole('textbox', { name: 'Termin, opcjonalnie' })).toBeVisible();
+    await expect(page.getByRole('spinbutton', { name: 'Liczba osób, opcjonalnie' })).toBeVisible();
+    await expect(dateField.locator('.field-overlay-empty')).toHaveText('Termin — opcjonalnie');
+    await expect(peopleField.locator('.field-overlay-empty')).toHaveText('Liczba osób — opcjonalnie');
+
+    await people.focus();
+    await expect(peopleField.locator('.field-overlay-empty')).toBeHidden();
+    await people.blur();
+    await expect(peopleField.locator('.field-overlay-empty')).toBeVisible();
+
+    const labels: Record<string, string> = { '1': 'Liczba osób: 1', '6': 'Liczba osób: 6', '25': 'Liczba osób: 25' };
+    for (const [value, label] of Object.entries(labels)) {
+      await people.fill(value);
+      await people.blur();
+      await expect(peopleField.locator('.field-overlay-empty')).toBeHidden();
+      await expect(peopleField.locator('.field-overlay-filled')).toHaveText(label);
+    }
+
+    await people.fill('');
+    await people.blur();
+    await expect(peopleField.locator('.field-overlay-filled')).toBeHidden();
+    await expect(peopleField.locator('.field-overlay-empty')).toBeVisible();
+
+    await date.fill('2030/05/20');
+    await date.blur();
+    await expect(dateField.locator('.field-overlay-empty')).toBeHidden();
+    await expect(dateField.locator('.field-overlay-filled')).toHaveText('Termin: 20 maja 2030');
+    await date.fill('2030/06/01');
+    await date.blur();
+    await expect(dateField.locator('.field-overlay-filled')).toHaveText('Termin: 1 czerwca 2030');
+    await date.fill('');
+    await date.blur();
+    await expect(dateField.locator('.field-overlay-empty')).toBeVisible();
+  });
+
+  test('date field uses the yyyy/mm/dd format', async ({ page }) => {
+    await openContactPage(page);
+    await captureEmailSubmissions(page);
+    const date = page.locator('#contact-date');
+
+    await date.pressSequentially('20300520');
+    await expect(date).toHaveValue('2030/05/20');
+    await date.fill('2030-0520xyz');
+    await expect(date).toHaveValue('2030/05/20');
+    await date.fill('2030/05');
+    await expect(date).toHaveValue('2030/05');
+    await date.blur();
+    await expect(date).toHaveAttribute('aria-invalid', 'true');
+
+    await date.fill('2030/02/31');
+    await date.blur();
+    await expect(date).toHaveAttribute('aria-invalid', 'true');
+
+    await page.getByLabel('E-mail').fill('anna@example.com');
+    await page.getByRole('button', { name: 'Wyślij e-mailem' }).click();
+    expect(await emailSubmissions(page)).toEqual([MESSAGE_FALLBACK]);
+
+    await page.locator('[data-date-native]').evaluate((input: HTMLInputElement) => {
+      input.value = '2030-06-01';
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await expect(date).toHaveValue('2030/06/01');
+    await expect(date).not.toHaveAttribute('aria-invalid');
+  });
+
   test('flavour selection is limited by MAX_CREAM_FLAVORS', async ({ page }) => {
     await openContactPage(page);
     const count = page.locator('[data-flavors-count]');
+    const dropdown = page.locator('.flavor-dropdown');
+    const summary = dropdown.locator('summary');
+    const optional = summary.locator('[data-flavors-optional]');
+    const flavorGroup = page.getByRole('group', { name: 'Smaki kremów' });
 
+    await expect(flavorGroup).toBeVisible();
+    await expect(flavorGroup.locator('legend')).toHaveCount(0);
+    await expect(summary).toHaveText(`Wybierz smaki (0 z ${MAX_CREAM_FLAVORS}) — opcjonalnie`);
+    await expect(optional).toBeVisible();
+    await summary.click();
     for (const flavor of CREAM_FLAVORS.slice(0, MAX_CREAM_FLAVORS)) {
       await page.getByLabel(flavor).check();
     }
-    await expect(count).toHaveText(`Wybrano ${MAX_CREAM_FLAVORS} z ${MAX_CREAM_FLAVORS}`);
+    await expect(count).toHaveText(`(${MAX_CREAM_FLAVORS} z ${MAX_CREAM_FLAVORS})`);
+    await expect(summary).toHaveText(`${CREAM_FLAVORS.slice(0, MAX_CREAM_FLAVORS).join(', ')} (${MAX_CREAM_FLAVORS} z ${MAX_CREAM_FLAVORS})`, { useInnerText: true });
+    await expect(optional).toBeHidden();
+    await expect(dropdown).not.toHaveAttribute('open');
+    await expect(summary).toBeFocused();
+
+    await summary.click();
+    for (const flavor of CREAM_FLAVORS.slice(0, MAX_CREAM_FLAVORS)) {
+      await expect(page.getByLabel(flavor)).toBeChecked();
+    }
     await expect(page.getByLabel(CREAM_FLAVORS[MAX_CREAM_FLAVORS])).toBeDisabled();
 
     await page.getByLabel(CREAM_FLAVORS[0]).uncheck();
     await expect(page.getByLabel(CREAM_FLAVORS[MAX_CREAM_FLAVORS])).toBeEnabled();
-    await expect(count).toHaveText(`Wybrano ${MAX_CREAM_FLAVORS - 1} z ${MAX_CREAM_FLAVORS}`);
+    await expect(count).toHaveText(`(${MAX_CREAM_FLAVORS - 1} z ${MAX_CREAM_FLAVORS})`);
+    await expect(dropdown).toHaveAttribute('open', '');
+
+    for (const flavor of CREAM_FLAVORS.slice(1, MAX_CREAM_FLAVORS)) {
+      await page.getByLabel(flavor).uncheck();
+    }
+    await expect(summary).toHaveText(`Wybierz smaki (0 z ${MAX_CREAM_FLAVORS}) — opcjonalnie`);
+    await expect(optional).toBeVisible();
+  });
+
+  test('flavour dropdown preserves selection when closed on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await openContactPage(page);
+    const dropdown = page.locator('.flavor-dropdown');
+    const summary = dropdown.locator('summary');
+    const flavor = page.getByLabel(CREAM_FLAVORS[0]);
+
+    await expect(flavor).toBeHidden();
+    await summary.focus();
+    await summary.press('Enter');
+    await expect(flavor).toBeVisible();
+    await flavor.check();
+    await summary.press('Enter');
+
+    await expect(flavor).toBeHidden();
+    await expect(summary).toHaveText(`${CREAM_FLAVORS[0]} (1 z ${MAX_CREAM_FLAVORS})`, { useInnerText: true });
+    await expect(summary.locator('[data-flavors-optional]')).toBeHidden();
+
+    await summary.press('Enter');
+    await expect(flavor).toBeChecked();
+  });
+
+  test('flavour dropdown closes on outside click without losing selection', async ({ page }) => {
+    await openContactPage(page);
+    const dropdown = page.locator('.flavor-dropdown');
+    const summary = dropdown.locator('summary');
+    const flavor = page.getByLabel(CREAM_FLAVORS[0]);
+
+    await summary.click();
+    await flavor.check();
+    await expect(dropdown).toHaveAttribute('open', '');
+
+    await page.getByLabel('E-mail').click();
+    await expect(dropdown).not.toHaveAttribute('open');
+    await expect(summary).toContainText(CREAM_FLAVORS[0]);
+
+    await summary.click();
+    await expect(flavor).toBeChecked();
   });
 
   test('inspiration images can be selected and removed', async ({ page }) => {
     await openContactPage(page);
+    const trigger = page.getByRole('button', { name: 'Dodaj zdjęcie inspiracji' });
     const list = page.locator('[data-image-list]');
     const note = page.locator('[data-images-note]');
+
+    await expect(trigger).toBeVisible();
+    await expect(trigger).toHaveCSS('color', 'rgb(229, 226, 225)');
+    await expect(page.getByText('Inspiracje — opcjonalnie', { exact: true })).toHaveCount(0);
 
     await page.locator('[data-image-input]').setInputFiles('src/assets/gallery/1-1.jpeg');
     await expect(list).toContainText('1-1.jpeg');
