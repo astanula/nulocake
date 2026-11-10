@@ -111,7 +111,23 @@ import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config
   </div>
 
   <div class="contact-actions">
-    <button type="submit" class="btn-secondary email-submit">Wyślij e-mailem</button>
+    <button type="submit" class="btn-secondary email-submit">
+      <svg
+        class="email-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <rect x="1.5" y="4.5" width="21" height="15" rx="2.5" />
+        <path d="M2 7.2 10.6 13a2.5 2.5 0 0 0 2.8 0L22 7.2" />
+      </svg>
+      Wyślij e-mailem
+    </button>
   </div>
 
   <p class="form-status" role="status" data-form-status></p>
@@ -816,10 +832,28 @@ import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config
 
   .contact-actions {
     display: flex;
+    justify-content: flex-end;
   }
 
   .email-submit {
     color: var(--color-on-surface);
+    transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .email-submit:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    transform: scale(1.02);
+  }
+
+  .email-submit:active {
+    transform: scale(0.98);
+  }
+
+  .email-icon {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
   }
 
   .form-status {
@@ -830,15 +864,6 @@ import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config
   @media (max-width: 640px) {
     .field-row {
       grid-template-columns: minmax(0, 1fr);
-    }
-
-    .contact-actions {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .email-submit {
-      justify-content: center;
     }
   }
 

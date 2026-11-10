@@ -6,9 +6,8 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
 const activeChannels = CONTACT_CHANNELS.filter((channel) => channel.recipient);
 ---
 
-<div class="channels" role="group" aria-labelledby="contact-channels-label">
-  <p class="label-md channels-label" id="contact-channels-label">Napisz przez:</p>
-  <h2 class="channels-heading" id="contact-channels-heading">Zacznijmy od rozmowy.</h2>
+<div class="channels" role="group" aria-labelledby="contact-channels-heading">
+  <h2 class="label-md channels-heading" id="contact-channels-heading">Zacznijmy od rozmowy</h2>
   <ul class="channel-list">
     {activeChannels.map((channel) => (
       <li>
@@ -58,22 +57,13 @@ const activeChannels = CONTACT_CHANNELS.filter((channel) => channel.recipient);
 
 <style>
   .channels {
-    padding-bottom: 1.75rem;
+    padding-bottom: 1.25rem;
     border-bottom: 1px solid var(--color-outline-variant);
-  }
-
-  .channels-label {
-    margin-bottom: 0.75rem;
-    color: var(--color-primary);
   }
 
   .channels-heading {
     margin-bottom: 1.25rem;
-    font-family: var(--font-family-display);
-    font-size: clamp(1.25rem, 2vw, 1.5rem);
-    font-weight: 600;
-    line-height: 1.35;
-    letter-spacing: -0.03em;
+    color: var(--color-primary);
   }
 
   .channel-list {
@@ -98,17 +88,18 @@ const activeChannels = CONTACT_CHANNELS.filter((channel) => channel.recipient);
     padding: 0.875rem 0.75rem;
     font-size: 0.8125rem;
     font-weight: 600;
-    color: var(--color-primary);
+    color: var(--color-on-surface);
     text-decoration: none;
-    background: color-mix(in srgb, var(--color-primary) 4%, var(--color-background));
-    border: 1px solid color-mix(in srgb, var(--color-primary) 50%, var(--color-background));
+    background: transparent;
+    border: 1px solid var(--color-outline-variant);
     border-radius: 0.125rem;
     touch-action: manipulation;
-    transition: transform 0.2s ease, background-color 0.2s ease;
+    transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   }
 
   .channel-btn:hover {
-    background: color-mix(in srgb, var(--color-primary) 10%, var(--color-background));
+    color: var(--color-primary);
+    border-color: var(--color-primary);
     transform: scale(1.02);
   }
 
