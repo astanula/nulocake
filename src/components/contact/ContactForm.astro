@@ -6,22 +6,24 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
 
 <form class="contact-form" id="contact-form" data-contact-form novalidate>
   <div class="field">
-    <label class="field-label" for="contact-email">E-mail</label>
-    <input
-      class="field-control"
-      id="contact-email"
-      name="email"
-      type="email"
-      autocomplete="email"
-      aria-describedby="contact-email-error"
-    />
+    <div class="field overlay-field" data-state="empty">
+      <label class="visually-hidden" for="contact-email">E-mail</label>
+      <input
+        class="field-control"
+        id="contact-email"
+        name="email"
+        type="email"
+        autocomplete="email"
+        aria-describedby="contact-email-error"
+      />
+      <span class="field-overlay field-overlay-empty" aria-hidden="true">E-mail</span>
+      <span class="field-overlay field-overlay-filled" aria-hidden="true" data-email-label></span>
+    </div>
     <p class="field-error" id="contact-email-error"></p>
   </div>
 
-  <div class="field">
-    <label class="field-label" for="contact-message">
-      Wiadomość <span class="field-optional">— opcjonalnie</span>
-    </label>
+  <div class="field overlay-field overlay-field-message" data-state="empty">
+    <label class="visually-hidden" for="contact-message">Wiadomość, opcjonalnie</label>
     <textarea
       class="field-control field-textarea"
       id="contact-message"
@@ -29,6 +31,8 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
       rows="5"
       placeholder={MESSAGE_FALLBACK}
     ></textarea>
+    <span class="field-overlay field-overlay-empty" aria-hidden="true">Wiadomość{' '}<span class="field-optional">— opcjonalnie</span></span>
+    <span class="field-overlay field-overlay-filled" aria-hidden="true" data-message-label></span>
   </div>
 
   <div class="field-row">
@@ -246,6 +250,8 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
     const email = query<HTMLInputElement>('#contact-email');
     const emailError = query<HTMLElement>('#contact-email-error');
     const message = query<HTMLTextAreaElement>('#contact-message');
+    const emailDisplay = query<HTMLElement>('[data-email-label]');
+    const messageDisplay = query<HTMLElement>('[data-message-label]');
     const date = query<HTMLInputElement>('#contact-date');
     const people = query<HTMLInputElement>('#contact-people');
     const dateDisplay = query<HTMLElement>('[data-date-label]');
@@ -291,6 +297,10 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
     };
 
     const updateOverlays = () => {
+      email.parentElement!.dataset.state = email.value ? 'filled' : 'empty';
+      emailDisplay.textContent = email.value ? `E-mail: ${email.value}` : '';
+      message.parentElement!.dataset.state = message.value ? 'filled' : 'empty';
+      messageDisplay.textContent = message.value ? `Wiadomość: ${message.value}` : '';
       date.parentElement!.dataset.state = date.value ? 'filled' : 'empty';
       dateDisplay.textContent = date.value ? `Termin: ${dateLabel(date.value)}` : '';
       people.parentElement!.dataset.state = people.value ? 'filled' : 'empty';
@@ -549,14 +559,6 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
     gap: 1.25rem;
   }
 
-  .field-label {
-    font-family: var(--font-family-body);
-    font-weight: 600;
-    font-size: 0.875rem;
-    color: var(--color-on-surface);
-    padding: 0;
-  }
-
   .field-optional {
     font-weight: 400;
     color: var(--color-outline);
@@ -597,6 +599,17 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
   .overlay-field:not(:has(.field-control:focus))[data-state='empty'] .field-overlay-empty,
   .overlay-field:not(:has(.field-control:focus))[data-state='filled'] .field-overlay-filled {
     display: flex;
+  }
+
+  .overlay-field-message .field-overlay {
+    align-items: flex-start;
+    padding-right: 1rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .overlay-field-message:not(:has(.field-control:focus))[data-state='filled'] .field-overlay-filled {
+    display: block;
   }
 
   .overlay-field:not(:has(.field-control:focus)) .field-control {
