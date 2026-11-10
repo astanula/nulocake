@@ -1,7 +1,7 @@
 # Contact Page: Communicator-First Layout
 
 **Date:** 2026-11-10
-**Status:** Variant A selected by the user; written specification awaiting review
+**Status:** Approved by the user after written-specification review
 **Related:** `DESIGN.md`, `src/pages/kontakt.astro`,
 `src/components/contact/ContactForm.astro`, `src/config/contact.ts`,
 `2026-11-09-contact-enquiry-form-design.md`
