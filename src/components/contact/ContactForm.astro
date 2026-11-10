@@ -16,8 +16,8 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
         autocomplete="email"
         aria-describedby="contact-email-error"
       />
-      <span class="field-overlay field-overlay-empty" aria-hidden="true">E-mail</span>
-      <span class="field-overlay field-overlay-filled" aria-hidden="true" data-email-label></span>
+      <span class="field-overlay field-overlay-empty" aria-hidden="true"><span class="field-name">E-mail</span></span>
+      <span class="field-overlay field-overlay-filled" aria-hidden="true"><span class="field-name">E-mail:</span>{' '}<span data-email-label></span></span>
     </div>
     <p class="field-error" id="contact-email-error"></p>
   </div>
@@ -31,8 +31,8 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
       rows="5"
       placeholder={MESSAGE_FALLBACK}
     ></textarea>
-    <span class="field-overlay field-overlay-empty" aria-hidden="true">Wiadomość{' '}<span class="field-optional">— opcjonalnie</span></span>
-    <span class="field-overlay field-overlay-filled" aria-hidden="true" data-message-label></span>
+    <span class="field-overlay field-overlay-empty" aria-hidden="true"><span class="field-name">Wiadomość</span>{' '}<span class="field-optional">— opcjonalnie</span></span>
+    <span class="field-overlay field-overlay-filled" aria-hidden="true"><span class="field-name">Wiadomość:</span>{' '}<span data-message-label></span></span>
   </div>
 
   <div class="field-row">
@@ -49,9 +49,9 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
         placeholder="yyyy/mm/dd"
       />
       <span class="field-overlay field-overlay-empty" aria-hidden="true">
-        Termin{' '}<span class="field-optional">— opcjonalnie</span>
+        <span class="field-name">Termin</span>{' '}<span class="field-optional">— opcjonalnie</span>
       </span>
-      <span class="field-overlay field-overlay-filled" aria-hidden="true" data-date-label></span>
+      <span class="field-overlay field-overlay-filled" aria-hidden="true"><span class="field-name">Termin:</span>{' '}<span data-date-label></span></span>
       <input class="date-native" type="date" tabindex="-1" aria-hidden="true" data-date-native />
       <button type="button" class="date-picker" aria-label="Wybierz termin z kalendarza" data-date-picker>
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -77,9 +77,9 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
         inputmode="numeric"
       />
       <span class="field-overlay field-overlay-empty" aria-hidden="true">
-        Liczba osób{' '}<span class="field-optional">— opcjonalnie</span>
+        <span class="field-name">Liczba osób</span>{' '}<span class="field-optional">— opcjonalnie</span>
       </span>
-      <span class="field-overlay field-overlay-filled" aria-hidden="true" data-people-label></span>
+      <span class="field-overlay field-overlay-filled" aria-hidden="true"><span class="field-name">Liczba osób:</span>{' '}<span data-people-label></span></span>
     </div>
   </div>
 
@@ -298,13 +298,13 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
 
     const updateOverlays = () => {
       email.parentElement!.dataset.state = email.value ? 'filled' : 'empty';
-      emailDisplay.textContent = email.value ? `E-mail: ${email.value}` : '';
+      emailDisplay.textContent = email.value;
       message.parentElement!.dataset.state = message.value ? 'filled' : 'empty';
-      messageDisplay.textContent = message.value ? `Wiadomość: ${message.value}` : '';
+      messageDisplay.textContent = message.value;
       date.parentElement!.dataset.state = date.value ? 'filled' : 'empty';
-      dateDisplay.textContent = date.value ? `Termin: ${dateLabel(date.value)}` : '';
+      dateDisplay.textContent = date.value ? dateLabel(date.value) : '';
       people.parentElement!.dataset.state = people.value ? 'filled' : 'empty';
-      peopleDisplay.textContent = people.value ? `Liczba osób: ${people.value}` : '';
+      peopleDisplay.textContent = people.value;
     };
 
     const updateFlavors = () => {
@@ -564,6 +564,11 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
     color: var(--color-outline);
   }
 
+  .field-name,
+  .flavor-summary-selection:has(.flavor-summary-optional:not([hidden])) .flavor-summary-text {
+    color: var(--color-primary);
+  }
+
   .visually-hidden {
     position: absolute;
     width: 1px;
@@ -585,6 +590,7 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
     inset: 0;
     display: none;
     align-items: center;
+    gap: 0.3em;
     padding: 0.875rem 3rem 0.875rem 1rem;
     border: 1px solid transparent;
     font-size: 1rem;
@@ -610,6 +616,12 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
 
   .overlay-field-message:not(:has(.field-control:focus))[data-state='filled'] .field-overlay-filled {
     display: block;
+  }
+
+  .field-overlay-filled > span:not(.field-name) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .overlay-field:not(:has(.field-control:focus)) .field-control {
