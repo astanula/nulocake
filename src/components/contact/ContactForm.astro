@@ -1,7 +1,5 @@
 ---
-import { CONTACT_CHANNELS, CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config/contact';
-import { channelSupportsPrefill, channelUrl } from '../../utils/contactEnquiry';
-import { CHANNEL_ICON_PATHS } from './channelIcons';
+import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config/contact';
 ---
 
 <form class="contact-form" id="contact-form" data-contact-form novalidate>
@@ -113,69 +111,7 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
   </div>
 
   <div class="contact-actions">
-    <button type="submit" class="btn-primary">Wyślij e-mailem</button>
-
-    <div class="channels" role="group" aria-labelledby="contact-channels-label">
-      <span class="channels-label" id="contact-channels-label">Napisz przez:</span>
-      <ul class="channel-list">
-        {CONTACT_CHANNELS.map((channel) => {
-          const url = channelUrl(channel, MESSAGE_FALLBACK);
-          const icon = (
-            <svg class="channel-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d={CHANNEL_ICON_PATHS[channel.id]} />
-            </svg>
-          );
-          return (
-            <li>
-              {url ? (
-                <a
-                  class="channel-btn"
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-channel={channel.id}
-                  data-label={channel.label}
-                  data-prefill={String(channelSupportsPrefill(channel.id))}
-                >
-                  {icon}
-                  <span>{channel.label}</span>
-                </a>
-              ) : (
-                <button type="button" class="channel-btn" disabled>
-                  {icon}
-                  <span>{channel.label}</span>
-                  <span class="sr-only">(wkrótce)</span>
-                </button>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  </div>
-
-  <p class="field-hint channel-note" data-images-note hidden>
-    Zdjęcia inspiracji dodaj ponownie w rozmowie, jeśli piszesz przez komunikator.
-  </p>
-
-  <div class="handoff" data-handoff hidden>
-    <p class="handoff-text" id="contact-handoff-text">
-      <span data-handoff-channel></span> nie wstawi treści automatycznie. Skopiuj ją i wklej w rozmowie.
-    </p>
-    <textarea
-      class="field-control handoff-preview"
-      rows="4"
-      readonly
-      aria-labelledby="contact-handoff-text"
-      data-handoff-preview
-    ></textarea>
-    <div class="handoff-actions">
-      <button type="button" class="btn-secondary" data-handoff-copy>Kopiuj treść</button>
-      <a class="btn-primary" target="_blank" rel="noopener noreferrer" data-handoff-open>
-        Otwórz <span data-handoff-channel></span>
-      </a>
-    </div>
-    <p class="field-hint" role="status" data-handoff-status></p>
+    <button type="submit" class="btn-secondary email-submit">Wyślij e-mailem</button>
   </div>
 
   <p class="form-status" role="status" data-form-status></p>
@@ -241,11 +177,13 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
     cleanupController = null;
 
     const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
-    if (!form) return;
+    const page = form?.closest<HTMLElement>('[data-contact-page]');
+    if (!form || !page) return;
 
     cleanupController = new AbortController();
     const { signal } = cleanupController;
     const query = <T extends Element>(selector: string) => form.querySelector<T>(selector)!;
+    const queryPage = <T extends Element>(selector: string) => page.querySelector<T>(selector)!;
 
     const email = query<HTMLInputElement>('#contact-email');
     const emailError = query<HTMLElement>('#contact-email-error');
@@ -266,14 +204,14 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
     const imageInput = query<HTMLInputElement>('[data-image-input]');
     const imageTrigger = query<HTMLButtonElement>('[data-image-trigger]');
     const imageList = query<HTMLUListElement>('[data-image-list]');
-    const imagesNote = query<HTMLElement>('[data-images-note]');
-    const channelLinks = Array.from(form.querySelectorAll<HTMLAnchorElement>('a[data-channel]'));
-    const handoff = query<HTMLElement>('[data-handoff]');
-    const handoffNames = Array.from(form.querySelectorAll<HTMLElement>('[data-handoff-channel]'));
-    const handoffPreview = query<HTMLTextAreaElement>('[data-handoff-preview]');
-    const handoffCopy = query<HTMLButtonElement>('[data-handoff-copy]');
-    const handoffOpen = query<HTMLAnchorElement>('[data-handoff-open]');
-    const handoffStatus = query<HTMLElement>('[data-handoff-status]');
+    const imagesNote = queryPage<HTMLElement>('[data-images-note]');
+    const channelLinks = Array.from(page.querySelectorAll<HTMLAnchorElement>('a[data-channel]'));
+    const handoff = queryPage<HTMLElement>('[data-handoff]');
+    const handoffNames = Array.from(page.querySelectorAll<HTMLElement>('[data-handoff-channel]'));
+    const handoffPreview = queryPage<HTMLTextAreaElement>('[data-handoff-preview]');
+    const handoffCopy = queryPage<HTMLButtonElement>('[data-handoff-copy]');
+    const handoffOpen = queryPage<HTMLAnchorElement>('[data-handoff-open]');
+    const handoffStatus = queryPage<HTMLElement>('[data-handoff-status]');
     const formStatus = query<HTMLElement>('[data-form-status]');
 
     let images: SelectedImage[] = [];
@@ -728,11 +666,6 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
     display: none;
   }
 
-  .field-hint {
-    font-size: 0.8125rem;
-    color: var(--color-on-surface-variant);
-  }
-
   .flavor-summary {
     display: flex;
     align-items: center;
@@ -883,89 +816,10 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
 
   .contact-actions {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--form-row-gap) 3rem;
   }
 
-  .channels {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .channels-label {
-    font-size: 0.875rem;
-    color: var(--color-on-surface-variant);
-  }
-
-  .channel-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--form-row-gap) 0.5rem;
-    list-style: none;
-  }
-
-  .channel-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-height: 44px;
-    padding: 0.5rem 0.875rem;
-    font-family: var(--font-family-body);
-    font-size: 0.8125rem;
-    font-weight: 600;
+  .email-submit {
     color: var(--color-on-surface);
-    text-decoration: none;
-    background: transparent;
-    border: 1px solid var(--color-outline-variant);
-    border-radius: 0.125rem;
-    cursor: pointer;
-    transition: border-color 0.2s ease, color 0.2s ease;
-  }
-
-  a.channel-btn:hover {
-    color: var(--color-primary);
-    border-color: var(--color-primary);
-  }
-
-  .channel-btn:disabled {
-    color: var(--color-outline);
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .channel-icon {
-    width: 1rem;
-    height: 1rem;
-    fill: currentColor;
-    flex-shrink: 0;
-  }
-
-  .handoff {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: 1.25rem;
-    background: var(--color-surface);
-    border: 1px solid var(--color-outline-variant);
-    border-radius: 0.125rem;
-  }
-
-  .handoff-text {
-    font-size: 0.9375rem;
-    color: var(--color-on-surface);
-  }
-
-  .handoff-preview {
-    resize: vertical;
-  }
-
-  .handoff-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--form-row-gap) 0.75rem;
   }
 
   .form-status {
@@ -983,13 +837,8 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
       align-items: stretch;
     }
 
-    .contact-actions > .btn-primary {
+    .email-submit {
       justify-content: center;
-    }
-
-    .channels {
-      flex-direction: column;
-      align-items: flex-start;
     }
   }
 

@@ -1,10 +1,13 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ContactChannels from '../components/contact/ContactChannels.astro';
 import ContactForm from '../components/contact/ContactForm.astro';
+import ContactMap from '../components/contact/ContactMap.astro';
+import { CONTACT_DETAILS, CONTACT_LINKS } from '../config/contact';
 ---
 
 <Layout title="Kontakt — Nulo Cake" description="Skontaktuj się z Nulo Cake. Zamów artystyczny tort na swoją wyjątkową okazję." isSubpage={true}>
-  <main class="contact-page">
+  <main class="contact-page" data-contact-page>
     <section class="contact-intro" aria-labelledby="contact-heading">
       <p class="label-md contact-label">Kontakt</p>
       <h1 id="contact-heading" class="display-lg contact-heading">
@@ -15,8 +18,36 @@ import ContactForm from '../components/contact/ContactForm.astro';
       </p>
     </section>
 
-    <section class="contact-form-section" aria-label="Formularz kontaktowy">
+    <section class="contact-channels-section" aria-labelledby="contact-channels-heading">
+      <ContactChannels />
+    </section>
+
+    <section class="contact-details" aria-labelledby="contact-details-heading">
+      <h2 class="label-md contact-details-heading" id="contact-details-heading">Bezpośrednio</h2>
+      <dl class="contact-facts">
+        <div>
+          <dt>Telefon</dt>
+          <dd><a href={CONTACT_LINKS.phone}>{CONTACT_DETAILS.phone}</a></dd>
+        </div>
+        <div>
+          <dt>E-mail</dt>
+          <dd><a href={CONTACT_LINKS.email}>{CONTACT_DETAILS.email}</a></dd>
+        </div>
+        <div>
+          <dt>Adres</dt>
+          <dd>{CONTACT_DETAILS.address}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="contact-form-section" aria-labelledby="contact-email-heading">
+      <h2 class="contact-email-heading" id="contact-email-heading">Wolisz e-mail?</h2>
+      <p class="contact-email-intro">Zostaw adres i napisz tyle, ile już wiesz.</p>
       <ContactForm />
+    </section>
+
+    <section class="contact-map-section" aria-label="Lokalizacja">
+      <ContactMap />
     </section>
   </main>
 </Layout>
@@ -25,8 +56,13 @@ import ContactForm from '../components/contact/ContactForm.astro';
   .contact-page {
     display: grid;
     grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    grid-template-areas:
+      'intro channels'
+      'details email'
+      'map email';
+    grid-template-rows: auto auto 1fr;
     align-items: start;
-    gap: clamp(2.5rem, 6vw, 6rem);
+    gap: 2rem clamp(2.5rem, 6vw, 6rem);
     width: 100%;
     max-width: 1400px;
     margin: 0 auto;
@@ -35,6 +71,8 @@ import ContactForm from '../components/contact/ContactForm.astro';
   }
 
   .contact-intro {
+    grid-area: intro;
+    min-width: 0;
     max-width: 30rem;
   }
 
@@ -45,16 +83,100 @@ import ContactForm from '../components/contact/ContactForm.astro';
 
   .contact-heading {
     margin-bottom: 1.5rem;
+    font-size: clamp(2.125rem, 4.3vw, 3.5rem);
+  }
+
+  .contact-channels-section,
+  .contact-form-section {
+    min-width: 0;
+    max-width: 44rem;
+  }
+
+  .contact-channels-section {
+    grid-area: channels;
+  }
+
+  .contact-details {
+    grid-area: details;
+    min-width: 0;
+  }
+
+  .contact-details-heading {
+    margin-bottom: 1.25rem;
+  }
+
+  .contact-facts {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .contact-facts > div {
+    display: grid;
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: 1rem;
+  }
+
+  .contact-facts dt {
+    font-size: 0.8125rem;
+    color: var(--color-on-surface-variant);
+  }
+
+  .contact-facts dd {
+    min-width: 0;
+    font-size: 1rem;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+  }
+
+  .contact-facts a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--color-on-surface);
+    text-decoration: none;
+  }
+
+  .contact-facts a:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
   }
 
   .contact-form-section {
-    max-width: 44rem;
+    grid-area: email;
+  }
+
+  .contact-email-heading {
+    margin-bottom: 0.5rem;
+    font-family: var(--font-family-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+
+  .contact-email-intro {
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--color-on-surface-variant);
+  }
+
+  .contact-map-section {
+    grid-area: map;
+    min-width: 0;
   }
 
   @media (max-width: 900px) {
     .contact-page {
       grid-template-columns: minmax(0, 1fr);
-      gap: 2.5rem;
+      grid-template-areas:
+        'intro'
+        'channels'
+        'details'
+        'email'
+        'map';
+      grid-template-rows: auto;
     }
   }
 </style>

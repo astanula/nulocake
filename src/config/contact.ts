@@ -1,5 +1,20 @@
 export const MESSAGE_FALLBACK = 'Chcę zapytać o tort.';
 
+export const CONTACT_DETAILS = {
+  phone: '+48 500 268 600',
+  email: 'kontakt@nulocake.pl',
+  address: '32-445 Krzyszkowice 756',
+} as const;
+
+const mapDestination = encodeURIComponent(`${CONTACT_DETAILS.address}, Polska`);
+
+export const CONTACT_LINKS = {
+  phone: `tel:${CONTACT_DETAILS.phone.replace(/\s/g, '')}`,
+  email: `mailto:${CONTACT_DETAILS.email}`,
+  mapEmbed: `https://maps.google.com/maps?q=${mapDestination}&z=15&output=embed`,
+  directions: `https://www.google.com/maps/dir/?api=1&destination=${mapDestination}`,
+} as const;
+
 export const MAX_CREAM_FLAVORS = 3;
 
 export const CREAM_FLAVORS = [

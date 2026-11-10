@@ -139,17 +139,66 @@ test.describe('Contact enquiry form', () => {
     await page.locator('a[data-channel="instagram"]').click();
     await expect(handoff).toBeVisible();
     await expect(handoff.locator('[data-handoff-open]')).toHaveAttribute('href', 'https://ig.me/m/nulo.cake');
+    await expect(handoff.locator('[data-handoff-preview]')).toHaveValue('Tort z motywem lasu');
+
+    await page.locator('#contact-people').fill('12');
+    await expect(handoff.locator('[data-handoff-preview]')).toHaveValue('Tort z motywem lasu\n\nLiczba osób: 12');
 
     await page.getByRole('button', { name: 'Kopiuj treść' }).click();
     await expect(page.locator('[data-handoff-status]')).toHaveText('Skopiowano treść.');
-    expect(await page.evaluate(() => (window as any).__copied)).toEqual(['Tort z motywem lasu']);
+    expect(await page.evaluate(() => (window as any).__copied)).toEqual(['Tort z motywem lasu\n\nLiczba osób: 12']);
   });
 
-  test('unconfigured communicators are disabled', async ({ page }) => {
+  test('only configured communicators are shown', async ({ page }) => {
     await openContactPage(page);
 
-    await expect(page.getByRole('button', { name: /Messenger/ })).toBeDisabled();
-    await expect(page.getByRole('button', { name: /Telegram/ })).toBeDisabled();
+    await expect(page.getByRole('link', { name: 'Messenger', exact: true })).toHaveAttribute(
+      'href',
+      'https://m.me/61583364552840',
+    );
+    await expect(page.getByRole('link', { name: 'WhatsApp', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Instagram', exact: true })).toBeVisible();
+    await expect(page.locator('[data-channel="telegram"]')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /Telegram/ })).toHaveCount(0);
+  });
+
+  test('map loads only after activation and works after return navigation', async ({ page }) => {
+    const mapRequests: string[] = [];
+    await page.route('https://maps.google.com/maps?**', async (route) => {
+      mapRequests.push(route.request().url());
+      await route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>Map preview</title>' });
+    });
+    await openContactPage(page);
+
+    const map = page.locator('contact-location-map');
+    const directions = map.getByRole('link', { name: 'Wyznacz trasę' });
+    const load = map.getByRole('button', { name: 'Wczytaj mapę Google' });
+    await expect(load).toBeVisible();
+    await expect(map.locator('iframe')).toHaveCount(0);
+    await expect(directions).toHaveAttribute('href', /^https:\/\/www\.google\.com\/maps\/dir\/\?/);
+    expect(mapRequests).toEqual([]);
+
+    await load.click();
+    await expect(map.locator('iframe')).toHaveCount(1);
+    await expect(map.locator('iframe')).toHaveAttribute('title', 'Google Maps: 32-445 Krzyszkowice 756');
+    await expect.poll(() => mapRequests.length).toBe(1);
+    await expect(load).toHaveCount(0);
+    await expect(directions).toBeVisible();
+
+    await page.click(navLinkSelector('oferta'));
+    await page.waitForURL('**/oferta');
+    await waitForHydration(page);
+    await page.click(navLinkSelector('kontakt'));
+    await page.waitForURL('**/kontakt');
+    await waitForHydration(page);
+
+    await expect(load).toBeVisible();
+    await expect(map.locator('iframe')).toHaveCount(0);
+    expect(mapRequests).toHaveLength(1);
+    await load.click();
+    await expect.poll(() => mapRequests.length).toBe(2);
+    await expect(map.locator('iframe')).toHaveCount(1);
+    await expect(directions).toBeVisible();
   });
 
   test('date and people fields show an inline label until focused or filled', async ({ page }) => {

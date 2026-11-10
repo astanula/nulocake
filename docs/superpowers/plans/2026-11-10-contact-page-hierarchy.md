@@ -1,7 +1,7 @@
 # Communicator-First Contact Page Implementation Plan
 
 **Date:** 2026-11-10
-**Status:** Ready for implementation; application changes not started
+**Status:** Implemented; interactive browser review and building-pin confirmation pending
 **Specification:** `docs/superpowers/specs/2026-11-10-contact-page-hierarchy-design.md`
 
 ## Goal and Constraints
@@ -64,14 +64,14 @@ a concrete requirement within this scope.
 
 **File:** `src/config/contact.ts`
 
-- [ ] Add one exported contact-details object containing the displayed phone
+- [x] Add one exported contact-details object containing the displayed phone
   number, email address, and address from the approved specification.
-- [ ] Derive the `tel:` destination by normalising the shared phone value;
+- [x] Derive the `tel:` destination by normalising the shared phone value;
   do not scatter hardcoded contact literals through page components.
-- [ ] Build the `mailto:` destination from the shared email address.
-- [ ] Derive the map query and directions destination from the same address,
+- [x] Build the `mailto:` destination from the shared email address.
+- [x] Derive the map query and directions destination from the same address,
   adding the country and URL encoding it as needed.
-- [ ] Preserve the existing channel configuration and handoff capabilities.
+- [x] Preserve the existing channel configuration and handoff capabilities.
   Do not remove Telegram's supported type or invent a recipient for it.
 
 **Checkpoint:** Displayed details are exactly `+48 500 268 600`,
@@ -84,26 +84,26 @@ destinations resolve to `tel:+48500268600` and
 **Files:** `ContactChannels.astro`, `ContactForm.astro`,
 `src/pages/kontakt.astro`
 
-- [ ] Introduce `data-contact-page` on the contact page's main element.
-- [ ] Extract the communicator group into `ContactChannels.astro`; reuse
+- [x] Introduce `data-contact-page` on the contact page's main element.
+- [x] Extract the communicator group into `ContactChannels.astro`; reuse
   `CONTACT_CHANNELS`, `CHANNEL_ICON_PATHS`, `channelUrl()`, and existing
   `data-channel`, `data-label`, and `data-prefill` attributes.
-- [ ] Render only channels with a recipient. Initially show Messenger,
+- [x] Render only channels with a recipient. Initially show Messenger,
   WhatsApp, and Instagram, without a disabled Telegram button.
-- [ ] Move the image warning and complete handoff UI with the group,
+- [x] Move the image warning and complete handoff UI with the group,
   preserving their IDs, data attributes, selectable preview, and status.
-- [ ] In the existing controller, locate the shared page root through the
+- [x] In the existing controller, locate the shared page root through the
   form. Query channel links, image warning, and handoff controls from that
   root; keep input and email-status queries form-scoped.
-- [ ] Preserve `readDraft()`, `refreshHandoff()`, email-only validation,
+- [x] Preserve `readDraft()`, `refreshHandoff()`, email-only validation,
   clipboard fallback, file cleanup, and the existing form-dispatched
   `EMAIL_SUBMIT_EVENT`. Do not introduce duplicate state or a second draft.
-- [ ] Preserve `astro:page-load`, AbortController cleanup, and
+- [x] Preserve `astro:page-load`, AbortController cleanup, and
   `astro:before-swap` behaviour for all relocated listeners.
-- [ ] Move scoped channel, handoff, preview, warning, focus, and
+- [x] Move scoped channel, handoff, preview, warning, focus, and
   reduced-motion styles to the new component. Supply the preview's
   necessary textarea styling locally rather than making field styles global.
-- [ ] Keep only the email action and email status with the actual form.
+- [x] Keep only the email action and email status with the actual form.
   Restyle the email-submit button locally as a secondary outlined action.
 
 **Checkpoint:** Communicators work with a blank or invalid email, receive
@@ -114,23 +114,23 @@ prefill is unsupported. Image warnings and cleanup still work.
 
 **File:** `src/pages/kontakt.astro`
 
-- [ ] Retain the current introduction.
-- [ ] Use page-owned section wrappers in this DOM order: introduction,
+- [x] Retain the current introduction.
+- [x] Use page-owned section wrappers in this DOM order: introduction,
   communicators, direct contact details, email form, map.
-- [ ] Use grid areas to place introduction, details, and map in the left
+- [x] Use grid areas to place introduction, details, and map in the left
   column, with communicators and email form in the right column.
   Keep approximately the existing 0.8fr/1.2fr column proportions.
-- [ ] Style grid wrappers in the page, avoiding dependence on selectors
+- [x] Style grid wrappers in the page, avoiding dependence on selectors
   reaching into child components across Astro style boundaries.
-- [ ] Render direct details as accessible, selectable text, with actual
+- [x] Render direct details as accessible, selectable text, with actual
   `tel:` and `mailto:` links and visible focus styling.
-- [ ] Add the approved communicator heading and short no-form-required
+- [x] Add the approved communicator heading and short no-form-required
   explanation; introduce the form with "Wolisz e-mail?".
-- [ ] At 900px and below, stack sections in DOM order. Keep the map below
+- [x] At 900px and below, stack sections in DOM order. Keep the map below
   the form so it does not displace primary contact actions.
-- [ ] Allow named communicator buttons to wrap on narrow screens with
+- [x] Allow named communicator buttons to wrap on narrow screens with
   at least 44px hit areas, rather than hiding labels or adding overflow.
-- [ ] Preserve the Layout's existing subpage scroll container. Do not add
+- [x] Preserve the Layout's existing subpage scroll container. Do not add
   a competing viewport-height or scroll-lock system.
 
 **Checkpoint:** The desktop layout matches variant A, mobile focus order
@@ -141,24 +141,24 @@ horizontal scrolling appears.
 
 **File:** `src/components/contact/ContactMap.astro`
 
-- [ ] Render a branded, fixed-height placeholder with the shared address
+- [x] Render a branded, fixed-height placeholder with the shared address
   and a button that explicitly loads Google Maps.
-- [ ] Explain that loading the map connects to Google. Include no map
+- [x] Explain that loading the map connects to Google. Include no map
   iframe request, map SDK, map preconnect, or automatic loading before
   the activation.
-- [ ] On activation, create one titled Google Maps iframe using the
+- [x] On activation, create one titled Google Maps iframe using the
   encoded shared address. Replace the placeholder without changing the
   reserved 210-220px height.
-- [ ] Leave map controls and attribution unmodified; do not apply dark
+- [x] Leave map controls and attribution unmodified; do not apply dark
   filters over Google's map.
-- [ ] Keep a visible, protected new-tab directions link outside the
+- [x] Keep a visible, protected new-tab directions link outside the
   replaceable area. It remains usable before activation, without
   JavaScript, and when embedded maps are blocked.
-- [ ] Make initialisation work on direct visits and Astro revisits.
+- [x] Make initialisation work on direct visits and Astro revisits.
   Clean up listeners before swaps and avoid duplicate frames or handlers.
-- [ ] Do not add guessed coordinates. Manually confirm the building pin
-  before release; use a verified place target for both links if the
-  address-based target is inaccurate.
+- [x] Use an address-based target without guessed coordinates.
+- [ ] Manually confirm the building pin before release; use a verified
+  place target for both links if the address-based target is inaccurate.
 
 **Checkpoint:** No Maps request occurs before activation, a small real
 map loads afterward, and the directions link remains available in every
@@ -169,22 +169,22 @@ state. Existing Google Fonts requests are unrelated to map activation.
 **Files:** `tests/e2e/contact/contact-form.spec.ts`, changed implementation
 files
 
-- [ ] Before writing or updating E2E coverage, read `docs/testing.md` and
+- [x] Before writing or updating E2E coverage, read `docs/testing.md` and
   invoke `playwright-e2e-testing`. Use the repository's fixtures,
   base-path handling, and navigation helpers.
-- [ ] Replace the stale assertion that Messenger is disabled. Assert a
+- [x] Replace the stale assertion that Messenger is disabled. Assert a
   configured Messenger link and absence of unconfigured Telegram instead.
-- [ ] Retain existing checks for invalid-email bypass, prepared draft
+- [x] Retain existing checks for invalid-email bypass, prepared draft
   content, explicit copying, selected images, and navigation away/back.
   Their page-scoped locators should continue to work after extraction.
-- [ ] Add focused map activation coverage: no iframe/request before
+- [x] Add focused map activation coverage: no iframe/request before
   activation, one iframe after activation, and a persistent directions
   link. Intercept map requests so coverage does not depend on Google
   availability or trigger external resources.
-- [ ] Keep external conversations, clipboard side effects, and all real
+- [x] Keep external conversations, clipboard side effects, and all real
   submission routes stubbed. Do not add brittle screenshot tests or
   duplicate the full existing form suite.
-- [ ] After implementation, run local Astro/TypeScript checking and the
+- [x] After implementation, run local Astro/TypeScript checking and the
   production build using the installed toolchain:
   `npm run astro -- check` and `npm run build`.
   Do not install or fetch dependencies merely to run checks.
@@ -193,7 +193,7 @@ files
   fallback visibility, map size, and Astro return navigation.
 - [ ] Confirm the real building pin manually, without sending an enquiry
   or starting a real business conversation.
-- [ ] Report changed files, completed checks, map-pin verification status,
+- [x] Report changed files, completed checks, map-pin verification status,
   and the fact that live email delivery remains outside this change.
 
 Do not execute the E2E suite unless explicitly requested by the user. If
@@ -209,6 +209,16 @@ Implement tasks 1-4 in order, keeping the controller and relocated markup
 changes in task 2 coherent. Complete task 5 after the page is assembled.
 Do not start unrelated refactoring or broaden testing automatically.
 
-This planning session changes documentation only. All implementation
-checkboxes remain open; no application code, automated tests, Astro checks,
-or builds have been executed as part of preparing this plan.
+## Implementation Results
+
+- Application changes and focused E2E updates are implemented. The map uses
+  a custom element's connection/disconnection lifecycle for Astro revisits.
+- `npm run build` passes. The production Kontakt route responds with HTTP
+  200 and renders the agreed section order and direct contact links.
+- `npm run astro -- check` reports 66 errors in unchanged navigation,
+  home-page, and Playwright-configuration files. It reports no diagnostics
+  in the changed contact files. These unrelated errors are not modified.
+- `git diff --check` passes. Automated tests have not been executed.
+- Interactive desktop/mobile, keyboard, and navigation review remains
+  pending, as does confirmation that Google's pin identifies the actual
+  building. Address-based lookup is implemented, not a verified place pin.

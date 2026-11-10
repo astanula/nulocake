@@ -1,0 +1,209 @@
+---
+import { CONTACT_CHANNELS, MESSAGE_FALLBACK } from '../../config/contact';
+import { channelSupportsPrefill, channelUrl } from '../../utils/contactEnquiry';
+import { CHANNEL_ICON_PATHS } from './channelIcons';
+
+const activeChannels = CONTACT_CHANNELS.filter((channel) => channel.recipient);
+---
+
+<div class="channels" role="group" aria-labelledby="contact-channels-label">
+  <p class="label-md channels-label" id="contact-channels-label">Napisz przez:</p>
+  <h2 class="channels-heading" id="contact-channels-heading">Zacznijmy od rozmowy.</h2>
+  <ul class="channel-list">
+    {activeChannels.map((channel) => (
+      <li>
+        <a
+          class="channel-btn"
+          href={channelUrl(channel, MESSAGE_FALLBACK)!}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-channel={channel.id}
+          data-label={channel.label}
+          data-prefill={String(channelSupportsPrefill(channel.id))}
+        >
+          <svg class="channel-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d={CHANNEL_ICON_PATHS[channel.id]} />
+          </svg>
+          <span>{channel.label}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+  <p class="channel-hint">Bez wype&#322;niania formularza. Szczeg&oacute;&#322;y ustalimy w rozmowie.</p>
+
+  <p class="channel-hint channel-note" data-images-note hidden>
+    Zdj&#281;cia inspiracji dodaj ponownie w rozmowie, je&#347;li piszesz przez komunikator.
+  </p>
+
+  <div class="handoff" data-handoff hidden>
+    <p class="handoff-text" id="contact-handoff-text">
+      <span data-handoff-channel></span> nie wstawi tre&#347;ci automatycznie. Skopiuj j&#261; i wklej w rozmowie.
+    </p>
+    <textarea
+      class="handoff-preview"
+      rows="4"
+      readonly
+      aria-labelledby="contact-handoff-text"
+      data-handoff-preview
+    ></textarea>
+    <div class="handoff-actions">
+      <button type="button" class="btn-secondary" data-handoff-copy>Kopiuj tre&#347;&#263;</button>
+      <a class="btn-primary" target="_blank" rel="noopener noreferrer" data-handoff-open>
+        Otw&oacute;rz <span data-handoff-channel></span>
+      </a>
+    </div>
+    <p class="channel-hint" role="status" data-handoff-status></p>
+  </div>
+</div>
+
+<style>
+  .channels {
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid var(--color-outline-variant);
+  }
+
+  .channels-label {
+    margin-bottom: 0.75rem;
+    color: var(--color-primary);
+  }
+
+  .channels-heading {
+    margin-bottom: 1.25rem;
+    font-family: var(--font-family-display);
+    font-size: clamp(1.25rem, 2vw, 1.5rem);
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.03em;
+  }
+
+  .channel-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+  }
+
+  .channel-list li {
+    flex: 1 1 7rem;
+    min-width: 0;
+  }
+
+  .channel-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3.5rem;
+    height: 100%;
+    padding: 0.875rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-decoration: none;
+    background: color-mix(in srgb, var(--color-primary) 4%, var(--color-background));
+    border: 1px solid color-mix(in srgb, var(--color-primary) 50%, var(--color-background));
+    border-radius: 0.125rem;
+    touch-action: manipulation;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+  }
+
+  .channel-btn:hover {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--color-background));
+    transform: scale(1.02);
+  }
+
+  .channel-btn:active {
+    transform: scale(0.98);
+  }
+
+  .channel-icon {
+    flex-shrink: 0;
+    width: 1.125rem;
+    height: 1.125rem;
+    fill: currentColor;
+  }
+
+  .channel-hint {
+    margin-top: 0.875rem;
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: var(--color-on-surface-variant);
+  }
+
+  .channel-note {
+    color: var(--color-primary);
+  }
+
+  .handoff:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    padding: 1.25rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 0.125rem;
+  }
+
+  .handoff-text {
+    font-size: 0.9375rem;
+    color: var(--color-on-surface);
+  }
+
+  .handoff-preview {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    font-family: var(--font-family-body);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--color-on-surface);
+    background: var(--color-surface-container-low);
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 0.125rem;
+    resize: vertical;
+  }
+
+  .handoff-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .handoff .channel-hint {
+    margin: 0;
+  }
+
+  .handoff .channel-hint:empty {
+    display: none;
+  }
+
+  @media (max-width: 480px) {
+    .channel-list li {
+      flex-basis: 6rem;
+    }
+
+    .channel-btn {
+      gap: 0.375rem;
+      padding-inline: 0.375rem;
+      font-size: 0.75rem;
+    }
+
+    .channel-icon {
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .channel-btn,
+    .handoff :is(.btn-primary, .btn-secondary) {
+      transition: none;
+      will-change: auto;
+    }
+
+    .channel-btn:is(:hover, :active),
+    .handoff :is(.btn-primary, .btn-secondary):is(:hover, :active) {
+      transform: none;
+    }
+  }
+</style>
