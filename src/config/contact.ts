@@ -22,7 +22,7 @@ export interface ContactChannel {
 }
 
 export const CONTACT_CHANNELS: readonly ContactChannel[] = [
-  { id: 'messenger', label: 'Messenger' },
+  { id: 'messenger', label: 'Messenger', recipient: '61583364552840' },
   { id: 'whatsapp', label: 'WhatsApp', recipient: '48500268600' },
   { id: 'instagram', label: 'Instagram', recipient: 'nulo.cake' },
   { id: 'telegram', label: 'Telegram' },

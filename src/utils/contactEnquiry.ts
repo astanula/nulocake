@@ -67,8 +67,8 @@ interface ChannelHandoff {
 
 const CHANNEL_HANDOFFS: Record<ContactChannelId, ChannelHandoff> = {
   messenger: {
-    prefill: true,
-    buildUrl: (recipient, text) => `https://m.me/${encodeURIComponent(recipient)}?text=${encodeURIComponent(text)}`,
+    prefill: false,
+    buildUrl: (recipient) => `https://m.me/${encodeURIComponent(recipient)}`,
   },
   whatsapp: {
     prefill: true,
