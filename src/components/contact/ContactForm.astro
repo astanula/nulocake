@@ -539,9 +539,10 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
 
 <style>
   .contact-form {
+    --form-row-gap: 1.12rem;
     display: flex;
     flex-direction: column;
-    gap: 1.75rem;
+    gap: var(--form-row-gap);
     width: 100%;
   }
 
@@ -556,7 +557,7 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
   .field-row {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.25rem;
+    gap: var(--form-row-gap) 1.25rem;
   }
 
   .field-optional {
@@ -844,14 +845,14 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.5rem;
+    padding: 0 0.5rem;
     background: var(--color-surface-container-low);
     border-radius: 0.125rem;
   }
 
   .image-list :global(.image-thumb) {
-    width: 48px;
-    height: 48px;
+    width: 28px;
+    height: 28px;
     object-fit: cover;
     border-radius: 0.125rem;
     flex-shrink: 0;
@@ -869,6 +870,7 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
 
   .image-list :global(.image-remove) {
     min-height: 44px;
+    margin: -4px 0;
     padding: 0 0.75rem;
     font: inherit;
     font-size: 0.8125rem;
@@ -883,8 +885,7 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 1.25rem 3rem;
-    margin-top: 0.5rem;
+    gap: var(--form-row-gap) 3rem;
   }
 
   .channels {
@@ -902,7 +903,7 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
   .channel-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--form-row-gap) 0.5rem;
     list-style: none;
   }
 
@@ -964,7 +965,7 @@ import { CHANNEL_ICON_PATHS } from './channelIcons';
   .handoff-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: var(--form-row-gap) 0.75rem;
   }
 
   .form-status {
