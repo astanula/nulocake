@@ -9,7 +9,6 @@ import { CONTACT_DETAILS, CONTACT_LINKS } from '../config/contact';
 <Layout title="Kontakt — Nulo Cake" description="Skontaktuj się z Nulo Cake. Zamów artystyczny tort na swoją wyjątkową okazję." isSubpage={true}>
   <main class="contact-page" data-contact-page>
     <section class="contact-intro" aria-labelledby="contact-heading">
-      <p class="label-md contact-label">Kontakt</p>
       <h1 id="contact-heading" class="display-lg contact-heading">
         Porozmawiajmy<br /><span class="accent-italic">o Twoim torcie.</span>
       </h1>
@@ -26,15 +25,32 @@ import { CONTACT_DETAILS, CONTACT_LINKS } from '../config/contact';
       <h2 class="label-md contact-details-heading" id="contact-details-heading">Bezpośrednio</h2>
       <dl class="contact-facts">
         <div>
-          <dt>Telefon</dt>
+          <dt>
+            <span class="sr-only">Telefon</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.2 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.96.35 1.91.69 2.81a2 2 0 0 1-.45 2.11L8.08 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.69A2 2 0 0 1 22 16.92Z" />
+            </svg>
+          </dt>
           <dd><a href={CONTACT_LINKS.phone}>{CONTACT_DETAILS.phone}</a></dd>
         </div>
         <div>
-          <dt>E-mail</dt>
+          <dt>
+            <span class="sr-only">E-mail</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <rect x="3" y="5" width="18" height="14" rx="2" />
+              <path d="m3 7 9 6 9-6" />
+            </svg>
+          </dt>
           <dd><a href={CONTACT_LINKS.email}>{CONTACT_DETAILS.email}</a></dd>
         </div>
         <div>
-          <dt>Adres</dt>
+          <dt>
+            <span class="sr-only">Adres</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z" />
+              <circle cx="12" cy="10" r="2.5" />
+            </svg>
+          </dt>
           <dd>{CONTACT_DETAILS.address}</dd>
         </div>
       </dl>
@@ -80,11 +96,6 @@ import { CONTACT_DETAILS, CONTACT_LINKS } from '../config/contact';
     border-bottom: 1px solid var(--color-outline-variant);
   }
 
-  .contact-label {
-    color: var(--color-primary);
-    margin-bottom: 1.5rem;
-  }
-
   .contact-heading {
     margin-bottom: 1.5rem;
     font-size: clamp(2.125rem, 4.3vw, 3.5rem);
@@ -107,23 +118,36 @@ import { CONTACT_DETAILS, CONTACT_LINKS } from '../config/contact';
 
   .contact-details-heading {
     margin-bottom: 1.25rem;
+    color: var(--color-primary);
   }
 
   .contact-facts {
     display: grid;
-    gap: 1rem;
   }
 
   .contact-facts > div {
     display: grid;
-    grid-template-columns: 3.5rem minmax(0, 1fr);
-    align-items: baseline;
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    align-items: center;
     gap: 1rem;
+    min-height: 44px;
   }
 
   .contact-facts dt {
-    font-size: 0.8125rem;
-    color: var(--color-on-surface-variant);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary);
+  }
+
+  .contact-facts svg {
+    width: 1.375rem;
+    height: 1.375rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   .contact-facts dd {
@@ -134,9 +158,9 @@ import { CONTACT_DETAILS, CONTACT_LINKS } from '../config/contact';
   }
 
   .contact-facts a {
-    display: inline-flex;
-    align-items: center;
+    display: block;
     min-height: 44px;
+    padding: 0.5rem 0;
     color: var(--color-on-surface);
     text-decoration: none;
   }
@@ -149,7 +173,6 @@ import { CONTACT_DETAILS, CONTACT_LINKS } from '../config/contact';
 
   .contact-form-section {
     grid-area: email;
-    padding-top: 2.5rem;
   }
 
   .contact-email-heading {
@@ -179,10 +202,6 @@ import { CONTACT_DETAILS, CONTACT_LINKS } from '../config/contact';
         'email'
         'map';
       grid-template-rows: auto;
-    }
-
-    .contact-form-section {
-      padding-top: 0;
     }
   }
 </style>
