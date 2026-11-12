@@ -159,7 +159,7 @@ test.describe('Contact enquiry form', () => {
 
   test('only configured communicators are shown', async ({ page }) => {
     await openContactPage(page);
-    const channels = page.getByRole('group', { name: 'Zacznijmy od rozmowy', exact: true });
+    const channels = page.getByRole('group', { name: 'Porozmawiajmy wygodnie na czacie', exact: true });
 
     await expect(channels.getByRole('link', { name: 'Messenger', exact: true })).toHaveAttribute(
       'href',
