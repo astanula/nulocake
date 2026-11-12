@@ -1,5 +1,24 @@
 # Testing
 
+## Browser setup
+
+After installing or updating Playwright, install its matching Chromium browser:
+
+```powershell
+npx playwright install chromium
+```
+
+If the download fails with `SELF_SIGNED_CERT_IN_CHAIN` on Windows, let Node use
+the system's trusted certificate store and retry:
+
+```powershell
+$env:NODE_USE_SYSTEM_CA = '1'
+npx playwright install chromium
+```
+
+This keeps certificate verification enabled. The setting applies to the current
+terminal session; it does not change the project or system configuration.
+
 ## Running tests
 
 ### Run single test by exact name

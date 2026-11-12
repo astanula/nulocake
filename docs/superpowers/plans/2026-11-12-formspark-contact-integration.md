@@ -1,7 +1,7 @@
 # Formspark Contact Integration
 
 **Specification:** `docs/superpowers/specs/2026-11-12-formspark-contact-integration-design.md`
-**Status:** Implemented; regression tests written but not run
+**Status:** Implemented; all 37 contact regression tests pass
 
 ## 1. Provider Configuration and Transport
 
@@ -76,5 +76,8 @@ uploads, notification delivery, or account configuration have been verified.
   `src/components/Navigation.astro`, `src/pages/index.astro`, and
   `tests/e2e/playwright.config.ts`. No diagnostics remain in the integration's
   changed or added files.
-- Playwright tests were not run, as required by the repository instructions.
+- At the user's request, the Playwright contact suite was run: 37 passed in
+  40.5 seconds. Initial failures were caused by missing Chromium browser
+  binaries; subsequent ambiguous email/Instagram test locators were corrected.
+  Browser installation required Node's Windows system CA support.
 - No live uploads, form submissions, email sends, or account changes were made.

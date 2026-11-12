@@ -43,7 +43,7 @@ test.describe('Contact enquiry form', () => {
     await openContactPage(page);
     await captureEmailSubmissions(page);
 
-    await page.getByLabel('E-mail').fill('anna@example.com');
+    await page.getByLabel('E-mail', { exact: true }).fill('anna@example.com');
     await page.getByRole('button', { name: 'Wyślij e-mailem' }).click();
 
     expect(await emailSubmissions(page)).toEqual([MESSAGE_FALLBACK]);
@@ -56,7 +56,7 @@ test.describe('Contact enquiry form', () => {
     const message = page.locator('#contact-message');
     const submit = page.getByRole('button', { name: 'Wyślij e-mailem' });
 
-    await page.getByLabel('E-mail').fill('anna@example.com');
+    await page.getByLabel('E-mail', { exact: true }).fill('anna@example.com');
     await message.fill('   ');
     await submit.click();
     await message.fill('Szukam tortu na chrzciny.');
@@ -69,7 +69,7 @@ test.describe('Contact enquiry form', () => {
     await openContactPage(page);
     await captureEmailSubmissions(page);
 
-    await page.getByLabel('E-mail').fill('anna@example.com');
+    await page.getByLabel('E-mail', { exact: true }).fill('anna@example.com');
     await page.locator('#contact-date').fill('2030/05/20');
     await page.locator('#contact-people').fill('25');
     await page.locator('.flavor-summary').click();
@@ -85,7 +85,7 @@ test.describe('Contact enquiry form', () => {
   test('email action requires a valid email address only', async ({ page }) => {
     await openContactPage(page);
     await captureEmailSubmissions(page);
-    const email = page.getByLabel('E-mail');
+    const email = page.getByLabel('E-mail', { exact: true });
     const submit = page.getByRole('button', { name: 'Wyślij e-mailem' });
 
     await submit.click();
@@ -109,7 +109,7 @@ test.describe('Contact enquiry form', () => {
     const whatsapp = page.locator('a[data-channel="whatsapp"]');
 
     await page.getByRole('button', { name: 'Wyślij e-mailem' }).click();
-    await expect(page.getByLabel('E-mail')).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.getByLabel('E-mail', { exact: true })).toHaveAttribute('aria-invalid', 'true');
 
     await whatsapp.click();
     await expect(whatsapp).toHaveAttribute('href', `https://wa.me/48500268600?text=${encodeURIComponent(MESSAGE_FALLBACK)}`);
@@ -119,7 +119,7 @@ test.describe('Contact enquiry form', () => {
   test('communicator draft includes details but omits the email address', async ({ page }) => {
     await openContactPage(page);
 
-    await page.getByLabel('E-mail').fill('anna@example.com');
+    await page.getByLabel('E-mail', { exact: true }).fill('anna@example.com');
     await page.locator('#contact-message').fill('Tort na urodziny');
     await page.locator('#contact-people').fill('12');
 
@@ -159,13 +159,14 @@ test.describe('Contact enquiry form', () => {
 
   test('only configured communicators are shown', async ({ page }) => {
     await openContactPage(page);
+    const channels = page.getByRole('group', { name: 'Zacznijmy od rozmowy', exact: true });
 
-    await expect(page.getByRole('link', { name: 'Messenger', exact: true })).toHaveAttribute(
+    await expect(channels.getByRole('link', { name: 'Messenger', exact: true })).toHaveAttribute(
       'href',
       'https://m.me/61583364552840',
     );
-    await expect(page.getByRole('link', { name: 'WhatsApp', exact: true })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Instagram', exact: true })).toBeVisible();
+    await expect(channels.getByRole('link', { name: 'WhatsApp', exact: true })).toBeVisible();
+    await expect(channels.getByRole('link', { name: 'Instagram', exact: true })).toBeVisible();
     await expect(page.locator('[data-channel="telegram"]')).toHaveCount(0);
     await expect(page.getByRole('button', { name: /Telegram/ })).toHaveCount(0);
   });
@@ -269,7 +270,7 @@ test.describe('Contact enquiry form', () => {
     await date.blur();
     await expect(date).toHaveAttribute('aria-invalid', 'true');
 
-    await page.getByLabel('E-mail').fill('anna@example.com');
+    await page.getByLabel('E-mail', { exact: true }).fill('anna@example.com');
     await page.getByRole('button', { name: 'Wyślij e-mailem' }).click();
     expect(await emailSubmissions(page)).toEqual([MESSAGE_FALLBACK]);
 
@@ -353,7 +354,7 @@ test.describe('Contact enquiry form', () => {
     await flavor.check();
     await expect(dropdown).toHaveAttribute('open', '');
 
-    await page.getByLabel('E-mail').click();
+    await page.getByLabel('E-mail', { exact: true }).click();
     await expect(dropdown).not.toHaveAttribute('open');
     await expect(summary).toContainText(CREAM_FLAVORS[0]);
 
@@ -391,7 +392,7 @@ test.describe('Contact enquiry form', () => {
     await waitForHydration(page);
 
     await captureEmailSubmissions(page);
-    await page.getByLabel('E-mail').fill('anna@example.com');
+    await page.getByLabel('E-mail', { exact: true }).fill('anna@example.com');
     await page.getByRole('button', { name: 'Wyślij e-mailem' }).click();
 
     expect(await emailSubmissions(page)).toEqual([MESSAGE_FALLBACK]);

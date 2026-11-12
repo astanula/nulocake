@@ -58,7 +58,7 @@ async function captureUploads(page: Page) {
 }
 
 async function sendEnquiry(page: Page) {
-  await page.getByLabel('E-mail').fill('anna@example.com');
+  await page.getByLabel('E-mail', { exact: true }).fill('anna@example.com');
   await page.getByRole('button', { name: 'Wyślij e-mailem' }).click();
 }
 
@@ -108,7 +108,7 @@ test.describe('Contact provider submission', () => {
       _email: { subject: 'Zapytanie o tort - Nulo Cake' },
     }]);
     expect(requests).toEqual([{ contentType: 'application/json', accept: 'application/json' }]);
-    await expect(page.getByLabel('E-mail')).toHaveValue('');
+    await expect(page.getByLabel('E-mail', { exact: true })).toHaveValue('');
     await expect(page.locator('[data-email-label]')).toHaveText('');
     await expect(page.locator('[data-contact-form]')).not.toHaveAttribute('aria-busy');
     await expect(page.getByRole('button', { name: 'Wyślij e-mailem' })).toBeEnabled();
@@ -120,10 +120,10 @@ test.describe('Contact provider submission', () => {
     await openContactPage(page);
     await selectImages(page, [image()]);
     await page.getByRole('button', { name: 'Wyślij e-mailem' }).click();
-    await expect(page.getByLabel('E-mail')).toBeFocused();
-    await page.getByLabel('E-mail').fill('anna@');
+    await expect(page.getByLabel('E-mail', { exact: true })).toBeFocused();
+    await page.getByLabel('E-mail', { exact: true }).fill('anna@');
     await page.getByRole('button', { name: 'Wyślij e-mailem' }).click();
-    await expect(page.getByLabel('E-mail')).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.getByLabel('E-mail', { exact: true })).toHaveAttribute('aria-invalid', 'true');
     expect(payloads).toEqual([]);
     expect(uploads).toEqual([]);
   });
@@ -174,8 +174,8 @@ test.describe('Contact provider submission', () => {
     await holdProviderFetch(page, CONTACT_SUBMISSION.formsparkUrl);
     await sendEnquiry(page);
     await expect(page.locator('[data-contact-form]')).toHaveAttribute('aria-busy', 'true');
-    await expect(page.getByLabel('E-mail')).toHaveValue('anna@example.com');
-    await expect(page.getByLabel('E-mail')).toBeDisabled();
+    await expect(page.getByLabel('E-mail', { exact: true })).toHaveValue('anna@example.com');
+    await expect(page.getByLabel('E-mail', { exact: true })).toBeDisabled();
     await expect(page.getByRole('button', { name: 'Wyślij e-mailem' })).toBeDisabled();
     await expect(page.locator('a[data-channel="whatsapp"]')).toBeEnabled();
     await page.locator('[data-contact-form]').evaluate((form) => {
@@ -238,8 +238,8 @@ test.describe('Contact provider submission', () => {
       await sendEnquiry(page);
       await expect(page.locator('[data-form-status]')).toHaveAttribute('data-state', 'error');
       await expect(page.locator('[data-form-status]')).toContainText('przesłać zdjęć');
-      await expect(page.getByLabel('E-mail')).toHaveValue('anna@example.com');
-      await expect(page.getByLabel('E-mail')).toBeEnabled();
+      await expect(page.getByLabel('E-mail', { exact: true })).toHaveValue('anna@example.com');
+      await expect(page.getByLabel('E-mail', { exact: true })).toBeEnabled();
       await expect(page.locator('[data-image-list] li')).toHaveCount(1);
       expect(payloads).toEqual([]);
     });
@@ -253,7 +253,7 @@ test.describe('Contact provider submission', () => {
       await sendEnquiry(page);
       await expect(page.locator('[data-form-status]')).toHaveAttribute('data-state', 'error');
       await expect(page.locator('#contact-message')).toHaveValue('Proszę o poradę.');
-      await expect(page.getByLabel('E-mail')).toBeEnabled();
+      await expect(page.getByLabel('E-mail', { exact: true })).toBeEnabled();
       expect(payloads).toHaveLength(1);
     });
   }
@@ -306,7 +306,7 @@ test.describe('Contact provider submission', () => {
       if (stage === 'upload') await selectImages(page, [image()]);
       await sendEnquiry(page);
       await expect(page.locator('[data-form-status]')).toHaveAttribute('data-state', 'error');
-      await expect(page.getByLabel('E-mail')).toHaveValue('anna@example.com');
+      await expect(page.getByLabel('E-mail', { exact: true })).toHaveValue('anna@example.com');
       await expect(page.getByRole('button', { name: 'Wyślij e-mailem' })).toBeEnabled();
       expect(payloads).toEqual([]);
     });
@@ -321,8 +321,8 @@ test.describe('Contact provider submission', () => {
       await page.clock.fastForward(CONTACT_SUBMISSION.requestTimeoutMs + 1);
       await expect(page.locator('[data-form-status]')).toHaveAttribute('data-state', 'error');
       expect(await page.evaluate(() => (window as any).__providerRequest.aborted)).toBe(1);
-      await expect(page.getByLabel('E-mail')).toHaveValue('anna@example.com');
-      await expect(page.getByLabel('E-mail')).toBeEnabled();
+      await expect(page.getByLabel('E-mail', { exact: true })).toHaveValue('anna@example.com');
+      await expect(page.getByLabel('E-mail', { exact: true })).toBeEnabled();
     });
 
     test(`navigation aborts ${stage} and the form submits once after returning`, async ({ page }) => {
