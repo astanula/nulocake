@@ -11,19 +11,16 @@ import { testConfig } from './test-config';
 
 const isCI = !!process.env.CI;
 const mode = (process.env.TEST_MODE ?? 'dev') as 'dev' | 'preview';
+const port = 4322;
 
 const webServerByMode = {
   dev: {
-    command: 'npm run dev',
-    port: 4321,
+    command: `npm run dev -- --port ${port}`,
   },
   preview: {
-    command: 'npm run build && npm run preview',
-    port: 4321,
+    command: `npm run build && npm run preview -- --port ${port}`,
   },
 } as const;
-
-const port = webServerByMode[mode].port;
 
 export default defineConfig({
   testDir: '.',
@@ -48,8 +45,9 @@ export default defineConfig({
 
   webServer: {
     command: webServerByMode[mode].command,
-    port: webServerByMode[mode].port,
-    reuseExistingServer: true,
+    port,
+    // A reused server may be running an older build or different configuration.
+    reuseExistingServer: false,
     timeout: 60_000,
   },
 });

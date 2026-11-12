@@ -7,6 +7,9 @@ import {
   BLUR_RANGE,
   BRIGHTNESS_MIN,
   BRIGHTNESS_MAX,
+  WU_WORD,
+  WU_BODY,
+  WU_CTA,
 } from '../../../src/config/animation';
 
 export type ElementState = 'visible' | 'partially' | 'invisible';
@@ -32,14 +35,14 @@ export interface Section0Elements {
 
 export function buildSection0Elements(): Section0Elements {
   const elements: ElementTiming[] = [
-    { name: 'w1', type: 'word', wu: 1, duration: 0, start: 0 },
-    { name: 'w2', type: 'word', wu: 1, duration: 0, start: 0 },
-    { name: 'w3', type: 'word', wu: 1, duration: 0, start: 0 },
-    { name: 'w4', type: 'word', wu: 1, duration: 0, start: 0 },
-    { name: 'w5', type: 'word', wu: 1, duration: 0, start: 0 },
-    { name: 'w6', type: 'word', wu: 1, duration: 0, start: 0 },
-    { name: 'p1', type: 'blur-in', wu: 1, duration: 0, start: 0 },
-    { name: 'cta1', type: 'blur-in', wu: 1, duration: 0, start: 0 },
+    { name: 'w1', type: 'word', wu: WU_WORD, duration: 0, start: 0 },
+    { name: 'w2', type: 'word', wu: WU_WORD, duration: 0, start: 0 },
+    { name: 'w3', type: 'word', wu: WU_WORD, duration: 0, start: 0 },
+    { name: 'w4', type: 'word', wu: WU_WORD, duration: 0, start: 0 },
+    { name: 'w5', type: 'word', wu: WU_WORD, duration: 0, start: 0 },
+    { name: 'w6', type: 'word', wu: WU_WORD, duration: 0, start: 0 },
+    { name: 'p1', type: 'blur-in', wu: WU_BODY, duration: 0, start: 0 },
+    { name: 'cta1', type: 'blur-in', wu: WU_CTA, duration: 0, start: 0 },
   ];
 
   for (const el of elements) {
