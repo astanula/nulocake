@@ -1,0 +1,443 @@
+---
+import CakeCrossSection from './CakeCrossSection.astro';
+import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../../config/cakeFlavors';
+---
+
+<div class="flavor-selector" data-flavor-selector>
+  <p class="flavor-hint" id="flavor-hint">Wybierz smak, aby zobaczyć jego warstwy.</p>
+
+  <div class="flavor-layout">
+    <fieldset class="flavor-picks" aria-describedby="flavor-hint">
+      <legend class="visually-hidden">Smak tortu</legend>
+      <div class="flavor-pick-list">
+        {CAKE_FLAVORS.map((flavor) => (
+          <label class="flavor-pick">
+            <input type="radio" name="cake-flavor" value={flavor.id} aria-controls="flavor-card" />
+            <span class="flavor-thumb"><CakeCrossSection flavor={flavor} /></span>
+            <span class="flavor-pick-name">{flavor.name}</span>
+            <svg class="flavor-pick-mark" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path d="M3 8.5l3.2 3L13 4.5" />
+            </svg>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+
+    <div class="flavor-card" id="flavor-card">
+      <div class="flavor-empty" data-flavor-empty>
+        <span class="flavor-empty-range" aria-hidden="true">01&ndash;{String(CAKE_FLAVORS.length).padStart(2, '0')}</span>
+        <p class="label-md flavor-eyebrow">Najpierw apetyt. Potem szczegóły.</p>
+        <h3 class="flavor-card-title">Który smak wybierasz?</h3>
+        <p class="flavor-empty-text">Wybierz kompozycję z listy, a pokażę Ci jej przekrój i skład.</p>
+      </div>
+
+      {CAKE_FLAVORS.map((flavor) => (
+        <article class="flavor-panel" data-flavor-panel={flavor.id} data-flavor-name={flavor.name} aria-labelledby={`flavor-${flavor.id}-title`} hidden>
+          <h3 class="flavor-card-title" id={`flavor-${flavor.id}-title`}>{flavor.name}</h3>
+          <p class="label-md flavor-eyebrow">Warstwa po warstwie / od góry</p>
+          <div class="layer-map">
+            <div class="layer-map-cake"><CakeCrossSection flavor={flavor} /></div>
+            <ol class="layer-labels" aria-label="Warstwy tortu od góry">
+              {cakeLayers(flavor).map((layer) => (
+                <li class:list={['layer-label', layer.kind === 'cream' && 'layer-label--cream']}>
+                  <span class="visually-hidden">{layer.heightCm} cm: </span>
+                  <span class="layer-name">{layer.name}</span>
+                  {layer.addition && <span class="layer-addition">{layer.addition.label}</span>}
+                </li>
+              ))}
+            </ol>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+
+  <p class="flavor-note">Każdy tort to trzy warstwy biszkoptu po {SPONGE_HEIGHT_CM} cm i dwie warstwy kremu po {CREAM_HEIGHT_CM} cm. Dodatki są częścią kremów. Przekrój jest poglądowy.</p>
+  <p class="visually-hidden" role="status" data-flavor-status></p>
+</div>
+
+<script>
+  let cleanupController: AbortController | null = null;
+
+  function initFlavorSelector() {
+    cleanupController?.abort();
+    cleanupController = null;
+
+    const root = document.querySelector<HTMLElement>('[data-flavor-selector]');
+    if (!root) return;
+
+    cleanupController = new AbortController();
+    const { signal } = cleanupController;
+    const panels = Array.from(root.querySelectorAll<HTMLElement>('[data-flavor-panel]'));
+    const empty = root.querySelector<HTMLElement>('[data-flavor-empty]')!;
+    const status = root.querySelector<HTMLElement>('[data-flavor-status]')!;
+
+    const showFlavor = (id: string | null, announce: boolean) => {
+      const active = panels.find((panel) => panel.dataset.flavorPanel === id);
+      panels.forEach((panel) => {
+        panel.hidden = panel !== active;
+      });
+      empty.hidden = Boolean(active);
+      if (announce && active) status.textContent = `Pokazuję warstwy smaku: ${active.dataset.flavorName}.`;
+    };
+
+    root.addEventListener(
+      'change',
+      (event) => {
+        const input = event.target as HTMLInputElement;
+        if (input.name === 'cake-flavor') showFlavor(input.value, true);
+      },
+      { signal },
+    );
+
+    // Browsers may restore a checked radio on history navigation.
+    showFlavor(root.querySelector<HTMLInputElement>('input[name="cake-flavor"]:checked')?.value ?? null, false);
+  }
+
+  document.addEventListener('astro:page-load', initFlavorSelector);
+  document.addEventListener('astro:before-swap', () => {
+    cleanupController?.abort();
+    cleanupController = null;
+  });
+</script>
+
+<style>
+  .flavor-selector {
+    width: 100%;
+    margin: 0.5rem 0 1rem;
+  }
+
+  .flavor-hint {
+    margin-bottom: 1rem;
+    font-size: 0.8125rem;
+    color: var(--color-on-surface-variant);
+  }
+
+  .flavor-layout {
+    display: grid;
+    grid-template-columns: minmax(14rem, 0.8fr) minmax(0, 1.7fr);
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .flavor-picks {
+    min-width: 0;
+    border: 0;
+  }
+
+  .flavor-pick-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .flavor-pick {
+    position: relative;
+    display: grid;
+    grid-template-columns: 45px minmax(0, 1fr) 15px;
+    gap: 0.625rem;
+    align-items: center;
+    min-height: 4.75rem;
+    padding: 0.8125rem 0.625rem;
+    border-top: 1px solid var(--color-outline-variant);
+    cursor: pointer;
+  }
+
+  .flavor-pick:last-child {
+    border-bottom: 1px solid var(--color-outline-variant);
+  }
+
+  .flavor-pick input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .flavor-pick:hover {
+    background: var(--color-surface-container-low);
+  }
+
+  .flavor-pick:has(input:focus-visible) {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
+  }
+
+  .flavor-pick:has(input:checked) {
+    background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface-container-low));
+    box-shadow: inset 2px 0 var(--color-primary);
+  }
+
+  .flavor-thumb {
+    display: flex;
+    width: 45px;
+    height: 43px;
+  }
+
+  .flavor-pick-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--color-on-surface);
+  }
+
+  .flavor-pick:has(input:checked) .flavor-pick-name {
+    color: var(--color-primary);
+  }
+
+  .flavor-pick-mark {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: var(--color-primary);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    visibility: hidden;
+  }
+
+  .flavor-pick:has(input:checked) .flavor-pick-mark {
+    visibility: visible;
+  }
+
+  .flavor-card {
+    min-width: 0;
+    padding: 1.75rem;
+    border: 1px solid var(--color-outline-variant);
+    background: var(--color-surface);
+  }
+
+  .flavor-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 28rem;
+    padding: 1.25rem;
+  }
+
+  .flavor-empty[hidden],
+  .flavor-panel[hidden] {
+    display: none;
+  }
+
+  .flavor-empty-range {
+    margin-bottom: 1.625rem;
+    font-family: var(--font-family-display);
+    font-weight: 600;
+    font-size: clamp(4.5rem, 8vw, 5.625rem);
+    line-height: 1;
+    letter-spacing: -0.08em;
+    color: color-mix(in srgb, var(--color-primary) 18%, var(--color-surface));
+  }
+
+  .flavor-eyebrow {
+    margin-bottom: 0.625rem;
+    color: var(--color-primary);
+  }
+
+  .flavor-card-title {
+    font-family: var(--font-family-display);
+    font-weight: 600;
+    font-size: clamp(1.375rem, 2.4vw, 1.875rem);
+    line-height: 1.25;
+    letter-spacing: -0.03em;
+    color: var(--color-on-surface);
+    overflow-wrap: anywhere;
+  }
+
+  .flavor-empty-text {
+    max-width: 20rem;
+    margin-top: 0.625rem;
+    color: var(--color-on-surface-variant);
+  }
+
+  .flavor-panel .flavor-eyebrow {
+    margin: 1.75rem 0 1.25rem;
+  }
+
+  .layer-map {
+    display: grid;
+    grid-template-columns: minmax(3rem, 0.7fr) minmax(0, 1.4fr);
+    gap: 1.875rem;
+    max-width: 46rem;
+  }
+
+  .layer-map-cake {
+    display: flex;
+    min-width: 0;
+  }
+
+  /* Flexible rows keep the 1 : 2 : 1 : 2 : 1 ratio even when a label wraps. */
+  .layer-labels {
+    display: grid;
+    grid-template-rows: 1fr 2fr 1fr 2fr 1fr;
+    min-width: 0;
+    list-style: none;
+  }
+
+  .layer-label {
+    position: relative;
+    display: grid;
+    align-content: center;
+    min-width: 0;
+    min-height: 1.6875rem;
+    padding: 0.28125rem 0;
+    border-top: 1px solid var(--color-outline-variant);
+  }
+
+  .layer-label:last-child {
+    border-bottom: 1px solid var(--color-outline-variant);
+  }
+
+  .layer-label--cream {
+    min-height: 3.375rem;
+  }
+
+  .layer-label::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -1.875rem;
+    width: 1.3125rem;
+    height: 1px;
+    background: var(--color-outline);
+  }
+
+  .layer-name {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--color-on-surface);
+    overflow-wrap: anywhere;
+  }
+
+  .layer-addition {
+    margin-top: 0.125rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--color-on-surface-variant);
+  }
+
+  .flavor-note {
+    max-width: 65ch;
+    margin-top: 1.25rem;
+    font-size: 0.75rem;
+    color: var(--color-on-surface-variant);
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .flavor-pick {
+      transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .flavor-panel:not([hidden]) {
+      animation: flavor-panel-in 0.2s ease-out;
+    }
+
+    @keyframes flavor-panel-in {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    .flavor-layout {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.125rem;
+    }
+
+    .flavor-pick-list {
+      flex-direction: row;
+      gap: 0.5rem;
+      padding: 0.375rem 0.125rem 0.875rem;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x proximity;
+      scroll-padding-inline: 0.125rem;
+      scrollbar-width: thin;
+    }
+
+    .flavor-pick,
+    .flavor-pick:last-child {
+      flex: 0 0 11.875rem;
+      grid-template-columns: 35px minmax(0, 1fr) 10px;
+      min-height: 4.6875rem;
+      padding: 0.75rem;
+      border: 1px solid var(--color-outline-variant);
+      scroll-snap-align: start;
+    }
+
+    .flavor-pick:has(input:checked) {
+      box-shadow: inset 0 -2px var(--color-primary);
+    }
+
+    .flavor-thumb {
+      width: 35px;
+      height: 35px;
+    }
+
+    .flavor-pick-name {
+      font-size: 0.8125rem;
+    }
+
+    .flavor-pick-mark {
+      width: 10px;
+      height: 10px;
+    }
+
+    .flavor-card {
+      padding: 1.375rem 0.9375rem;
+    }
+
+    .flavor-empty {
+      min-height: 20rem;
+      padding: 0.4375rem;
+    }
+
+    .layer-map {
+      grid-template-columns: minmax(2.75rem, 0.55fr) minmax(0, 1.45fr);
+      gap: 1.375rem;
+    }
+
+    .layer-label {
+      min-height: 1.8125rem;
+    }
+
+    .layer-label--cream {
+      min-height: 3.625rem;
+    }
+
+    .layer-label::before {
+      left: -1.375rem;
+      width: 0.9375rem;
+    }
+
+    .layer-name {
+      font-size: 0.8125rem;
+    }
+
+    .layer-addition {
+      font-size: 0.6875rem;
+    }
+  }
+</style>

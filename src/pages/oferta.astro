@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import FlavorSelector from '../components/offer/FlavorSelector.astro';
 import { withBase } from '../utils/withBase';
 ---
 
@@ -11,7 +12,7 @@ import { withBase } from '../utils/withBase';
         <h2 class="display-lg section-heading">Co kryje się w środku?</h2>
         <p class="body-lg section-body">W moich tortach nie znajdziesz gotowych mieszanek – używam tylko prawdziwego masła, belgijskiej czekolady i świeżych owoców.</p>
         <p class="body-lg section-body">Każde piętro tortu to puszysty biszkopt i aż 3 warstwy przepysznego kremu/żelki</p>
-        <p class="body-lg section-body">TODO: Tabelka z kombinacjami smaków</p>
+        <FlavorSelector />
         <div class="section-cta-group">
           <a href={withBase('kontakt')} class="btn-primary">Mam pytanie o smaki</a>
         </div>

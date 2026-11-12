@@ -1,0 +1,135 @@
+---
+import { cakeLayers, type AdditionKind, type CakeFlavor } from '../../config/cakeFlavors';
+
+interface Props {
+  flavor: CakeFlavor;
+}
+
+const { flavor } = Astro.props;
+const layers = cakeLayers(flavor);
+
+// Positions (% of the cream layer) and rotations (deg) of the small addition pieces.
+const CRUNCH_BITS = [
+  { x: 12, y: 34, r: -18 },
+  { x: 26, y: 64, r: 24 },
+  { x: 40, y: 40, r: 8 },
+  { x: 54, y: 70, r: -30 },
+  { x: 68, y: 34, r: 16 },
+  { x: 80, y: 64, r: -8 },
+  { x: 90, y: 40, r: 30 },
+];
+const FRUIT_BITS = [
+  { x: 14, y: 54, r: -6 },
+  { x: 34, y: 38, r: 10 },
+  { x: 54, y: 62, r: -12 },
+  { x: 74, y: 42, r: 6 },
+  { x: 90, y: 62, r: -4 },
+];
+const NUT_BITS = [
+  { x: 22, y: 74, r: 20 },
+  { x: 62, y: 26, r: -25 },
+  { x: 84, y: 76, r: 10 },
+];
+
+const bitsFor = (kind: AdditionKind) => (kind === 'crunch' ? CRUNCH_BITS : kind === 'fruit' ? FRUIT_BITS : kind === 'caramel-nuts' ? NUT_BITS : []);
+const bitClass = (kind: AdditionKind) => (kind === 'crunch' ? 'bit--crunch' : kind === 'fruit' ? 'bit--fruit' : 'bit--nut');
+---
+
+<span class="cake" aria-hidden="true">
+  {layers.map((layer) => (
+    <span class:list={['layer', `layer--${layer.kind}`]} style={`--layer-color: ${layer.color}`}>
+      {layer.addition && (
+        <span class="addition" style={`--addition-color: ${layer.addition.color}`}>
+          {layer.addition.kind.startsWith('caramel') && (
+            <svg class="caramel" viewBox="0 0 100 20" preserveAspectRatio="none" focusable="false">
+              <path d="M2 10 Q14 1 26 10 T50 10 T74 10 T98 10" />
+            </svg>
+          )}
+          {bitsFor(layer.addition.kind).map(({ x, y, r }) => (
+            <span class:list={['bit', bitClass(layer.addition!.kind)]} style={`--x: ${x}%; --y: ${y}%; --r: ${r}deg`} />
+          ))}
+        </span>
+      )}
+    </span>
+  ))}
+</span>
+
+<style>
+  .cake {
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .layer {
+    position: relative;
+    flex: 1 1 0;
+    min-height: 0;
+    background-color: var(--layer-color);
+  }
+
+  .layer + .layer {
+    box-shadow: inset 0 1px rgb(19 19 19 / 0.22);
+  }
+
+  .layer--cream {
+    flex-grow: 2;
+  }
+
+  .layer--sponge {
+    background-image: radial-gradient(circle, rgb(56 35 21 / 0.28) 0.7px, transparent 1.2px);
+    background-size: 9px 7px;
+  }
+
+  .addition {
+    position: absolute;
+    inset: 0;
+  }
+
+  .bit {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    background: var(--addition-color);
+    transform: translate(-50%, -50%) rotate(var(--r));
+  }
+
+  .bit--crunch {
+    width: max(2px, 5cqi);
+    aspect-ratio: 1.3;
+    clip-path: polygon(0 30%, 55% 0, 100% 45%, 70% 100%, 15% 85%);
+  }
+
+  .bit--fruit {
+    width: max(3px, 9cqi);
+    aspect-ratio: 1.8;
+    border-radius: 50%;
+  }
+
+  .bit--nut {
+    width: max(2px, 5.5cqi);
+    aspect-ratio: 1.2;
+    background: #e3c897;
+    clip-path: polygon(10% 20%, 70% 0, 100% 60%, 45% 100%, 0 70%);
+  }
+
+  .caramel {
+    position: absolute;
+    left: 0;
+    top: 30%;
+    width: 100%;
+    height: 40%;
+    overflow: visible;
+  }
+
+  .caramel path {
+    fill: none;
+    stroke: var(--addition-color);
+    stroke-width: max(1.5px, 2.5cqi);
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+</style>
