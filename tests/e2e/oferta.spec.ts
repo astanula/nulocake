@@ -149,7 +149,8 @@ for (const { width, selector } of [
     await expect(thumbnail).toHaveCSS('height', `${thumbnailHeight}px`);
     await expect(pick).toHaveCSS('padding-top', `${padding}px`);
     await expect(pick).toHaveCSS('padding-bottom', `${padding}px`);
-    await expect(pick).toHaveCSS('min-height', 'auto');
+    // Include the top border and avoid layout-dependent min-height serialization.
+    await expect(pick).toHaveCSS('height', `${thumbnailHeight + 2 * padding + 1}px`);
   });
 }
 

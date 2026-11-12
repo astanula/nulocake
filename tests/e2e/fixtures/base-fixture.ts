@@ -16,7 +16,7 @@ import { testConfig } from '../test-config';
  * instead of from '@playwright/test' directly.
  */
 export const test = base.extend({
-  page: async ({ page }, use) => {
+  page: async ({ page, javaScriptEnabled }, use) => {
     // ── 1. GSAP fast-forward via init script ──────────────────────────
     // Runs before any page script. Polls briefly for GSAP (loaded as ES module).
     await page.addInitScript((timeScale: number) => {
@@ -57,7 +57,8 @@ export const test = base.extend({
     // ── 2. Disable smooth scroll ──────────────────────────────────────
     // Applied after navigation in each test via page.addStyleTag.
     // We hook into the page's 'load' event to inject the style.
-    if (testConfig.disableSmoothScroll) {
+    // Style injection can remain pending until teardown when JavaScript is disabled.
+    if (testConfig.disableSmoothScroll && javaScriptEnabled) {
       page.on('load', async () => {
         await page.addStyleTag({
           content: 'html { scroll-behavior: auto !important; }',

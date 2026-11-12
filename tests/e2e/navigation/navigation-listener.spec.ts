@@ -1,6 +1,7 @@
 import { test, expect } from '../fixtures/base-fixture';
 import { testConfig, navLinkSelector } from '../test-config';
 import { waitForHydration } from '../helpers/hydration';
+import type { gsap as GSAP } from 'gsap';
 
 /**
  * Tests for navigation behavior.
@@ -203,52 +204,39 @@ test.describe('Navigation', () => {
     // Get initial limelight position before animation
     const limelight = page.locator('#nav-limelight');
     const initialBox = await limelight.boundingBox();
+    expect(initialBox).not.toBeNull();
 
-    // Set up interception of gsap.to to capture limelight animation
-    const animationPromise = page.evaluate(() => {
-      return new Promise<{
-        duration: number;
-        ease: string;
-        hasOnComplete: boolean;
-        targetIsLimelight: boolean;
-      }>((resolve) => {
-        const limelight = document.getElementById('nav-limelight');
-        const originalTo = window.gsap.to;
-        
-        window.gsap.to = function(target: any, vars: any) {
-          // Check if this gsap.to call targets the limelight element
-          const isLimelight = 
-            target === limelight || 
-            (target && target.id === 'nav-limelight');
-          
-          if (isLimelight) {
-            resolve({
-              duration: vars.duration,
-              ease: vars.ease,
-              hasOnComplete: typeof vars.onComplete === 'function',
-              targetIsLimelight: true
-            });
-          }
-          
-          // Call original gsap.to with original arguments
-          return originalTo.call(this, target, vars);
-        };
-      });
+    // Pause the real tween before the fixture's 100x time scale can complete it.
+    const animation = await page.evaluateHandle(() => {
+      const gsap = (window as Window & { gsap: typeof GSAP }).gsap;
+      const limelight = document.getElementById('nav-limelight');
+      const originalTo = gsap.to;
+      const state = { tween: null as ReturnType<typeof originalTo> | null };
+
+      gsap.to = function(target, vars) {
+        const tween = originalTo.call(this, target, vars);
+        if (target === limelight) {
+          state.tween = tween.pause();
+          gsap.to = originalTo;
+        }
+        return tween;
+      };
+
+      return state;
     });
 
     // Click Oferta link to trigger the animation
     await page.click(navLinkSelector('oferta'));
     
-    // Wait for animation to start then check intermediate position
-    await page.waitForTimeout(100);
-    const intermediateBox = await limelight.boundingBox();
-    
-    // Verify animation is actually moving the limelight (intermediate position ≠ initial)
-    expect(intermediateBox).not.toBeNull();
-    expect(intermediateBox!.x).not.toEqual(initialBox!.x);
-    
-    // Wait for animation to be intercepted
-    const params = await animationPromise;
+    const params = await animation.evaluate(({ tween }) => {
+      if (!tween) throw new Error('Expected a limelight tween after clicking Oferta');
+      return {
+        duration: tween.vars.duration,
+        ease: tween.vars.ease,
+        hasOnComplete: typeof tween.vars.onComplete === 'function',
+        targetIsLimelight: tween.targets().includes(document.getElementById('nav-limelight')),
+      };
+    });
     
     // Verify animation targets the correct element
     expect(params.targetIsLimelight).toBe(true);
@@ -256,9 +244,22 @@ test.describe('Navigation', () => {
     expect(params.duration).toBe(0.4);
     expect(params.ease).toBe('power2.inOut');
     expect(params.hasOnComplete).toBe(true);
-    
+
+    // Inspect a deterministic midpoint before navigation replaces the DOM.
+    await animation.evaluate(({ tween }) => {
+      tween!.progress(0.5);
+    });
+    const intermediateBox = await limelight.boundingBox();
+    expect(intermediateBox).not.toBeNull();
+    expect(intermediateBox!.x).not.toEqual(initialBox!.x);
+    await expect(page).toHaveURL(testConfig.routes.landing);
+
     // Verify navigation occurred (proves onComplete callback fired)
+    await animation.evaluate(({ tween }) => {
+      tween!.progress(1);
+    });
     await page.waitForURL('**/oferta');
     await expect(page).toHaveURL(/\/oferta/);
+    await animation.dispose();
   });
 });
