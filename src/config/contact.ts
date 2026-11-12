@@ -17,6 +17,19 @@ export const CONTACT_LINKS = {
 
 export const MAX_CREAM_FLAVORS = 3;
 
+export const CONTACT_SUBMISSION = {
+  formsparkUrl: 'https://submit-form.com/Lu7wXKqqg',
+  cloudinaryCloudName: 'gaywqckp',
+  cloudinaryUploadPreset: 'nulocake-contact-form',
+  requestTimeoutMs: 60_000,
+} as const;
+
+export const CONTACT_IMAGES = {
+  maxCount: 5,
+  maxFileBytes: 10 * 1024 * 1024,
+  mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+} as const;
+
 export const CREAM_FLAVORS = [
   'Wanilia z mascarpone',
   'Belgijska czekolada',

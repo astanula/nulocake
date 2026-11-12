@@ -16,7 +16,10 @@ async function captureEmailSubmissions(page: Page) {
     (window as any).__emailSubmissions = submissions;
     document
       .querySelector('[data-contact-form]')!
-      .addEventListener(eventName, (event) => submissions.push((event as CustomEvent).detail.text));
+      .addEventListener(eventName, (event) => {
+        event.preventDefault();
+        submissions.push((event as CustomEvent).detail.text);
+      });
   }, EMAIL_SUBMIT_EVENT);
 }
 
@@ -31,6 +34,11 @@ async function blockExternalNavigation(page: Page) {
 }
 
 test.describe('Contact enquiry form', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.route('https://submit-form.com/**', (route) => route.abort());
+    await page.route('https://api.cloudinary.com/**', (route) => route.abort());
+  });
+
   test('email-only enquiry uses the fallback message', async ({ page }) => {
     await openContactPage(page);
     await captureEmailSubmissions(page);
@@ -39,7 +47,7 @@ test.describe('Contact enquiry form', () => {
     await page.getByRole('button', { name: 'Wyślij e-mailem' }).click();
 
     expect(await emailSubmissions(page)).toEqual([MESSAGE_FALLBACK]);
-    await expect(page.locator('[data-form-status]')).toContainText('nie jest jeszcze dostępna');
+    await expect(page.locator('[data-form-status]')).toHaveText('');
   });
 
   test('whitespace-only message falls back and entered messages are preserved', async ({ page }) => {

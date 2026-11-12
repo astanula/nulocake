@@ -1,5 +1,5 @@
 ---
-import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config/contact';
+import { CONTACT_IMAGES, CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config/contact';
 ---
 
 <form class="contact-form" id="contact-form" data-contact-form novalidate>
@@ -105,8 +105,13 @@ import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config
   </fieldset>
 
   <div class="field">
-    <input id="contact-images" type="file" accept="image/*" multiple hidden data-image-input />
-    <button type="button" class="btn-secondary image-trigger" data-image-trigger>Dodaj zdjęcie inspiracji</button>
+    <input id="contact-images" type="file" accept={CONTACT_IMAGES.mimeTypes.join(',')} multiple hidden data-image-input />
+    <button type="button" class="btn-secondary image-trigger" aria-describedby="contact-images-hint contact-images-error" data-image-trigger>Dodaj zdjęcie inspiracji</button>
+    <p class="image-hint" id="contact-images-hint">
+      JPEG, PNG lub WebP. Maksymalnie {CONTACT_IMAGES.maxCount} zdjęć, do {CONTACT_IMAGES.maxFileBytes / (1024 * 1024)} MB każde.
+      Zdjęcia prześlemy po kliknięciu "Wyślij e-mailem". Każdy, kto ma link, może je wyświetlić.
+    </p>
+    <p class="field-error" id="contact-images-error" role="alert" data-image-error></p>
     <ul class="image-list" aria-label="Wybrane zdjęcia" data-image-list></ul>
   </div>
 
@@ -129,9 +134,8 @@ import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config
       Wyślij e-mailem
     </button>
   </div>
-
-  <p class="form-status" role="status" data-form-status></p>
 </form>
+<p class="form-status" role="status" aria-atomic="true" data-form-status></p>
 
 <script>
   import { CONTACT_CHANNELS, MAX_CREAM_FLAVORS, type ContactChannelId } from '../../config/contact';
@@ -146,10 +150,12 @@ import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config
     type EmailSubmitDetail,
     type EnquiryDraft,
   } from '../../utils/contactEnquiry';
+  import { ContactSubmissionError, imageSelectionError, submitContactEnquiry, uploadContactImage } from '../../utils/contactSubmission';
 
   interface SelectedImage {
     file: File;
     url: string;
+    uploadedUrl?: string;
   }
 
   let cleanupController: AbortController | null = null;
@@ -220,6 +226,7 @@ import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config
     const imageInput = query<HTMLInputElement>('[data-image-input]');
     const imageTrigger = query<HTMLButtonElement>('[data-image-trigger]');
     const imageList = query<HTMLUListElement>('[data-image-list]');
+    const imageError = query<HTMLElement>('[data-image-error]');
     const imagesNote = queryPage<HTMLElement>('[data-images-note]');
     const channelLinks = Array.from(page.querySelectorAll<HTMLAnchorElement>('a[data-channel]'));
     const handoff = queryPage<HTMLElement>('[data-handoff]');
@@ -228,10 +235,16 @@ import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config
     const handoffCopy = queryPage<HTMLButtonElement>('[data-handoff-copy]');
     const handoffOpen = queryPage<HTMLAnchorElement>('[data-handoff-open]');
     const handoffStatus = queryPage<HTMLElement>('[data-handoff-status]');
-    const formStatus = query<HTMLElement>('[data-form-status]');
+    const formStatus = queryPage<HTMLElement>('[data-form-status]');
 
     let images: SelectedImage[] = [];
     let emailAttempted = false;
+    let isSubmitting = false;
+
+    const setStatus = (text: string, state = '') => {
+      formStatus.textContent = text;
+      formStatus.dataset.state = state;
+    };
 
     dateNative.min = todayIso();
 
@@ -265,7 +278,7 @@ import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config
       const selectedFlavors = flavorInputs.filter((input) => input.checked);
       const selected = selectedFlavors.length;
       flavorInputs.forEach((input) => {
-        input.disabled = selected >= MAX_CREAM_FLAVORS && !input.checked;
+        input.disabled = isSubmitting || (selected >= MAX_CREAM_FLAVORS && !input.checked);
       });
       flavorCount.textContent = `(${selected} z ${MAX_CREAM_FLAVORS})`;
       flavorSummary.textContent = selectedFlavors.map((input) => input.value).join(', ') || 'Wybierz smaki';
@@ -348,8 +361,9 @@ import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config
     form.addEventListener(
       'input',
       () => {
+        if (isSubmitting) return;
         updateOverlays();
-        formStatus.textContent = '';
+        setStatus('');
         if (emailAttempted) showEmailError(emailErrorText(email.value));
         refreshHandoff();
       },
@@ -385,14 +399,26 @@ import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config
     imageInput.addEventListener(
       'change',
       () => {
+        if (isSubmitting) return;
         const known = new Set(images.map(({ file }) => fileKey(file)));
-        Array.from(imageInput.files ?? [])
-          .filter((file) => file.type.startsWith('image/') && !known.has(fileKey(file)))
-          .forEach((file) => {
-            known.add(fileKey(file));
-            images.push({ file, url: URL.createObjectURL(file) });
-          });
+        const additions = Array.from(imageInput.files ?? []).filter((file) => {
+          const key = fileKey(file);
+          if (known.has(key)) return false;
+          known.add(key);
+          return true;
+        });
+        const error = imageSelectionError([...images.map(({ file }) => file), ...additions]);
         imageInput.value = '';
+        imageError.textContent = error;
+        if (error) {
+          imageTrigger.setAttribute('aria-invalid', 'true');
+          return;
+        }
+        imageTrigger.removeAttribute('aria-invalid');
+        setStatus('');
+        additions.forEach((file) => {
+          images.push({ file, url: URL.createObjectURL(file) });
+        });
         renderImages();
       },
       { signal },
@@ -401,11 +427,15 @@ import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config
     imageList.addEventListener(
       'click',
       (event) => {
+        if (isSubmitting) return;
         const button = (event.target as Element).closest<HTMLButtonElement>('[data-remove-index]');
         if (!button) return;
         const index = Number(button.dataset.removeIndex);
         URL.revokeObjectURL(images[index].url);
         images = images.filter((_, i) => i !== index);
+        imageError.textContent = '';
+        imageTrigger.removeAttribute('aria-invalid');
+        setStatus('');
         renderImages();
         const next = imageList.querySelectorAll<HTMLButtonElement>('[data-remove-index]')[Math.min(index, images.length - 1)];
         (next ?? imageTrigger).focus();
@@ -415,13 +445,14 @@ import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config
 
     form.addEventListener(
       'submit',
-      (event) => {
+      async (event) => {
         event.preventDefault();
+        if (isSubmitting) return;
         emailAttempted = true;
         const error = emailErrorText(email.value);
         showEmailError(error);
         if (error) {
-          formStatus.textContent = '';
+          setStatus('');
           email.focus();
           return;
         }
@@ -433,8 +464,58 @@ import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config
             detail: { draft, text: formatEnquiryText(draft) },
           }),
         );
-        if (!handled) {
-          formStatus.textContent = 'Wysyłka e-mailem nie jest jeszcze dostępna. Twoje dane zostają w formularzu.';
+        if (handled || signal.aborted) return;
+
+        const controls = Array.from(
+          form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLButtonElement>('input, textarea, button'),
+          (control) => ({ control, disabled: control.disabled }),
+        );
+        isSubmitting = true;
+        form.setAttribute('aria-busy', 'true');
+        controls.forEach(({ control }) => { control.disabled = true; });
+        flavorDropdown.open = false;
+
+        try {
+          const imageUrls: string[] = [];
+          for (const [index, image] of images.entries()) {
+            setStatus(`Przesyłanie zdjęć (${index + 1} z ${images.length})...`);
+            image.uploadedUrl ??= await uploadContactImage(image.file, signal);
+            imageUrls.push(image.uploadedUrl);
+          }
+          setStatus('Wysyłanie wiadomości...');
+          await submitContactEnquiry(draft, imageUrls, signal);
+          if (signal.aborted) return;
+
+          form.reset();
+          images.forEach(({ url }) => URL.revokeObjectURL(url));
+          images = [];
+          emailAttempted = false;
+          showEmailError('');
+          imageError.textContent = '';
+          imageTrigger.removeAttribute('aria-invalid');
+          date.removeAttribute('aria-invalid');
+          handoff.hidden = true;
+          handoffPreview.value = '';
+          handoffStatus.textContent = '';
+          renderImages();
+          updateOverlays();
+          refreshHandoff();
+          setStatus('Dziękuję! Twoje zapytanie zostało przyjęte. Odpowiem na podany adres e-mail.', 'success');
+        } catch (error) {
+          if (signal.aborted) return;
+          setStatus(
+            error instanceof ContactSubmissionError && error.stage === 'upload'
+              ? 'Nie udało się przesłać zdjęć. Dane zostały w formularzu. Spróbuj ponownie.'
+              : 'Nie udało się potwierdzić wysyłki. Dane zostały w formularzu. Spróbuj ponownie lub skontaktuj się bezpośrednio.',
+            'error',
+          );
+        } finally {
+          isSubmitting = false;
+          if (!signal.aborted) {
+            form.removeAttribute('aria-busy');
+            controls.forEach(({ control, disabled }) => { control.disabled = disabled; });
+            updateFlavors();
+          }
         }
       },
       { signal },
@@ -477,7 +558,10 @@ import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config
       { signal },
     );
 
-    signal.addEventListener('abort', () => images.forEach(({ url }) => URL.revokeObjectURL(url)));
+    signal.addEventListener('abort', () => {
+      images.forEach(({ url }) => URL.revokeObjectURL(url));
+      images = [];
+    }, { once: true });
 
     updateOverlays();
     updateFlavors();
@@ -779,6 +863,12 @@ import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config
     color: var(--color-on-surface);
   }
 
+  .image-hint {
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--color-on-surface-variant);
+  }
+
   .image-list {
     display: flex;
     flex-direction: column;
@@ -840,13 +930,13 @@ import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config
     transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   }
 
-  .email-submit:hover {
+  .email-submit:hover:not(:disabled) {
     color: var(--color-primary);
     border-color: var(--color-primary);
     transform: scale(1.02);
   }
 
-  .email-submit:active {
+  .email-submit:active:not(:disabled) {
     transform: scale(0.98);
   }
 
@@ -857,8 +947,27 @@ import { CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../config
   }
 
   .form-status {
+    margin-top: 1.12rem;
     font-size: 0.9375rem;
+    line-height: 1.6;
     color: var(--color-on-surface-variant);
+  }
+
+  .form-status[data-state='error'] {
+    color: var(--color-error);
+  }
+
+  .form-status[data-state='success'] {
+    color: var(--color-primary);
+  }
+
+  .contact-form[aria-busy='true'] :is(input, textarea, button):disabled {
+    cursor: wait;
+  }
+
+  .contact-form :is(.btn-primary, .btn-secondary):disabled {
+    opacity: 0.6;
+    transform: none;
   }
 
   @media (max-width: 640px) {
