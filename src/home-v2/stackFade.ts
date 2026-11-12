@@ -118,11 +118,10 @@ export function mountStackFade(root: HTMLElement): () => void {
     const next = sections[target];
     const focusWasInside = current.contains(document.activeElement);
     const focusWasOnHint = !!hint?.contains(document.activeElement);
-    const showHint = hintFits(target);
 
     next.scrollTop = dir > 0 ? 0 : maxScroll(next);
     setDots(target);
-    if (!showHint) setHint(false);
+    setHint(false);
 
     tl = gsap.timeline({
       defaults: { duration: reducedMotion ? REDUCED_MOTION_S : TRANSITION_S, ease: TRANSITION_EASE },

@@ -236,9 +236,9 @@ in our own CSS.
   its content ends at least `SCROLL_HINT_GAP_PX` above the hint. Tall
   sections never show it, even when scrolled to their bottom; their overflow
   already signals scrolling. Hidden means faded out (0.3s) and `inert`.
-  Re-checked when a transition starts (hide only), when it completes, and on
-  section or section-content resize. Between two fitting sections it stays
-  visible without flicker. No extra section padding is reserved for it.
+  Hidden whenever a transition starts, then re-checked when it completes
+  and on section or section-content resize. It fades back in only if the
+  destination section qualifies. No extra section padding is reserved for it.
 - **Click:** runs a transition to the next section (§4). It does nothing
   while a transition runs. If the hint had focus and becomes hidden, focus
   moves to the new active section.
