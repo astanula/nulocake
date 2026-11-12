@@ -19,6 +19,7 @@ import {
   EDGE_EPSILON_PX,
   KEY_SCROLL_RATIO,
   REDUCED_MOTION_S,
+  SCROLL_HINT_GAP_PX,
 } from './config';
 
 declare global {
@@ -41,6 +42,7 @@ export function mountStackFade(root: HTMLElement): () => void {
   const sections = Array.from(root.querySelectorAll<HTMLElement>('.v2-section'));
   const dots = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-v2-dot]'));
   const footerDock = root.querySelector<HTMLElement>('.v2-footer-dock');
+  const hint = root.querySelector<HTMLButtonElement>('[data-scroll-hint]');
   const last = sections.length - 1;
   if (last < 0) return () => {};
 
@@ -83,6 +85,28 @@ export function mountStackFade(root: HTMLElement): () => void {
       : sec.scrollTop <= EDGE_EPSILON_PX;
   }
 
+  // ── Scroll hint ────────────────────────────────────
+
+  /** Content ends above the hint. Layout offsets ignore transforms and inner scroll. */
+  function fitsAboveHint(sec: HTMLElement) {
+    const parent = sec.offsetParent;
+    if (!hint || !parent) return false;
+    const contentBottom = Array.from(sec.children as HTMLCollectionOf<HTMLElement>)
+      .reduce((max, el) => Math.max(max, el.offsetTop + el.offsetHeight), 0);
+    const secTop = parent.getBoundingClientRect().top + sec.offsetTop;
+    return secTop + contentBottom + SCROLL_HINT_GAP_PX <= hint.getBoundingClientRect().top;
+  }
+
+  const hintFits = (index: number) => index !== last && fitsAboveHint(sections[index]);
+
+  function setHint(visible: boolean) {
+    if (!hint) return;
+    hint.classList.toggle('is-hidden', !visible);
+    hint.inert = !visible;
+  }
+
+  const updateHint = () => { if (!tl) setHint(hintFits(active)); };
+
   // ── Transition ─────────────────────────────────────
 
   function goTo(target: number) {
@@ -93,17 +117,21 @@ export function mountStackFade(root: HTMLElement): () => void {
     const current = sections[from];
     const next = sections[target];
     const focusWasInside = current.contains(document.activeElement);
+    const focusWasOnHint = !!hint?.contains(document.activeElement);
+    const showHint = hintFits(target);
 
     next.scrollTop = dir > 0 ? 0 : maxScroll(next);
     setDots(target);
+    if (!showHint) setHint(false);
 
     tl = gsap.timeline({
       defaults: { duration: reducedMotion ? REDUCED_MOTION_S : TRANSITION_S, ease: TRANSITION_EASE },
       onComplete: () => {
         setActive(target);
         gsap.set([current, next], { clearProps: TRANSIENT_PROPS });
-        if (focusWasInside) next.focus({ preventScroll: true });
         tl = null;
+        updateHint();
+        if (focusWasInside || (focusWasOnHint && hint?.inert)) next.focus({ preventScroll: true });
       },
     });
 
@@ -220,12 +248,21 @@ export function mountStackFade(root: HTMLElement): () => void {
     dot.addEventListener('click', () => goTo(Number(dot.dataset.v2Dot)), { signal });
   });
 
+  hint?.addEventListener('click', () => goTo(active + 1), { signal });
+
   motionQuery.addEventListener('change', (e) => { reducedMotion = e.matches; }, { signal });
 
   const footerObserver = footerDock
     ? new ResizeObserver(() => root.style.setProperty('--v2-footer-h', `${footerDock.offsetHeight}px`))
     : null;
   if (footerDock) footerObserver?.observe(footerDock);
+
+  // Re-check the hint when sections resize (viewport) or their content does (fonts, images).
+  const hintObserver = hint ? new ResizeObserver(updateHint) : null;
+  sections.forEach((sec) => {
+    hintObserver?.observe(sec);
+    Array.from(sec.children).forEach((el) => hintObserver?.observe(el));
+  });
 
   // ── Initial state ──────────────────────────────────
 
@@ -234,6 +271,7 @@ export function mountStackFade(root: HTMLElement): () => void {
   if (footerDock) gsap.set(footerDock, { y: 0, yPercent: 100, opacity: 1 });
   setActive(0);
   setDots(0);
+  updateHint();
 
   return () => {
     tl?.kill();
@@ -241,6 +279,8 @@ export function mountStackFade(root: HTMLElement): () => void {
     observer.kill();
     controller.abort();
     footerObserver?.disconnect();
+    hintObserver?.disconnect();
+    setHint(false);
     gsap.set(sections, { clearProps: TRANSIENT_PROPS });
     if (footerDock) gsap.set(footerDock, { clearProps: 'all' });
     root.style.removeProperty('--v2-footer-h');

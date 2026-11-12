@@ -1,0 +1,110 @@
+---
+/**
+ * Animated "scroll down" hint for stack-fade pages.
+ * Markup and styles only: the stack-fade controller finds `[data-scroll-hint]`
+ * inside its root, wires the click and toggles visibility. Rendered hidden so
+ * it never shows without the controller. Position it via the `class` prop.
+ */
+interface Props {
+  label?: string;
+  class?: string;
+}
+
+const { label = 'Następna sekcja', class: className, ...rest } = Astro.props;
+---
+
+<button
+  type="button"
+  class:list={['scroll-hint', 'is-hidden', className]}
+  data-scroll-hint
+  aria-label={label}
+  inert
+  {...rest}
+>
+  <span class="scroll-hint-track" aria-hidden="true">
+    <span class="scroll-hint-chevron"></span>
+    <span class="scroll-hint-chevron scroll-hint-chevron--delayed"></span>
+  </span>
+</button>
+
+<style>
+  .scroll-hint {
+    display: inline-block;
+    width: 1.1em;
+    height: 1.5em;
+    padding: 0;
+    font-size: 2.5rem;
+    color: var(--color-on-surface);
+    background: none;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.3s, color 0.2s, box-shadow 0.2s;
+  }
+
+  .scroll-hint:hover,
+  .scroll-hint:focus-visible {
+    color: var(--color-primary);
+  }
+
+  .scroll-hint:focus-visible {
+    box-shadow: 0 0 0 2px var(--color-primary);
+  }
+
+  .scroll-hint.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .scroll-hint-track {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Down chevron: right + bottom borders of a square rotated 45°. */
+  .scroll-hint-chevron {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0.4em;
+    height: 0.4em;
+    margin: -0.3em 0 0 -0.2em;
+    border: 0.1em solid;
+    border-color: transparent currentColor currentColor transparent;
+    opacity: 0;
+    animation: scroll-hint-slide 2s linear infinite;
+  }
+
+  .scroll-hint-chevron--delayed {
+    animation-delay: -1s;
+  }
+
+  @keyframes scroll-hint-slide {
+    0%   { opacity: 0; transform: translateY(-0.75em) rotate(45deg); }
+    20%  { opacity: 1; transform: translateY(-0.45em) rotate(45deg); }
+    80%  { opacity: 1; transform: translateY(0.45em) rotate(45deg); }
+    100% { opacity: 0; transform: translateY(0.75em) rotate(45deg); }
+  }
+
+  @media (max-width: 768px) {
+    .scroll-hint {
+      font-size: 2rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-hint-chevron {
+      opacity: 1;
+      animation: none;
+      transform: rotate(45deg);
+    }
+
+    .scroll-hint-chevron--delayed {
+      display: none;
+    }
+  }
+</style>

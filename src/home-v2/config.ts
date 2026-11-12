@@ -16,5 +16,8 @@ export const OBSERVER_TOLERANCE = 10;  // Observer gesture tolerance (px)
 export const EDGE_EPSILON_PX    = 2;   // Distance from top/bottom treated as "at edge"
 export const KEY_SCROLL_RATIO   = 0.8; // Inner scroll step for keys, × visible height
 
+// ── Scroll hint ──────────────────────────────────────
+export const SCROLL_HINT_GAP_PX = 8; // Min space between section content and the hint
+
 // ── Reduced motion ───────────────────────────────────
 export const REDUCED_MOTION_S = 0.2; // Crossfade duration

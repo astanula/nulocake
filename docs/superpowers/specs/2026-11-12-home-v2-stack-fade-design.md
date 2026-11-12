@@ -35,6 +35,7 @@ New files only:
 | `src/home-v2/stackFade.ts` | Controller: state, input, transitions, dots, footer, teardown |
 | `src/home-v2/testimonialsCarousel.ts` | Copy of v1's testimonials carousel, re-targeted to v2 IDs |
 | `src/home-v2/config.ts` | Tunable constants (see §5) |
+| `src/components/stack-fade/ScrollHintArrow.astro` | Reusable scroll-down hint arrow, markup and styles only (see §13) |
 
 v2 reuses only site-wide chrome: `Layout.astro`, `Navigation.astro`,
 `Footer.astro`, `src/styles/global.css`, `src/utils/withBase.ts`. None of these
@@ -109,6 +110,7 @@ queued). Requests to navigate to the current section are no-ops.
 | `KEY_SCROLL_RATIO` | `0.8` | Inner scroll step for keys, × visible height |
 | `REDUCED_MOTION_S` | `0.2` | Crossfade duration under reduced motion |
 | `OBSERVER_TOLERANCE` | `10` | Observer gesture tolerance (px) |
+| `SCROLL_HINT_GAP_PX` | `8` | Min space between section content and the scroll hint (px) |
 
 ## 6. Input
 
@@ -212,3 +214,31 @@ footer fades instead of sliding.
   user asks.
 - v1 (`src/pages/index.astro`, `src/config/animation.ts`) and shared
   components are not modified.
+
+## 13. Scroll Hint Arrow
+
+Reference: the sliding arrows (`.fp-arrow-10`) on
+https://alvarotrigo.com/fullPage/extensions/cinematic.html, re-implemented
+in our own CSS.
+
+- **Component:** `ScrollHintArrow.astro` renders a `<button data-scroll-hint>`
+  with an `aria-label` prop (default *Następna sekcja*) and a `class` prop for
+  page placement. No script. It is rendered hidden and `inert`, so it never
+  shows without the controller. Any page using the stack fade controller gets
+  a working hint by placing the component inside the controller's root.
+- **Look:** two down chevrons (16px, `--color-on-surface`, pink
+  `--color-primary` on hover/`:focus-visible`) slide down and fade on a 2s
+  linear loop, offset by 1s. Smaller on mobile. Under reduced motion: one
+  static chevron.
+- **Placement (v2):** horizontally centred in the left column,
+  `bottom: calc(1.5rem + env(safe-area-inset-bottom))`, below the footer dock.
+- **Visibility:** shown only when the active section is not the last one and
+  its content ends at least `SCROLL_HINT_GAP_PX` above the hint. Tall
+  sections never show it, even when scrolled to their bottom; their overflow
+  already signals scrolling. Hidden means faded out (0.3s) and `inert`.
+  Re-checked when a transition starts (hide only), when it completes, and on
+  section or section-content resize. Between two fitting sections it stays
+  visible without flicker. No extra section padding is reserved for it.
+- **Click:** runs a transition to the next section (§4). It does nothing
+  while a transition runs. If the hint had focus and becomes hidden, focus
+  moves to the new active section.
