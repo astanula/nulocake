@@ -1,7 +1,7 @@
 # Formspark Contact Integration
 
 **Specification:** `docs/superpowers/specs/2026-11-12-formspark-contact-integration-design.md`
-**Status:** Implemented; all 37 contact regression tests pass
+**Status:** Implemented; email-formatting follow-up awaits test execution
 
 ## 1. Provider Configuration and Transport
 
@@ -13,7 +13,8 @@ Add `src/utils/contactSubmission.ts` to:
 - Validate selected images without DOM dependencies.
 - Upload an image with unsigned Cloudinary multipart parameters.
 - Validate the upload response and its HTTPS URL.
-- Submit the existing formatted enquiry and uploaded URL array as Formspark JSON.
+- Submit separate Polish-labelled enquiry fields and uploaded URL arrays as
+  Formspark JSON, sharing validation rules with the unchanged communicator text.
 - Apply finite request timeouts and propagate the page's abort signal.
 - Report upload and submission failures separately without trusting provider
   error text as UI content.
@@ -81,3 +82,15 @@ uploads, notification delivery, or account configuration have been verified.
   binaries; subsequent ambiguous email/Instagram test locators were corrected.
   Browser installation required Node's Windows system CA support.
 - No live uploads, form submissions, email sends, or account changes were made.
+
+## Email Formatting Follow-up
+
+- Replaced the combined `message` and `images` fields with `Wiadomość`,
+  optional `Termin` and `Liczba osób`, and optional `Smaki` and `Inspiracje`
+  arrays. Communicator text remains unchanged.
+- Updated mocked payload and retry assertions; added coverage for invalid
+  optional details and whitespace-only message fallback.
+- Production build, strict TypeScript checking of both contact utility modules,
+  and `git diff --check`: passed.
+- Tests were not run for this follow-up. No live submissions were sent, and
+  Formspark's notification layout remains unverified.

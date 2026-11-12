@@ -1,5 +1,5 @@
 import { CONTACT_IMAGES, CONTACT_SUBMISSION } from '../config/contact';
-import { formatEnquiryText, type EnquiryDraft } from './contactEnquiry';
+import { formatEnquiryFields, type EnquiryDraft } from './contactEnquiry';
 
 export class ContactSubmissionError extends Error {
   constructor(public readonly stage: 'upload' | 'submission') {
@@ -80,8 +80,8 @@ export async function submitContactEnquiry(
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
           email: draft.email.trim(),
-          message: formatEnquiryText(draft),
-          ...(imageUrls.length ? { images: imageUrls } : {}),
+          ...formatEnquiryFields(draft),
+          ...(imageUrls.length ? { Inspiracje: imageUrls } : {}),
           _language: 'pl',
           _email: { subject: 'Zapytanie o tort - Nulo Cake' },
         }),

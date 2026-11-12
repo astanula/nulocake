@@ -103,7 +103,7 @@ test.describe('Contact provider submission', () => {
     await expect(page.locator('[data-form-status]')).toHaveAttribute('data-state', 'success');
     expect(payloads).toEqual([{
       email: 'anna@example.com',
-      message: MESSAGE_FALLBACK,
+      'Wiadomość': MESSAGE_FALLBACK,
       _language: 'pl',
       _email: { subject: 'Zapytanie o tort - Nulo Cake' },
     }]);
@@ -128,11 +128,11 @@ test.describe('Contact provider submission', () => {
     expect(uploads).toEqual([]);
   });
 
-  test('images upload before the formatted enquiry and success clears all draft state', async ({ page }) => {
+  test('images upload before the structured enquiry and success clears all draft state', async ({ page }) => {
     const payloads = await captureFormspark(page);
     const uploads = await captureUploads(page);
     await openContactPage(page);
-    await page.locator('#contact-message').fill('Tort z motywem lasu');
+    await page.locator('#contact-message').fill('  Tort z motywem lasu\nBez orzechów  ');
     await page.locator('#contact-date').fill('2030/05/20');
     await page.locator('#contact-people').fill('25');
     await page.locator('.flavor-summary').click();
@@ -154,10 +154,16 @@ test.describe('Contact provider submission', () => {
     expect(uploads[0]).toContain('name="upload_preset"');
     expect(uploads[0]).toContain(CONTACT_SUBMISSION.cloudinaryUploadPreset);
     expect(uploads[0]).toContain('name="file"; filename="inspiration.png"');
-    expect(payloads[0].images).toEqual([uploadedImageUrl]);
-    expect(payloads[0].message).toBe(
-      `Tort z motywem lasu\n\nTermin: 2030/05/20\nLiczba osób: 25\nSmaki kremów: ${CREAM_FLAVORS.slice(0, MAX_CREAM_FLAVORS).join(', ')}`,
-    );
+    expect(payloads).toEqual([{
+      email: 'anna@example.com',
+      'Wiadomość': 'Tort z motywem lasu\nBez orzechów',
+      Termin: '2030/05/20',
+      'Liczba osób': '25',
+      Smaki: CREAM_FLAVORS.slice(0, MAX_CREAM_FLAVORS),
+      Inspiracje: [uploadedImageUrl],
+      _language: 'pl',
+      _email: { subject: 'Zapytanie o tort - Nulo Cake' },
+    }]);
     await expect(page.locator('#contact-message')).toHaveValue('');
     await expect(page.locator('#contact-date')).toHaveValue('');
     await expect(page.locator('#contact-people')).toHaveValue('');
@@ -167,6 +173,23 @@ test.describe('Contact provider submission', () => {
     await expect(page.locator('[data-handoff]')).toBeHidden();
     await expect(page.locator('[data-handoff-preview]')).toHaveValue('');
     await expect(page.locator('input[name="flavors"]:disabled')).toHaveCount(0);
+  });
+
+  test('invalid optional email details are omitted and whitespace uses the fallback', async ({ page }) => {
+    const payloads = await captureFormspark(page);
+    await openContactPage(page);
+    await page.locator('#contact-message').fill('  \n  ');
+    await page.locator('#contact-date').fill('2030/02/31');
+    await page.locator('#contact-people').fill('0');
+
+    await sendEnquiry(page);
+    await expect(page.locator('[data-form-status]')).toHaveAttribute('data-state', 'success');
+    expect(payloads).toEqual([{
+      email: 'anna@example.com',
+      'Wiadomość': MESSAGE_FALLBACK,
+      _language: 'pl',
+      _email: { subject: 'Zapytanie o tort - Nulo Cake' },
+    }]);
   });
 
   test('busy state prevents duplicate submissions and preserves progress feedback', async ({ page }) => {
@@ -272,7 +295,7 @@ test.describe('Contact provider submission', () => {
     await page.getByRole('button', { name: 'Wyślij e-mailem' }).click();
     await expect(page.locator('[data-form-status]')).toHaveAttribute('data-state', 'success');
     expect(uploads).toHaveLength(2);
-    expect(retryPayloads[0].images).toEqual([uploadedImageUrl]);
+    expect(retryPayloads[0].Inspiracje).toEqual([uploadedImageUrl]);
   });
 
   test('retry after a partial upload failure preserves earlier successful uploads', async ({ page }) => {
@@ -294,7 +317,7 @@ test.describe('Contact provider submission', () => {
     await page.getByRole('button', { name: 'Wyślij e-mailem' }).click();
     await expect(page.locator('[data-form-status]')).toHaveAttribute('data-state', 'success');
     expect(attempts).toBe(3);
-    expect(payloads[0].images).toEqual([`${uploadedImageUrl}?attempt=1`, `${uploadedImageUrl}?attempt=3`]);
+    expect(payloads[0].Inspiracje).toEqual([`${uploadedImageUrl}?attempt=1`, `${uploadedImageUrl}?attempt=3`]);
   });
 
   for (const stage of ['upload', 'submission'] as const) {

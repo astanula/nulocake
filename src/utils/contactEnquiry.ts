@@ -57,6 +57,17 @@ export function formatEnquiryText(content: EnquiryContent): string {
   return details.length ? `${message}\n\n${details.join('\n')}` : message;
 }
 
+export function formatEnquiryFields(content: EnquiryContent) {
+  const date = formatDate(content.date);
+  const people = formatPeople(content.people);
+  return {
+    'Wiadomość': effectiveMessage(content.message),
+    ...(date ? { Termin: date } : {}),
+    ...(people ? { 'Liczba osób': people } : {}),
+    ...(content.flavors.length ? { Smaki: content.flavors } : {}),
+  };
+}
+
 export const hasCustomContent = (content: EnquiryContent) =>
   Boolean(content.message.trim()) || enquiryDetails(content).length > 0;
 

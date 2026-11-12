@@ -1,7 +1,7 @@
 # Contact Form: Formspark and Cloudinary
 
 **Date:** 2026-11-12
-**Status:** Design approved in conversation; awaiting written-specification review
+**Status:** Implemented; separate Polish-labelled email fields approved in conversation
 **Related:** `DESIGN.md`, `src/components/contact/ContactForm.astro`,
 `src/config/contact.ts`, `src/utils/contactEnquiry.ts`,
 `2026-11-09-contact-enquiry-form-design.md`
@@ -58,16 +58,27 @@ provider usage; this change does not modify account settings.
 The Formspark payload contains:
 
 - `email`: the trimmed reply address.
-- `message`: the existing formatted enquiry text, including the fallback
-  message and any valid supplied date, people count, and selected flavours.
-- `images`: an array of uploaded image URLs, omitted when there are none.
+- `Wiadomość`: the trimmed message, or the existing fallback when blank.
+- `Termin`: a valid supplied date in `yyyy/mm/dd` format; omitted otherwise.
+- `Liczba osób`: a positive integer formatted as a string; omitted otherwise.
+- `Smaki`: an array of selected flavours; omitted when there are none.
+- `Inspiracje`: an array of uploaded image URLs; omitted when there are none.
 - `_language`: `pl`.
 - `_email.subject`: a fixed Polish enquiry subject, represented as a nested
   `_email` object in the JSON payload.
 
-Reuse the existing enquiry formatter so email and communicator drafts do not
-diverge. Do not send `File` objects, base64 image bodies, local object URLs, or
-filenames as substitutes for uploaded images.
+Share the existing message fallback and date/people formatting rules between
+structured email fields and communicator text. Keep communicator messages and
+the cancellable email event's text unchanged. Do not duplicate date, people, or
+flavours inside `Wiadomość`, or send the old `message` and `images` fields.
+
+Use separate fields rather than relying on line breaks in a single message.
+Flavours and inspiration URLs remain arrays so Formspark can render lists;
+exact spacing and bullet styling are controlled by its notification renderer.
+Do not add an email template or change provider account settings.
+
+Do not send `File` objects, base64 image bodies, local object URLs, or filenames
+as substitutes for uploaded images.
 
 Keep upload/HTTP responsibilities separate from DOM state and feedback.
 Preserve the existing cancellable email-submit event as an integration seam:
