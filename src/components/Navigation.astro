@@ -10,7 +10,7 @@ const path = Astro.url.pathname;
       <Image src={logo} alt="Nulo Cake" width={40} height={40} class="nav-logo-img" />
     </a>
 
-    <button id="nav-toggle" class="nav-hamburger" aria-label="Otwórz menu" aria-expanded="false">
+    <button id="nav-toggle" class="nav-hamburger" aria-label="Otwórz menu" aria-expanded="false" aria-controls="nav-links">
       <span class="hamburger-line"></span>
       <span class="hamburger-line"></span>
       <span class="hamburger-line"></span>
@@ -20,13 +20,6 @@ const path = Astro.url.pathname;
       <div id="nav-limelight" class="limelight" aria-hidden="true">
         <div class="limelight-glow"></div>
       </div>
-      <li>
-        <button id="nav-close" class="nav-close" aria-label="Zamknij menu">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
-            <path d="M4 4l12 12M16 4L4 16"/>
-          </svg>
-        </button>
-      </li>
       <li>
         <a href={withBase('')} class:list={['nav-link nav-link--icon', { 'nav-link--active': isRouteActive(path, '') }]} aria-label="Strona główna" aria-current={isRouteActive(path, '') ? 'page' : undefined}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -41,12 +34,14 @@ const path = Astro.url.pathname;
       <li><a href={withBase('kontakt')} class:list={['nav-link', { 'nav-link--active': isRouteActive(path, 'kontakt') }]} aria-current={isRouteActive(path, 'kontakt') ? 'page' : undefined}>Kontakt</a></li>
     </ul>
 
-    <a
-      id="nav-cta"
-      href={withBase('kontakt')}
-      class="nav-cta"
-      aria-label="Zamów tort"
-    >Zamów</a>
+    {!isRouteActive(path, 'kontakt') && (
+      <a
+        id="nav-cta"
+        href={withBase('kontakt')}
+        class="nav-cta"
+        aria-label="Zamów tort"
+      >Zamów</a>
+    )}
   </div>
 </nav>
 <div id="nav-backdrop" class="nav-backdrop" aria-hidden="true"></div>
@@ -230,19 +225,6 @@ const path = Astro.url.pathname;
     background: rgba(255, 170, 248, 0.06);
   }
 
-  /* Close button inside mobile drawer */
-  .nav-close {
-    display: none;
-    position: absolute;
-    top: 1.5rem;
-    right: 1.5rem;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--color-on-surface-variant);
-    padding: 0.5rem;
-  }
-
   /* Backdrop overlay */
   .nav-backdrop {
     position: fixed;
@@ -265,10 +247,6 @@ const path = Astro.url.pathname;
 
     .nav-hamburger {
       display: flex;
-    }
-
-    .nav-close {
-      display: block;
     }
 
     /* Hide the CTA button on mobile — it's accessible via the drawer */
@@ -332,7 +310,7 @@ const path = Astro.url.pathname;
     }
   };
 
-  let toggle, links, backdrop, closeBtn;
+  let toggle, links, backdrop;
 
   function openMenu() {
     toggle?.setAttribute('aria-expanded', 'true');
@@ -340,7 +318,7 @@ const path = Astro.url.pathname;
     toggle?.classList.add('active');
     links?.classList.add('open');
     backdrop?.classList.add('open');
-    closeBtn?.focus();
+    toggle?.focus();
   }
 
   function closeMenu() {
@@ -357,7 +335,6 @@ const path = Astro.url.pathname;
     toggle = document.getElementById('nav-toggle');
     links = document.getElementById('nav-links');
     backdrop = document.getElementById('nav-backdrop');
-    closeBtn = document.getElementById('nav-close');
 
     if (!isInitialized) {
       window.addEventListener('scroll', onScroll, { passive: true });
@@ -379,8 +356,10 @@ const path = Astro.url.pathname;
       document.addEventListener('keydown', (e) => {
         const currentLinks = document.getElementById('nav-links');
         if (!currentLinks?.classList.contains('open')) return;
-        const focusable = currentLinks.querySelectorAll('a, button');
-        if (focusable.length === 0) return;
+        const currentToggle = document.getElementById('nav-toggle');
+        if (!currentToggle) return;
+        // The shared open/close toggle sits outside the drawer.
+        const focusable = [currentToggle, ...currentLinks.querySelectorAll<HTMLElement>('a, button')];
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
         if (e.key === 'Tab') {
@@ -391,12 +370,7 @@ const path = Astro.url.pathname;
           }
         }
         if (e.key === 'Escape') {
-          const t = document.getElementById('nav-toggle');
-          const b = document.getElementById('nav-backdrop');
-          t?.classList.remove('active');
-          currentLinks?.classList.remove('open');
-          b?.classList.remove('open');
-          t?.focus();
+          closeMenu();
         }
       });
 
@@ -413,7 +387,6 @@ const path = Astro.url.pathname;
       }
     });
 
-    closeBtn?.addEventListener('click', closeMenu);
     backdrop?.addEventListener('click', closeMenu);
 
     onScroll();

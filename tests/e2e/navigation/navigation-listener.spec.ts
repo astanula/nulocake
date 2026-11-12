@@ -139,6 +139,53 @@ test.describe('Navigation', () => {
     await expect(navLinks).not.toHaveClass(/open/);
   });
 
+  test('mobile menu uses a single close toggle with keyboard access', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await navigateAndHydrate(page, testConfig.routes.oferta);
+
+    const toggle = page.locator('#nav-toggle');
+    const navLinks = page.locator('#nav-links');
+    await toggle.click();
+
+    await expect(page.getByRole('button', { name: 'Zamknij menu' })).toHaveCount(1);
+    await expect(navLinks.locator('button')).toHaveCount(0);
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(toggle).toBeFocused();
+
+    await page.keyboard.press('Shift+Tab');
+    await expect(page.locator(navLinkSelector('kontakt'))).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(toggle).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.locator(navLinkSelector('landing'))).toBeFocused();
+
+    await page.keyboard.press('Escape');
+    await expect(navLinks).not.toHaveClass(/open/);
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle).toHaveAttribute('aria-label', 'Otwórz menu');
+    await expect(toggle).toBeFocused();
+
+    await toggle.click();
+    await expect(navLinks).toHaveClass(/open/);
+    await toggle.click();
+    await expect(navLinks).not.toHaveClass(/open/);
+  });
+
+  test('order CTA is absent on Kontakt and returns after client navigation', async ({ page }) => {
+    await navigateAndHydrate(page, testConfig.routes.kontakt);
+    await expect(page.locator('#nav-cta')).toHaveCount(0);
+
+    await page.click(navLinkSelector('oferta'));
+    await page.waitForURL(`**${testConfig.routes.oferta}`);
+    await waitForHydration(page);
+    await expect(page.locator('#nav-cta')).toBeVisible();
+
+    await page.click('#nav-cta');
+    await page.waitForURL(`**${testConfig.routes.kontakt}`);
+    await waitForHydration(page);
+    await expect(page.locator('#nav-cta')).toHaveCount(0);
+  });
+
   /**
    * Test: Verify limelight animation is triggered with correct GSAP parameters.
    * 
