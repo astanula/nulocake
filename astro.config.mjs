@@ -12,6 +12,17 @@ export default defineConfig({
     host: '127.0.0.1',
   },
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    optimizeDeps: {
+      // Astro's client scripts and transition virtual modules are missed by Vite's initial scan.
+      include: [
+        'gsap',
+        'gsap/ScrollTrigger',
+        'astro/virtual-modules/transitions-router.js',
+        'astro/virtual-modules/transitions-types.js',
+        'astro/virtual-modules/transitions-events.js',
+        'astro/virtual-modules/transitions-swap-functions.js',
+      ],
+    },
   }
 });
