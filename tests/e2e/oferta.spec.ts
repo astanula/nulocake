@@ -40,11 +40,54 @@ test('uses the pink accent and keeps the details panel within its content area',
   expect(cardBox!.x + cardBox!.width).toBeLessThan(layoutBox!.x + layoutBox!.width - 1);
 
   await page.setViewportSize({ width: 375, height: 812 });
-  const mobileLayout = await layout.boundingBox();
-  const mobileCard = await card.boundingBox();
-  expect(mobileLayout).not.toBeNull();
-  expect(mobileCard).not.toBeNull();
-  expect(mobileCard!.x + mobileCard!.width).toBeLessThanOrEqual(mobileLayout!.x + mobileLayout!.width + 1);
+  await page.locator('.flavor-accordion-item summary').first().click();
+  const mobileSelector = await page.locator('[data-flavor-selector]').boundingBox();
+  const mobilePanel = await page.locator('.flavor-accordion-item[open] .flavor-accordion-panel').boundingBox();
+  expect(mobileSelector).not.toBeNull();
+  expect(mobilePanel).not.toBeNull();
+  expect(mobilePanel!.x + mobilePanel!.width).toBeLessThanOrEqual(mobileSelector!.x + mobileSelector!.width + 1);
+});
+
+test('switches to an exclusive accordion without flavor titles on small screens', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto(testConfig.routes.oferta);
+  await waitForHydration(page);
+
+  const [first, second] = CAKE_FLAVORS;
+  const firstItem = page.locator(`[data-flavor-accordion="${first.id}"]`);
+  const secondItem = page.locator(`[data-flavor-accordion="${second.id}"]`);
+
+  await expect(page.locator('.flavor-layout')).toBeHidden();
+  await expect(page.locator('.flavor-accordion-item[open]')).toHaveCount(0);
+
+  await firstItem.locator('summary').click();
+  await expect(firstItem).toHaveAttribute('open', '');
+  await expect(firstItem.locator('.flavor-accordion-panel')).toBeVisible();
+  await expect(firstItem.locator('.flavor-accordion-panel h3')).toHaveCount(0);
+
+  await secondItem.locator('summary').click();
+  await expect(secondItem).toHaveAttribute('open', '');
+  await expect(firstItem).not.toHaveAttribute('open', '');
+
+  const gaps = await secondItem.locator('.flavor-accordion-panel').evaluate((panel) => {
+    const panelBox = panel.getBoundingClientRect();
+    const style = getComputedStyle(panel);
+    return {
+      top: panel.querySelector('.flavor-eyebrow')!.getBoundingClientRect().top - panelBox.top - parseFloat(style.borderTopWidth),
+      bottom: panelBox.bottom - panel.querySelector('.layer-map')!.getBoundingClientRect().bottom,
+    };
+  });
+  expect(gaps.top).toBeCloseTo(gaps.bottom, 0);
+});
+
+test('sizes the small-screen accordion to the details panel width', async ({ page }) => {
+  await page.goto(testConfig.routes.oferta);
+  await waitForHydration(page);
+  const cardWidth = await page.locator('#flavor-card').evaluate((card) => card.getBoundingClientRect().width);
+
+  await page.setViewportSize({ width: 700, height: 812 });
+  const accordionWidth = await page.locator('.flavor-accordion').evaluate((list) => list.getBoundingClientRect().width);
+  expect(accordionWidth).toBeCloseTo(cardWidth, 1);
 });
 
 test('sizes the flavor list to its longest name', async ({ page }) => {
@@ -90,16 +133,17 @@ test('keeps the flavor note on one line when space allows', async ({ page }) => 
   expect(await lineCount()).toBeGreaterThan(1);
 });
 
-for (const { width, thumbnailWidth, thumbnailHeight, padding } of [
-  { width: 1280, thumbnailWidth: 32, thumbnailHeight: 31, padding: 6.5 },
-  { width: 375, thumbnailWidth: 26, thumbnailHeight: 26, padding: 6 },
+for (const { width, selector } of [
+  { width: 1280, selector: '.flavor-pick-list .flavor-pick' },
+  { width: 375, selector: '.flavor-accordion .flavor-pick' },
 ]) {
-  test(`uses smaller thumbnails and compact vertical spacing at ${width}px`, async ({ page }) => {
+  test(`uses the same compact flavor rows at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 812 });
     await page.goto(testConfig.routes.oferta);
     await waitForHydration(page);
 
-    const pick = page.locator('.flavor-pick').first();
+    const [thumbnailWidth, thumbnailHeight, padding] = [32, 31, 6.5];
+    const pick = page.locator(selector).first();
     const thumbnail = pick.locator('.flavor-thumb');
     await expect(thumbnail).toHaveCSS('width', `${thumbnailWidth}px`);
     await expect(thumbnail).toHaveCSS('height', `${thumbnailHeight}px`);
@@ -109,7 +153,32 @@ for (const { width, thumbnailWidth, thumbnailHeight, padding } of [
   });
 }
 
-for (const width of [1280, 800, 375, 320]) {
+for (const width of [375, 320]) {
+  test(`keeps the cake drawing and accordion panel the same width for every flavor at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 812 });
+    await page.goto(testConfig.routes.oferta);
+    await waitForHydration(page);
+
+    const widths: { cake: number; panel: number }[] = [];
+    for (const flavor of CAKE_FLAVORS) {
+      const item = page.locator(`[data-flavor-accordion="${flavor.id}"]`);
+      await item.locator('summary').click();
+      const panel = item.locator('.flavor-accordion-panel');
+      await expect(panel).toBeVisible();
+      widths.push({
+        cake: await panel.locator('.layer-map-cake').evaluate((element) => element.getBoundingClientRect().width),
+        panel: await panel.evaluate((element) => element.getBoundingClientRect().width),
+      });
+    }
+
+    for (const { cake, panel } of widths) {
+      expect(cake).toBeCloseTo(widths[0].cake, 1);
+      expect(panel).toBeCloseTo(widths[0].panel, 1);
+    }
+  });
+}
+
+for (const width of [1280, 800]) {
   test(`keeps the cake drawing and details panel the same width for every flavor at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 812 });
     await page.goto(testConfig.routes.oferta);

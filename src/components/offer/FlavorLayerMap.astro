@@ -1,0 +1,108 @@
+---
+import CakeCrossSection from './CakeCrossSection.astro';
+import { cakeLayers, type CakeFlavor } from '../../config/cakeFlavors';
+
+interface Props {
+  flavor: CakeFlavor;
+}
+
+const { flavor } = Astro.props;
+---
+
+<p class="label-md flavor-eyebrow">Warstwa po warstwie / od góry</p>
+<div class="layer-map">
+  <div class="layer-map-cake"><CakeCrossSection flavor={flavor} /></div>
+  <ol class="layer-labels" aria-label="Warstwy tortu od góry">
+    {cakeLayers(flavor).map((layer) => (
+      <li class:list={['layer-label', layer.kind === 'cream' && 'layer-label--cream']}>
+        <span class="visually-hidden">{layer.heightCm} cm: </span>
+        <span class="layer-name">{layer.name}</span>
+        {layer.addition && <span class="layer-addition">{layer.addition.label}</span>}
+      </li>
+    ))}
+  </ol>
+</div>
+
+<style>
+  .flavor-eyebrow {
+    margin-bottom: var(--flavor-eyebrow-gap, 1.25rem);
+    color: var(--color-primary);
+  }
+
+  .layer-map {
+    --layer-gap: var(--layer-map-gap, 1.875rem);
+    --layer-row: var(--layer-row-height, 1.6875rem);
+    display: grid;
+    grid-template-columns: var(--cake-cross-section-width, 9.5rem) minmax(0, 1fr);
+    gap: var(--layer-gap);
+    max-width: 46rem;
+  }
+
+  .layer-map-cake {
+    display: flex;
+    min-width: 0;
+  }
+
+  /* Flexible rows keep the 1 : 2 : 1 : 2 : 1 ratio even when a label wraps. */
+  .layer-labels {
+    display: grid;
+    grid-template-rows: 1fr 2fr 1fr 2fr 1fr;
+    min-width: 0;
+    list-style: none;
+  }
+
+  .layer-label {
+    position: relative;
+    display: grid;
+    align-content: center;
+    min-width: 0;
+    min-height: var(--layer-row);
+    padding: 0.28125rem 0;
+    border-top: 1px solid var(--color-outline-variant);
+  }
+
+  .layer-label:last-child {
+    border-bottom: 1px solid var(--color-outline-variant);
+  }
+
+  .layer-label--cream {
+    min-height: calc(2 * var(--layer-row));
+  }
+
+  .layer-label::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: calc(-1 * var(--layer-gap));
+    width: calc(0.7 * var(--layer-gap));
+    height: 1px;
+    background: var(--color-outline);
+  }
+
+  .layer-name {
+    font-size: var(--layer-name-size, 0.875rem);
+    line-height: 1.5;
+    color: var(--color-on-surface);
+    overflow-wrap: anywhere;
+  }
+
+  .layer-addition {
+    margin-top: 0.125rem;
+    font-size: var(--layer-addition-size, 0.75rem);
+    line-height: 1.5;
+    color: var(--color-on-surface-variant);
+    overflow-wrap: anywhere;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

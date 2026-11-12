@@ -1,6 +1,7 @@
 ---
 import CakeCrossSection from './CakeCrossSection.astro';
-import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../../config/cakeFlavors';
+import FlavorLayerMap from './FlavorLayerMap.astro';
+import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM } from '../../config/cakeFlavors';
 ---
 
 <div class="flavor-selector" data-flavor-selector>
@@ -27,22 +28,27 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
       {CAKE_FLAVORS.map((flavor, index) => (
         <article class="flavor-panel" data-flavor-panel={flavor.id} data-flavor-name={flavor.name} aria-labelledby={`flavor-${flavor.id}-title`} hidden={index !== 0}>
           <h3 class="flavor-card-title" id={`flavor-${flavor.id}-title`}>{flavor.name}</h3>
-          <p class="label-md flavor-eyebrow">Warstwa po warstwie / od góry</p>
-          <div class="layer-map">
-            <div class="layer-map-cake"><CakeCrossSection flavor={flavor} /></div>
-            <ol class="layer-labels" aria-label="Warstwy tortu od góry">
-              {cakeLayers(flavor).map((layer) => (
-                <li class:list={['layer-label', layer.kind === 'cream' && 'layer-label--cream']}>
-                  <span class="visually-hidden">{layer.heightCm} cm: </span>
-                  <span class="layer-name">{layer.name}</span>
-                  {layer.addition && <span class="layer-addition">{layer.addition.label}</span>}
-                </li>
-              ))}
-            </ol>
-          </div>
+          <FlavorLayerMap flavor={flavor} />
         </article>
       ))}
     </div>
+  </div>
+
+  <div class="flavor-accordion">
+    {CAKE_FLAVORS.map((flavor) => (
+      <details class="flavor-accordion-item" name="cake-flavor-details" data-flavor-accordion={flavor.id}>
+        <summary class="flavor-pick">
+          <span class="flavor-thumb"><CakeCrossSection flavor={flavor} /></span>
+          <span class="flavor-pick-name">{flavor.name}</span>
+          <svg class="flavor-pick-toggle" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M3 5.5l5 5 5-5" />
+          </svg>
+        </summary>
+        <div class="flavor-accordion-panel">
+          <FlavorLayerMap flavor={flavor} />
+        </div>
+      </details>
+    ))}
   </div>
 
   <p class="flavor-note">Każdy tort to trzy warstwy biszkoptu po {SPONGE_HEIGHT_CM} cm i dwie warstwy kremu po {CREAM_HEIGHT_CM} cm. Dodatki są częścią kremów. Przekrój jest poglądowy.</p>
@@ -99,8 +105,8 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
 
 <style>
   .flavor-selector {
-    --cake-cross-section-width: 9.5rem;
     --flavor-card-width: 34rem;
+    --flavor-eyebrow-gap: 1.25rem;
     width: 100%;
     margin: 0.5rem 0 1rem;
   }
@@ -136,7 +142,12 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
     align-items: center;
     padding: 0.40625rem 0.625rem;
     border-top: 1px solid var(--color-outline-variant);
+    list-style: none;
     cursor: pointer;
+  }
+
+  .flavor-pick::-webkit-details-marker {
+    display: none;
   }
 
   .flavor-pick:last-child {
@@ -157,12 +168,14 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
     background: var(--color-surface-container-low);
   }
 
-  .flavor-pick:has(input:focus-visible) {
+  .flavor-pick:has(input:focus-visible),
+  .flavor-pick:focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: -2px;
   }
 
-  .flavor-pick:has(input:checked) {
+  .flavor-pick:has(input:checked),
+  [open] > .flavor-pick {
     background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface-container-low));
     box-shadow: inset 2px 0 var(--color-primary);
   }
@@ -180,11 +193,13 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
     color: var(--color-on-surface);
   }
 
-  .flavor-pick:has(input:checked) .flavor-pick-name {
+  .flavor-pick:has(input:checked) .flavor-pick-name,
+  [open] > .flavor-pick .flavor-pick-name {
     color: var(--color-primary);
   }
 
-  .flavor-pick-mark {
+  .flavor-pick-mark,
+  .flavor-pick-toggle {
     width: 15px;
     height: 15px;
     fill: none;
@@ -192,11 +207,18 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
+  }
+
+  .flavor-pick-mark {
     visibility: hidden;
   }
 
   .flavor-pick:has(input:checked) .flavor-pick-mark {
     visibility: visible;
+  }
+
+  [open] > .flavor-pick .flavor-pick-toggle {
+    transform: rotate(180deg);
   }
 
   .flavor-card {
@@ -213,12 +235,8 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
     display: none;
   }
 
-  .flavor-eyebrow {
-    margin-bottom: 0.625rem;
-    color: var(--color-primary);
-  }
-
   .flavor-card-title {
+    margin-bottom: var(--flavor-eyebrow-gap);
     font-family: var(--font-family-display);
     font-weight: 600;
     font-size: clamp(1.375rem, 2.4vw, 1.875rem);
@@ -228,71 +246,33 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
     overflow-wrap: anywhere;
   }
 
-  .flavor-panel .flavor-eyebrow {
-    margin: 1.75rem 0 1.25rem;
+  .flavor-accordion {
+    container: flavor-accordion / inline-size;
+    display: none;
+    width: var(--flavor-card-width);
+    max-width: 100%;
   }
 
-  .layer-map {
-    display: grid;
-    grid-template-columns: var(--cake-cross-section-width) minmax(0, 1fr);
-    gap: 1.875rem;
-    max-width: 46rem;
-  }
-
-  .layer-map-cake {
-    display: flex;
-    min-width: 0;
-  }
-
-  /* Flexible rows keep the 1 : 2 : 1 : 2 : 1 ratio even when a label wraps. */
-  .layer-labels {
-    display: grid;
-    grid-template-rows: 1fr 2fr 1fr 2fr 1fr;
-    min-width: 0;
-    list-style: none;
-  }
-
-  .layer-label {
-    position: relative;
-    display: grid;
-    align-content: center;
-    min-width: 0;
-    min-height: 1.6875rem;
-    padding: 0.28125rem 0;
-    border-top: 1px solid var(--color-outline-variant);
-  }
-
-  .layer-label:last-child {
+  .flavor-accordion-item:last-child {
     border-bottom: 1px solid var(--color-outline-variant);
   }
 
-  .layer-label--cream {
-    min-height: 3.375rem;
+  .flavor-accordion-panel {
+    padding: var(--flavor-eyebrow-gap) 1.75rem;
+    border: 1px solid var(--color-outline-variant);
+    border-bottom: 0;
+    background: var(--color-surface);
   }
 
-  .layer-label::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: -1.875rem;
-    width: 1.3125rem;
-    height: 1px;
-    background: var(--color-outline);
-  }
-
-  .layer-name {
-    font-size: 0.875rem;
-    line-height: 1.5;
-    color: var(--color-on-surface);
-    overflow-wrap: anywhere;
-  }
-
-  .layer-addition {
-    margin-top: 0.125rem;
-    font-size: 0.75rem;
-    line-height: 1.5;
-    color: var(--color-on-surface-variant);
-    overflow-wrap: anywhere;
+  @container flavor-accordion (width < 34rem) {
+    .flavor-accordion-panel {
+      --cake-cross-section-width: 4.5rem;
+      --layer-map-gap: 1.375rem;
+      --layer-row-height: 1.8125rem;
+      --layer-name-size: 0.8125rem;
+      --layer-addition-size: 0.6875rem;
+      padding: var(--flavor-eyebrow-gap) 0.9375rem;
+    }
   }
 
   .flavor-note {
@@ -318,7 +298,12 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
       transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .flavor-panel:not([hidden]) {
+    .flavor-pick-toggle {
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .flavor-panel:not([hidden]),
+    [open] > .flavor-accordion-panel {
       animation: flavor-panel-in 0.2s ease-out;
     }
 
@@ -335,80 +320,12 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
   }
 
   @media (max-width: 768px) {
-    .flavor-selector {
-      --cake-cross-section-width: 4.5rem;
-    }
-
     .flavor-layout {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 1.125rem;
+      display: none;
     }
 
-    .flavor-pick-list {
-      flex-direction: row;
-      gap: 0.5rem;
-      padding: 0.375rem 0.125rem 0.875rem;
-      overflow-x: auto;
-      overscroll-behavior-x: contain;
-      scroll-snap-type: x proximity;
-      scroll-padding-inline: 0.125rem;
-      scrollbar-width: thin;
-    }
-
-    .flavor-pick,
-    .flavor-pick:last-child {
-      flex: 0 0 11.875rem;
-      grid-template-columns: 26px minmax(0, 1fr) 10px;
-      padding: 0.375rem 0.75rem;
-      border: 1px solid var(--color-outline-variant);
-      scroll-snap-align: start;
-    }
-
-    .flavor-pick:has(input:checked) {
-      box-shadow: inset 0 -2px var(--color-primary);
-    }
-
-    .flavor-thumb {
-      width: 26px;
-      height: 26px;
-    }
-
-    .flavor-pick-name {
-      font-size: 0.8125rem;
-    }
-
-    .flavor-pick-mark {
-      width: 10px;
-      height: 10px;
-    }
-
-    .flavor-card {
-      padding: 1.375rem 0.9375rem;
-    }
-
-    .layer-map {
-      gap: 1.375rem;
-    }
-
-    .layer-label {
-      min-height: 1.8125rem;
-    }
-
-    .layer-label--cream {
-      min-height: 3.625rem;
-    }
-
-    .layer-label::before {
-      left: -1.375rem;
-      width: 0.9375rem;
-    }
-
-    .layer-name {
-      font-size: 0.8125rem;
-    }
-
-    .layer-addition {
-      font-size: 0.6875rem;
+    .flavor-accordion {
+      display: block;
     }
   }
 </style>
