@@ -9,9 +9,8 @@ import { withBase } from '../utils/withBase';
     <!-- Sekcja 1: Co kryje się w środku? -->
     <section class="content-section">
       <div class="content-section-inner">
-        <h2 class="display-lg section-heading">Co kryje się w środku?</h2>
+        <h2 class="display-lg section-heading">Co kryje się <span class="section-heading-accent">w środku</span>?</h2>
         <p class="body-lg section-body">W moich tortach nie znajdziesz gotowych mieszanek – używam tylko prawdziwego masła, belgijskiej czekolady i świeżych owoców.</p>
-        <p class="body-lg section-body">Każde piętro tortu to puszysty biszkopt i aż 3 warstwy przepysznego kremu/żelki</p>
         <FlavorSelector />
         <div class="section-cta-group">
           <a href={withBase('kontakt')} class="btn-primary">Mam pytanie o smaki</a>
@@ -142,6 +141,10 @@ import { withBase } from '../utils/withBase';
 
   .section-heading {
     margin-bottom: 1.5rem;
+  }
+
+  .section-heading-accent {
+    color: var(--color-primary);
   }
 
   .section-body {

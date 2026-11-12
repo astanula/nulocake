@@ -4,15 +4,15 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
 ---
 
 <div class="flavor-selector" data-flavor-selector>
-  <p class="flavor-hint" id="flavor-hint">Wybierz smak, aby zobaczyć jego warstwy.</p>
+  <p class="flavor-hint" id="flavor-hint">Wybierz smak, aby zobaczyć szczegóły.</p>
 
   <div class="flavor-layout">
     <fieldset class="flavor-picks" aria-describedby="flavor-hint">
       <legend class="visually-hidden">Smak tortu</legend>
       <div class="flavor-pick-list">
-        {CAKE_FLAVORS.map((flavor) => (
+        {CAKE_FLAVORS.map((flavor, index) => (
           <label class="flavor-pick">
-            <input type="radio" name="cake-flavor" value={flavor.id} aria-controls="flavor-card" />
+            <input type="radio" name="cake-flavor" value={flavor.id} aria-controls="flavor-card" checked={index === 0} />
             <span class="flavor-thumb"><CakeCrossSection flavor={flavor} /></span>
             <span class="flavor-pick-name">{flavor.name}</span>
             <svg class="flavor-pick-mark" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
@@ -24,15 +24,8 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
     </fieldset>
 
     <div class="flavor-card" id="flavor-card">
-      <div class="flavor-empty" data-flavor-empty>
-        <span class="flavor-empty-range" aria-hidden="true">01&ndash;{String(CAKE_FLAVORS.length).padStart(2, '0')}</span>
-        <p class="label-md flavor-eyebrow">Najpierw apetyt. Potem szczegóły.</p>
-        <h3 class="flavor-card-title">Który smak wybierasz?</h3>
-        <p class="flavor-empty-text">Wybierz kompozycję z listy, a pokażę Ci jej przekrój i skład.</p>
-      </div>
-
-      {CAKE_FLAVORS.map((flavor) => (
-        <article class="flavor-panel" data-flavor-panel={flavor.id} data-flavor-name={flavor.name} aria-labelledby={`flavor-${flavor.id}-title`} hidden>
+      {CAKE_FLAVORS.map((flavor, index) => (
+        <article class="flavor-panel" data-flavor-panel={flavor.id} data-flavor-name={flavor.name} aria-labelledby={`flavor-${flavor.id}-title`} hidden={index !== 0}>
           <h3 class="flavor-card-title" id={`flavor-${flavor.id}-title`}>{flavor.name}</h3>
           <p class="label-md flavor-eyebrow">Warstwa po warstwie / od góry</p>
           <div class="layer-map">
@@ -69,15 +62,13 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
     cleanupController = new AbortController();
     const { signal } = cleanupController;
     const panels = Array.from(root.querySelectorAll<HTMLElement>('[data-flavor-panel]'));
-    const empty = root.querySelector<HTMLElement>('[data-flavor-empty]')!;
     const status = root.querySelector<HTMLElement>('[data-flavor-status]')!;
 
-    const showFlavor = (id: string | null, announce: boolean) => {
+    const showFlavor = (id: string, announce: boolean) => {
       const active = panels.find((panel) => panel.dataset.flavorPanel === id);
       panels.forEach((panel) => {
         panel.hidden = panel !== active;
       });
-      empty.hidden = Boolean(active);
       if (announce && active) status.textContent = `Pokazuję warstwy smaku: ${active.dataset.flavorName}.`;
     };
 
@@ -91,7 +82,12 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
     );
 
     // Browsers may restore a checked radio on history navigation.
-    showFlavor(root.querySelector<HTMLInputElement>('input[name="cake-flavor"]:checked')?.value ?? null, false);
+    const selected = root.querySelector<HTMLInputElement>('input[name="cake-flavor"]:checked')
+      ?? root.querySelector<HTMLInputElement>('input[name="cake-flavor"]');
+    if (selected) {
+      selected.checked = true;
+      showFlavor(selected.value, false);
+    }
   }
 
   document.addEventListener('astro:page-load', initFlavorSelector);
@@ -103,6 +99,8 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
 
 <style>
   .flavor-selector {
+    --cake-cross-section-width: 9.5rem;
+    --flavor-card-width: 34rem;
     width: 100%;
     margin: 0.5rem 0 1rem;
   }
@@ -110,12 +108,12 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
   .flavor-hint {
     margin-bottom: 1rem;
     font-size: 0.8125rem;
-    color: var(--color-on-surface-variant);
+    color: var(--color-primary);
   }
 
   .flavor-layout {
     display: grid;
-    grid-template-columns: minmax(14rem, 0.8fr) minmax(0, 1.7fr);
+    grid-template-columns: max-content minmax(0, 1fr);
     gap: 2rem;
     align-items: start;
   }
@@ -133,11 +131,10 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
   .flavor-pick {
     position: relative;
     display: grid;
-    grid-template-columns: 45px minmax(0, 1fr) 15px;
+    grid-template-columns: 32px minmax(0, 1fr) 15px;
     gap: 0.625rem;
     align-items: center;
-    min-height: 4.75rem;
-    padding: 0.8125rem 0.625rem;
+    padding: 0.40625rem 0.625rem;
     border-top: 1px solid var(--color-outline-variant);
     cursor: pointer;
   }
@@ -172,8 +169,8 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
 
   .flavor-thumb {
     display: flex;
-    width: 45px;
-    height: 43px;
+    width: 32px;
+    height: 31px;
   }
 
   .flavor-pick-name {
@@ -203,34 +200,17 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
   }
 
   .flavor-card {
+    justify-self: start;
     min-width: 0;
+    width: var(--flavor-card-width);
+    max-width: 100%;
     padding: 1.75rem;
     border: 1px solid var(--color-outline-variant);
     background: var(--color-surface);
   }
 
-  .flavor-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    min-height: 28rem;
-    padding: 1.25rem;
-  }
-
-  .flavor-empty[hidden],
   .flavor-panel[hidden] {
     display: none;
-  }
-
-  .flavor-empty-range {
-    margin-bottom: 1.625rem;
-    font-family: var(--font-family-display);
-    font-weight: 600;
-    font-size: clamp(4.5rem, 8vw, 5.625rem);
-    line-height: 1;
-    letter-spacing: -0.08em;
-    color: color-mix(in srgb, var(--color-primary) 18%, var(--color-surface));
   }
 
   .flavor-eyebrow {
@@ -248,19 +228,13 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
     overflow-wrap: anywhere;
   }
 
-  .flavor-empty-text {
-    max-width: 20rem;
-    margin-top: 0.625rem;
-    color: var(--color-on-surface-variant);
-  }
-
   .flavor-panel .flavor-eyebrow {
     margin: 1.75rem 0 1.25rem;
   }
 
   .layer-map {
     display: grid;
-    grid-template-columns: minmax(3rem, 0.7fr) minmax(0, 1.4fr);
+    grid-template-columns: var(--cake-cross-section-width) minmax(0, 1fr);
     gap: 1.875rem;
     max-width: 46rem;
   }
@@ -318,10 +292,10 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
     font-size: 0.75rem;
     line-height: 1.5;
     color: var(--color-on-surface-variant);
+    overflow-wrap: anywhere;
   }
 
   .flavor-note {
-    max-width: 65ch;
     margin-top: 1.25rem;
     font-size: 0.75rem;
     color: var(--color-on-surface-variant);
@@ -361,6 +335,10 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
   }
 
   @media (max-width: 768px) {
+    .flavor-selector {
+      --cake-cross-section-width: 4.5rem;
+    }
+
     .flavor-layout {
       grid-template-columns: minmax(0, 1fr);
       gap: 1.125rem;
@@ -380,9 +358,8 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
     .flavor-pick,
     .flavor-pick:last-child {
       flex: 0 0 11.875rem;
-      grid-template-columns: 35px minmax(0, 1fr) 10px;
-      min-height: 4.6875rem;
-      padding: 0.75rem;
+      grid-template-columns: 26px minmax(0, 1fr) 10px;
+      padding: 0.375rem 0.75rem;
       border: 1px solid var(--color-outline-variant);
       scroll-snap-align: start;
     }
@@ -392,8 +369,8 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
     }
 
     .flavor-thumb {
-      width: 35px;
-      height: 35px;
+      width: 26px;
+      height: 26px;
     }
 
     .flavor-pick-name {
@@ -409,13 +386,7 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM, cakeLayers } from '../
       padding: 1.375rem 0.9375rem;
     }
 
-    .flavor-empty {
-      min-height: 20rem;
-      padding: 0.4375rem;
-    }
-
     .layer-map {
-      grid-template-columns: minmax(2.75rem, 0.55fr) minmax(0, 1.45fr);
       gap: 1.375rem;
     }
 
