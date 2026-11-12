@@ -59,8 +59,9 @@ global window flags use a `homeV2` prefix.
 - Section content is copied from v1 verbatim (hero, story, gallery,
   testimonials, contact), with the per-word `<span class="word">` wrappers
   removed. The `accent-italic` emphasis is kept. Section padding matches v1.
-- The document never scrolls while v2 is mounted: add a v2 class to `<html>`
-  that sets `overflow: hidden` on `html` and `body`; remove it on teardown.
+- The document never scrolls while v2 is mounted: `html:has(.v2-root)` sets
+  `overflow: hidden` on `html` and `body`, so the lock disappears with the
+  v2 DOM on navigation.
 - `Layout.astro` adds `body.scroll-layout-active` for any non-home path,
   which would make the nav `position: relative` and lock body height. v2
   neutralises it in its own styles with `:global(body:has(.v2-root))`
@@ -103,13 +104,22 @@ queued). Requests to navigate to the current section are no-ops.
 | `SCALE_PAST` | `0.9` | Scale of the section being covered |
 | `OPACITY_PAST` | `0` | Opacity of the section being covered |
 | `EDGE_GUARD_MS` | `200` | Quiet time after inner scroll before an edge counts |
+| `WHEEL_QUIET_MS` | `150` | Wheel silence that separates two gestures |
+| `EDGE_EPSILON_PX` | `2` | Distance from top/bottom treated as "at edge" |
+| `KEY_SCROLL_RATIO` | `0.8` | Inner scroll step for keys, × visible height |
 | `REDUCED_MOTION_S` | `0.2` | Crossfade duration under reduced motion |
 | `OBSERVER_TOLERANCE` | `10` | Observer gesture tolerance (px) |
 
 ## 6. Input
 
 - **Wheel / trackpad** (desktop) and **vertical swipe** (touch): one gesture
-  toward "next" or "previous" requests one adjacent section change.
+  toward "next" or "previous" requests one adjacent section change. A gesture
+  is one touch, or a run of wheel events without a `WHEEL_QUIET_MS` gap; each
+  gesture can trigger at most one transition, so trackpad inertia that
+  outlasts a transition does not trigger a second one.
+- Wheel events outside the active section (e.g. over the image) scroll the
+  active section.
+- Input is ignored while the mobile navigation drawer is open.
 - **Keyboard** (ignored when focus is in an editable field):
   - `ArrowDown`, `PageDown`, `Space` → next
   - `ArrowUp`, `PageUp`, `Shift+Space` → previous
@@ -130,8 +140,10 @@ active section overflows the stage:
 - A "next" request triggers a transition only if the section is scrolled to
   its bottom (within 2px). A "previous" request triggers only at its top.
 - **Momentum guard:** if the section emitted a `scroll` event within the last
-  `EDGE_GUARD_MS`, the edge does not count yet. This prevents trackpad inertia
-  from carrying the user straight past a section after reaching its edge.
+  `EDGE_GUARD_MS`, or the current gesture started before the section's last
+  `scroll` event, the edge does not count yet. The user must start a new
+  gesture at the edge. This prevents trackpad inertia from carrying the user
+  straight past a section after reaching its edge.
 - Landing scroll position: going forward, the incoming section starts at
   `scrollTop = 0`; going backward, it starts at its maximum `scrollTop`, so
   reading continues naturally.
@@ -186,8 +198,7 @@ footer fades instead of sliding.
 - On `astro:before-swap` (when v2 is mounted): kill the Observer and any
   running timeline, remove the keydown listener and section scroll listeners,
   disconnect the `ResizeObserver`, clear the testimonials auto-play interval,
-  remove the `<html>` overflow class, and clear GSAP inline styles on v2
-  elements.
+  and clear GSAP inline styles on v2 elements.
 - v2 must not create, kill, or depend on ScrollTrigger instances.
 
 ## 12. Known Gaps and Boundaries
