@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import CakeSizeGuide from '../components/offer/CakeSizeGuide.astro';
 import FlavorSelector from '../components/offer/FlavorSelector.astro';
 import { withBase } from '../utils/withBase';
 ---
@@ -60,8 +61,14 @@ import { withBase } from '../utils/withBase';
     <section class="content-section">
       <div class="content-section-inner">
         <h2 class="display-lg section-heading">Przewodnik po porcjach i cennik</h2>
-        <p class="body-lg section-body">Ceny zaczynają się od X zł za porcję. Ostateczna cena tortu zależy od liczby porcji oraz stopnia skomplikowania dekoracji.</p>
-        <p class="body-lg section-body">Tabelka z rozmiarami tortów wg. ilości porcji (kolumny: ilość porcji, średnica, ilość pięter). Tu wspomnieć też jaka średnica to tort 1 piętrowy, jaka 2 piętrowy, jaka 3 piętrowy, itp. Wymienić też Bento cake w tabelce!</p>
+        <div class="portion-pricing">
+          <p class="portion-price">
+            <strong>22 <span class="portion-price-currency">zł</span></strong>
+            <span class="portion-price-label">za porcję</span>
+          </p>
+          <p class="body-lg portion-price-note">Ostateczna cena tortu zależy od liczby porcji oraz stopnia skomplikowania dekoracji.</p>
+        </div>
+        <CakeSizeGuide />
         <div class="section-cta-group">
           <a href={withBase('kontakt')} class="btn-primary">Zapytaj o rozmiar i cenę</a>
         </div>
@@ -160,6 +167,45 @@ import { withBase } from '../utils/withBase';
     flex-wrap: wrap;
     gap: 1rem;
     margin-top: 2rem;
+  }
+
+  .portion-pricing {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 2.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .portion-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 0.875rem;
+  }
+
+  .portion-price strong {
+    color: var(--color-primary);
+    font-family: var(--font-family-display);
+    font-size: clamp(1.715rem, 2.94vw, 2.45rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+    white-space: nowrap;
+  }
+
+  .portion-price-currency {
+    font-size: 0.45em;
+    letter-spacing: -0.02em;
+  }
+
+  .portion-price-label {
+    color: var(--color-on-surface-variant);
+    font-size: 1rem;
+  }
+
+  .portion-price-note {
+    max-width: 38ch;
   }
 
   .section-body ul, .section-body ol:not(.steps-list) {

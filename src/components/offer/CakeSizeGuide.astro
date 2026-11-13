@@ -1,0 +1,259 @@
+---
+const singleTierSizes = [
+  { portions: '4–6', diameter: 12 },
+  { portions: '8–10', diameter: 14 },
+  { portions: '10–12', diameter: 16 },
+  { portions: '14–18', diameter: 18 },
+  { portions: '20–22', diameter: 20 },
+];
+
+const multiTierSizes = [
+  { label: 'Tort dwupiętrowy', portions: '25+', layers: ['medium', 'large'] },
+  { label: 'Tort trzypiętrowy', portions: '50+', layers: ['small', 'medium', 'large'] },
+];
+---
+
+<div class="cake-size-guide">
+  <section class="cake-size-guide__group" aria-labelledby="single-tier-cakes-title">
+    <h3 id="single-tier-cakes-title" class="cake-size-guide__title">Torty jednopiętrowe</h3>
+
+    <table class="cake-size-guide__table" aria-labelledby="single-tier-cakes-title">
+      <thead>
+        <tr>
+          <th scope="col">Liczba porcji</th>
+          <th scope="col">Średnica</th>
+        </tr>
+      </thead>
+      <tbody>
+        {singleTierSizes.map((size) => (
+          <tr>
+            <th scope="row">
+              <span class="cake-size-guide__portion">
+                <strong class="cake-size-guide__portion-number">{size.portions}</strong>
+                <span class="cake-size-guide__portion-label">porcji</span>
+              </span>
+            </th>
+            <td>
+              <span class="cake-size-guide__diameter"><strong>Ø {size.diameter}</strong> cm</span>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="cake-size-guide__group" aria-labelledby="multi-tier-cakes-title">
+    <h3 id="multi-tier-cakes-title" class="cake-size-guide__title">Torty piętrowe</h3>
+
+    <div class="cake-size-guide__tiers">
+      {multiTierSizes.map((size) => (
+        <div class="cake-size-guide__tier">
+          <div class="cake-size-guide__cake" role="img" aria-label={size.label}>
+            {size.layers.map((layer) => (
+              <span class:list={['cake-size-guide__layer', `cake-size-guide__layer--${layer}`]} aria-hidden="true"></span>
+            ))}
+          </div>
+          <p class="cake-size-guide__portion">
+            <strong class="cake-size-guide__portion-number">{size.portions}</strong>
+            <span class="cake-size-guide__portion-label">porcji</span>
+          </p>
+        </div>
+      ))}
+    </div>
+
+    <p class="cake-size-guide__note">Konstrukcja, wymiary i cena tortów piętrowych są ustalane indywidualnie.</p>
+  </section>
+</div>
+
+<style>
+  .cake-size-guide {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: max-content;
+    max-width: 100%;
+    gap: 1rem;
+    color: var(--color-on-surface);
+    line-height: 1.3;
+  }
+
+  .cake-size-guide__group {
+    max-width: 100%;
+    min-width: 0;
+    padding: 1.5rem;
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+  }
+
+  .cake-size-guide__title {
+    margin-bottom: 1.25rem;
+    color: var(--color-primary);
+    font-family: var(--font-family-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.02em;
+  }
+
+  .cake-size-guide__table {
+    width: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cake-size-guide__table thead th {
+    padding-bottom: 0.75rem;
+    color: var(--color-on-surface-variant);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .cake-size-guide__table th:last-child,
+  .cake-size-guide__table td {
+    width: 1%;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .cake-size-guide__table tbody th,
+  .cake-size-guide__table td {
+    /* Match the flavor list's thumbnail, vertical padding and top border. */
+    height: calc(31px + 0.8125rem + 1px);
+    padding-block: 0;
+    vertical-align: middle;
+    border-top: 1px solid var(--color-outline-variant);
+  }
+
+  .cake-size-guide__table th:first-child {
+    padding-right: 0.75rem;
+    text-align: left;
+  }
+
+  .cake-size-guide__portion {
+    display: flex;
+    align-items: baseline;
+    gap: 0.375rem;
+    white-space: nowrap;
+  }
+
+  .cake-size-guide__portion-number {
+    color: var(--color-primary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .cake-size-guide__portion-label {
+    color: var(--color-on-surface-variant);
+    font-size: 1rem;
+    font-weight: 400;
+  }
+
+  .cake-size-guide__diameter {
+    display: inline-block;
+    padding: 4px 6px;
+    border: 1px solid var(--color-outline);
+    border-radius: 0.375rem;
+    background: var(--color-surface-container-low);
+    font-size: 0.875rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .cake-size-guide__diameter strong {
+    color: var(--color-primary);
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .cake-size-guide__tiers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .cake-size-guide__tier {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.25rem;
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 0.5rem;
+    background: var(--color-surface-container-low);
+  }
+
+  .cake-size-guide__cake {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    width: 100%;
+    height: 74px;
+    margin-bottom: 0.75rem;
+  }
+
+  .cake-size-guide__layer {
+    position: relative;
+    flex: 0 0 22px;
+    height: 22px;
+    border: 1.8px solid var(--color-on-surface);
+    border-radius: 1px;
+  }
+
+  .cake-size-guide__layer::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    right: 5px;
+    left: 5px;
+    border-top: 1px solid var(--color-primary);
+  }
+
+  .cake-size-guide__layer--small {
+    width: 42px;
+  }
+
+  .cake-size-guide__layer--medium {
+    width: 58px;
+  }
+
+  .cake-size-guide__layer--large {
+    width: 74px;
+  }
+
+  .cake-size-guide__note {
+    /* Let the cake diagrams, not the note, determine the panel width. */
+    contain: inline-size;
+    overflow-wrap: anywhere;
+    margin-top: 1rem;
+    color: var(--color-on-surface-variant);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 768px) {
+    .cake-size-guide {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .cake-size-guide__group {
+      padding: 1rem;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .cake-size-guide__portion-number {
+      font-size: 1.125rem;
+    }
+
+    .cake-size-guide__portion-label {
+      font-size: 0.9375rem;
+    }
+  }
+</style>
