@@ -20,13 +20,13 @@ Always load and reference `DESIGN.md` for design-related tasks including:
 Detailed documentation in `docs/architecture/word-based-scroll-animation-system.md` — read this file for full system specification before making animation changes.
 
 Two-phase setup:
-- **Phase 1** - Time-based intro for section 0 (plays once per session, blocks scroll)
-- **Phase 2** - Scroll-driven timeline for all sections (GSAP ScrollTrigger with pinned `.hero-sticky-wrapper`)
+- **Phase 1** - Time-based intro for section 0 (plays once per session, blocks input)
+- **Snap navigation** - `src/home/snapNavigator.ts` plays the paused master timeline (`src/home/sectionTimeline.ts`) by time; a gesture or key only triggers a transition. No ScrollTrigger: the document never scrolls while mounted (`html.home-snap-active`). Speed knob: `SNAP_MS_PER_WU` in `src/config/animation.ts`.
 
 ### Session State
 Uses `window.hasSeenIntro` flag (survives View Transition navigations):
-- First visit: Phase 1 → Phase 2
-- Subsequent visits: Skip Phase 1, show final state directly, run Phase 2
+- First visit: Phase 1 → snap navigation
+- Subsequent visits: Skip Phase 1, show final state directly, mount snap navigation
 
 ### Re-execution
 Script uses `astro:page-load` event (not `is:inline`) to run on every home page visit during client-side navigation.
@@ -35,7 +35,7 @@ Script uses `astro:page-load` event (not `is:inline`) to run on every home page 
 Hero video (`#hero-video`) is temporarily commented out in HTML. When re-enabled, the video readiness check (`readyState >= 1` or `loadedmetadata` event) must be preserved in `initHomePage()`.
 
 ### Cleanup
-Kill old ScrollTrigger instances before building new timeline: `ScrollTrigger.getAll().forEach(t => t.kill())`
+`stopHomeAnimation()` runs before every init, on `astro:before-swap` and on a switch to reduced motion: it kills the pending Phase 1 and calls the snap navigator's teardown (timelines, listeners via one `AbortController`, `ResizeObserver`, page lock, footer dock styles). Gate home-only logic on `.hero-section`, not `#hero-scroll-container` (`o-mnie.astro` uses that ID too).
 
 ## Testing
 

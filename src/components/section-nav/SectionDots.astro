@@ -1,0 +1,116 @@
+---
+/**
+ * Vertical section dots (click = jump to that section).
+ * Markup and styles only: the page's controller finds `[data-section-dot]`
+ * buttons, wires the clicks and keeps `aria-current` on the active one.
+ * Position it via the `class` prop.
+ */
+interface Props {
+  labels: string[];
+  ariaLabel?: string;
+  class?: string;
+}
+
+const { labels, ariaLabel = 'Sekcje', class: className, ...rest } = Astro.props;
+---
+
+<nav class:list={['section-dots', className]} aria-label={ariaLabel} {...rest}>
+  <ul>
+    {labels.map((label, i) => (
+      <li>
+        <button type="button" class="section-dot" data-section-dot={i} aria-label={label} aria-current={i === 0 ? 'true' : undefined}>
+          <span class="section-dot-mark" aria-hidden="true"></span>
+          <span class="section-dot-label" aria-hidden="true">{label}</span>
+        </button>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .section-dots ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .section-dot {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .section-dot-mark {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-outline);
+    opacity: 0.6;
+    transition: background 0.3s, opacity 0.3s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+  }
+
+  .section-dot:hover .section-dot-mark {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+
+  .section-dot[aria-current='true'] .section-dot-mark {
+    background: var(--color-primary);
+    opacity: 1;
+    transform: scale(1.35);
+    box-shadow: 0 0 10px rgba(255, 170, 248, 0.5);
+  }
+
+  .section-dot:focus-visible .section-dot-mark {
+    box-shadow: 0 0 0 3px var(--color-background), 0 0 0 4px var(--color-primary);
+  }
+
+  .section-dot-label {
+    position: absolute;
+    left: calc(100% + 0.5rem);
+    top: 50%;
+    transform: translate(-0.25rem, -50%);
+    white-space: nowrap;
+    padding: 0.25rem 0.625rem;
+    border-radius: 0.125rem;
+    background: var(--color-surface-container-high);
+    color: var(--color-on-surface);
+    font-family: var(--font-family-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .section-dot:hover .section-dot-label,
+  .section-dot:focus-visible .section-dot-label {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+
+  @media (max-width: 768px) {
+    .section-dot {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    .section-dot-mark {
+      width: 6px;
+      height: 6px;
+    }
+  }
+</style>

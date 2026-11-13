@@ -5,10 +5,17 @@
  */
 
 // ── Core Scroll System ───────────────────────────────
-export const PX_PER_WU = 40;   // Scroll pixels per Word Unit
+export const PX_PER_WU = 40;   // Master timeline units (px) per Word Unit
 export const DURGAP    = 0.25;  // Next element starts at 25% of previous duration
-export const HOLD      = 2;    // WU of hold between intro and outro
+export const HOLD      = 2;    // WU of hold between intro and outro (no visible effect under snap navigation)
 export const MS_PER_WU = 250;  // Time-based equivalent of PX_PER_WU (section 0 only)
+
+// ── Snap navigation ──────────────────────────────────
+export const SNAP_MS_PER_WU = 250;    // Transition speed: ms per WU of timeline length. Lower = faster
+export const SNAP_EASE      = 'none'; // Ease applied to each played segment
+export const TRIGGER_PX     = 60;     // Vertical gesture distance needed to trigger a transition
+export const WHEEL_QUIET_MS = 150;    // Wheel silence that separates two gestures
+export const SCROLL_HINT_GAP_PX = 8;  // Min space between section content and the scroll hint
 
 // ── Visual Parameters ────────────────────────────────
 export const FDUR_RATIO = 1.0; // Filter duration = this × element duration
