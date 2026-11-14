@@ -69,13 +69,15 @@ const SOCIAL_LINKS = [
         </a>
       ))}
 
-      {!isRouteActive(path, 'kontakt') && (
+      {!isRouteActive(path, 'kontakt') ? (
         <a
           id="nav-cta"
           href={withBase('kontakt')}
           class="nav-cta"
           aria-label="Zamów tort"
         >Zamów</a>
+      ) : (
+        <span class="nav-cta nav-cta--placeholder" aria-hidden="true">Zamów</span>
       )}
     </div>
   </div>
@@ -305,6 +307,11 @@ const SOCIAL_LINKS = [
   .nav-cta:hover {
     border-color: var(--color-primary);
     background: rgba(255, 170, 248, 0.06);
+  }
+
+  .nav-cta--placeholder {
+    visibility: hidden;
+    pointer-events: none;
   }
 
   /* Backdrop overlay */
