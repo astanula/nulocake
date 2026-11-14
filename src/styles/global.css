@@ -101,6 +101,86 @@ body {
 }
 
 /* ──────────────────────────────────────────────
+   SECTION TITLE SIZES
+   font-size: clamp(min, fluid, max)
+   desktop ≥1025px · tablet 769–1024px · mobile ≤768px
+   ────────────────────────────────────────────── */
+:root {
+  /* Home (v1 + v2) */
+  --title-home-desktop-min: 2.5rem;
+  --title-home-desktop-fluid: 5vw;
+  --title-home-desktop-max: 4rem;
+  --title-home-tablet-min: 2.5rem;
+  --title-home-tablet-fluid: 5vw;
+  --title-home-tablet-max: 4rem;
+  --title-home-mobile-min: 1.75rem;
+  --title-home-mobile-fluid: 6vw;
+  --title-home-mobile-max: 2.5rem;
+
+  /* Subpages — large titles */
+  --title-lg-desktop-min: 2.125rem;
+  --title-lg-desktop-fluid: 4.3vw;
+  --title-lg-desktop-max: 3.5rem;
+  --title-lg-tablet-min: 2.125rem;
+  --title-lg-tablet-fluid: 4.3vw;
+  --title-lg-tablet-max: 3.5rem;
+  --title-lg-mobile-min: 2.125rem;
+  --title-lg-mobile-fluid: 4.3vw;
+  --title-lg-mobile-max: 3.5rem;
+
+  /* Subpages — small titles */
+  --title-sm-desktop-min: 1.5rem;
+  --title-sm-desktop-fluid: 3vw;
+  --title-sm-desktop-max: 2.25rem;
+  --title-sm-tablet-min: 1.5rem;
+  --title-sm-tablet-fluid: 3vw;
+  --title-sm-tablet-max: 2.25rem;
+  --title-sm-mobile-min: 1.5rem;
+  --title-sm-mobile-fluid: 3vw;
+  --title-sm-mobile-max: 2.25rem;
+}
+
+.section-title-home {
+  font-size: clamp(var(--title-home-desktop-min), var(--title-home-desktop-fluid), var(--title-home-desktop-max));
+}
+
+.section-title-lg {
+  font-size: clamp(var(--title-lg-desktop-min), var(--title-lg-desktop-fluid), var(--title-lg-desktop-max));
+}
+
+.section-title-sm {
+  font-size: clamp(var(--title-sm-desktop-min), var(--title-sm-desktop-fluid), var(--title-sm-desktop-max));
+}
+
+@media (max-width: 1024px) {
+  .section-title-home {
+    font-size: clamp(var(--title-home-tablet-min), var(--title-home-tablet-fluid), var(--title-home-tablet-max));
+  }
+
+  .section-title-lg {
+    font-size: clamp(var(--title-lg-tablet-min), var(--title-lg-tablet-fluid), var(--title-lg-tablet-max));
+  }
+
+  .section-title-sm {
+    font-size: clamp(var(--title-sm-tablet-min), var(--title-sm-tablet-fluid), var(--title-sm-tablet-max));
+  }
+}
+
+@media (max-width: 768px) {
+  .section-title-home {
+    font-size: clamp(var(--title-home-mobile-min), var(--title-home-mobile-fluid), var(--title-home-mobile-max));
+  }
+
+  .section-title-lg {
+    font-size: clamp(var(--title-lg-mobile-min), var(--title-lg-mobile-fluid), var(--title-lg-mobile-max));
+  }
+
+  .section-title-sm {
+    font-size: clamp(var(--title-sm-mobile-min), var(--title-sm-mobile-fluid), var(--title-sm-mobile-max));
+  }
+}
+
+/* ──────────────────────────────────────────────
    ACCENT EMPHASIS
    ────────────────────────────────────────────── */
 .accent-italic {
