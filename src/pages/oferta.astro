@@ -26,27 +26,39 @@ import { withBase } from '../utils/withBase';
         <p class="body-lg section-body">W moich projektach najczęściej wykorzystuję:</p>
         <ul class="decor-list">
           <li class="decor-item">
-            <span class="checkbox"></span>
+            <svg class="decor-check" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m3 12 6 6L21 6" />
+            </svg>
             <span>Ręcznie rzeźbione figurki (Masa cukrowa)</span>
           </li>
           <li class="decor-item">
-            <span class="checkbox"></span>
+            <svg class="decor-check" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m3 12 6 6L21 6" />
+            </svg>
             <span>Wydruki jadalne (Opłatek lub masa cukrowa)</span>
           </li>
           <li class="decor-item">
-            <span class="checkbox"></span>
+            <svg class="decor-check" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m3 12 6 6L21 6" />
+            </svg>
             <span>Dekoracje z papieru waflowego</span>
           </li>
           <li class="decor-item">
-            <span class="checkbox"></span>
+            <svg class="decor-check" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m3 12 6 6L21 6" />
+            </svg>
             <span>Dekoracje naturalne (Żywe kwiaty i owoce)</span>
           </li>
           <li class="decor-item">
-            <span class="checkbox"></span>
+            <svg class="decor-check" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m3 12 6 6L21 6" />
+            </svg>
             <span>Słodycze i technika Drip Cake</span>
           </li>
           <li class="decor-item">
-            <span class="checkbox"></span>
+            <svg class="decor-check" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m3 12 6 6L21 6" />
+            </svg>
             <span>Napisy i Toppery</span>
           </li>
         </ul>
@@ -267,27 +279,10 @@ import { withBase } from '../utils/withBase';
     color: var(--color-text-primary);
   }
 
-  .checkbox {
+  .decor-check {
     flex-shrink: 0;
     width: 1.5rem;
     height: 1.5rem;
-    border-radius: 0.375rem;
-    background: var(--color-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-  }
-
-  .checkbox::after {
-    content: '';
-    display: block;
-    width: 0.625rem;
-    height: 0.375rem;
-    border-left: 2px solid var(--color-on-primary);
-    border-bottom: 2px solid var(--color-on-primary);
-    transform: rotate(-45deg);
-    margin-top: -2px;
   }
 
   @media (max-width: 768px) {
