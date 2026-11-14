@@ -1,24 +1,8 @@
 ---
-import logo from '../assets/nulocake logo.svg';
-import { Image } from 'astro:assets';
-import { withBase } from '../utils/withBase';
 import DesignSystemTooltip from './DesignSystemTooltip.astro';
 ---
 <footer class="footer">
   <div class="footer-inner">
-    <div class="footer-brand">
-      <a href={withBase('')} aria-label="Nulo Cake - strona główna">
-        <Image src={logo} alt="Nulo Cake" width={32} height={32} class="footer-logo" />
-      </a>
-    </div>
-
-    <nav class="footer-links" aria-label="Stopka">
-      <a href="https://www.instagram.com/nulo.cake/" target="_blank" rel="noopener noreferrer" class="footer-link">Instagram</a>
-      <a href="https://www.facebook.com/profile.php?id=61583364552840" target="_blank" rel="noopener noreferrer" class="footer-link">Facebook</a>
-    </nav>
-  </div>
-
-  <div class="footer-bottom">
     <p class="footer-copy">
       <span class="footer-copy-trigger" data-ds-trigger>&copy; 2026 Nulo Cake.</span> The Digital Gallery of Edible Art.
     </p>
@@ -30,62 +14,14 @@ import DesignSystemTooltip from './DesignSystemTooltip.astro';
   .footer {
     flex-shrink: 0;
     margin-top: auto;
-    padding: 1.75rem 2rem 1rem;
+    padding: 1rem 2rem;
     background: var(--color-background);
     border-top: 1px solid var(--ghost-border);
   }
 
   .footer-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     max-width: var(--layout-max-width);
     margin: 0 auto;
-    padding-bottom: 1.125rem;
-  }
-
-  .footer-brand a {
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    transition: opacity 0.3s;
-  }
-
-  .footer-brand a:hover {
-    opacity: 0.8;
-  }
-
-  .footer-logo {
-    width: 32px;
-    height: auto;
-    object-fit: contain;
-  }
-
-  .footer-links {
-    display: flex;
-    gap: 2rem;
-  }
-
-  .footer-link {
-    font-family: var(--font-family-body);
-    font-weight: 500;
-    font-size: 0.8125rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--color-on-surface-variant);
-    text-decoration: none;
-    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .footer-link:hover {
-    color: var(--color-primary);
-  }
-
-  .footer-bottom {
-    max-width: var(--layout-max-width);
-    margin: 0 auto;
-    padding-top: 0.875rem;
-    border-top: 1px solid var(--ghost-border);
   }
 
   .footer-copy {
@@ -102,15 +38,7 @@ import DesignSystemTooltip from './DesignSystemTooltip.astro';
 
   @media (max-width: 768px) {
     .footer-inner {
-      flex-direction: column;
-      gap: 0.75rem;
       text-align: center;
-    }
-
-    .footer-links {
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1rem 1.5rem;
     }
   }
 </style>

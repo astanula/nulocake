@@ -1,8 +1,28 @@
 ---
 import logo from '../assets/nulocake logo.svg';
 import { Image } from 'astro:assets';
+import { CHANNEL_ICON_PATHS } from './contact/channelIcons';
 import { isRouteActive, withBase } from '../utils/withBase';
+
 const path = Astro.url.pathname;
+
+const FACEBOOK_ICON_PATH =
+  'M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z';
+
+const SOCIAL_LINKS = [
+  {
+    id: 'instagram',
+    label: 'Instagram',
+    href: 'https://www.instagram.com/nulo.cake/',
+    iconPath: CHANNEL_ICON_PATHS.instagram,
+  },
+  {
+    id: 'facebook',
+    label: 'Facebook',
+    href: 'https://www.facebook.com/profile.php?id=61583364552840',
+    iconPath: FACEBOOK_ICON_PATH,
+  },
+] as const;
 ---
 <nav id="main-nav" class="nav">
   <div class="nav-inner">
@@ -34,14 +54,30 @@ const path = Astro.url.pathname;
       <li><a href={withBase('kontakt')} class:list={['nav-link', { 'nav-link--active': isRouteActive(path, 'kontakt') }]} aria-current={isRouteActive(path, 'kontakt') ? 'page' : undefined}>Kontakt</a></li>
     </ul>
 
-    {!isRouteActive(path, 'kontakt') && (
-      <a
-        id="nav-cta"
-        href={withBase('kontakt')}
-        class="nav-cta"
-        aria-label="Zamów tort"
-      >Zamów</a>
-    )}
+    <div class="nav-actions">
+      {SOCIAL_LINKS.map((social) => (
+        <a
+          href={social.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="nav-social-btn"
+          aria-label={social.label}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d={social.iconPath} />
+          </svg>
+        </a>
+      ))}
+
+      {!isRouteActive(path, 'kontakt') && (
+        <a
+          id="nav-cta"
+          href={withBase('kontakt')}
+          class="nav-cta"
+          aria-label="Zamów tort"
+        >Zamów</a>
+      )}
+    </div>
   </div>
 </nav>
 <div id="nav-backdrop" class="nav-backdrop" aria-hidden="true"></div>
@@ -204,21 +240,66 @@ const path = Astro.url.pathname;
     color: var(--color-on-surface);
   }
 
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    flex-shrink: 0;
+  }
+
+  .nav-social-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-shrink: 0;
+    color: var(--color-on-surface-variant);
+    background: transparent;
+    border: 1px solid var(--color-outline-variant);
+    border-radius: var(--radius-xs);
+    text-decoration: none;
+    touch-action: manipulation;
+    transition: color 0.3s var(--ease-standard),
+                border-color 0.3s var(--ease-standard),
+                background 0.3s var(--ease-standard);
+  }
+
+  .nav-social-btn svg {
+    width: 1rem;
+    height: 1rem;
+    fill: currentColor;
+    flex-shrink: 0;
+  }
+
+  .nav-social-btn:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    background: rgba(255, 170, 248, 0.06);
+  }
+
   /* Right-side CTA button */
   .nav-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.25rem;
     flex-shrink: 0;
-    padding: 0.5rem 1.25rem;
+    margin-left: 0.25rem;
+    padding: 0 1.25rem;
     background: transparent;
     color: var(--color-primary);
     border: 1px solid var(--color-outline-variant);
-    border-radius: 0.125rem;
+    border-radius: var(--radius-xs);
     font-family: var(--font-family-body);
     font-size: 0.8125rem;
     font-weight: 600;
     letter-spacing: 0.04em;
+    line-height: 1;
     text-decoration: none;
-    transition: border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    touch-action: manipulation;
+    transition: border-color 0.3s var(--ease-standard),
+                background 0.3s var(--ease-standard);
   }
 
   .nav-cta:hover {
@@ -246,8 +327,14 @@ const path = Astro.url.pathname;
       display: none;
     }
 
+    .nav-actions {
+      order: 1;
+      margin-left: auto;
+    }
+
     .nav-hamburger {
       display: flex;
+      order: 2;
     }
 
     /* Hide the CTA button on mobile — it's accessible via the drawer */
@@ -262,6 +349,7 @@ const path = Astro.url.pathname;
       width: 75%;
       max-width: 320px;
       height: 100dvh;
+      z-index: 45;
       flex-direction: column;
       justify-content: center;
       gap: 2rem;
@@ -278,6 +366,13 @@ const path = Astro.url.pathname;
 
     .nav-link {
       font-size: 1rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-social-btn,
+    .nav-cta {
+      transition: none;
     }
   }
 </style>

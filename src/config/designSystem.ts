@@ -139,7 +139,7 @@ export const COLOR_TOKEN_GROUPS: readonly ColorTokenGroup[] = [
       {
         tokenName: 'on-surface-variant',
         cssVar: '--color-on-surface-variant',
-        usage: 'Editorial body prose, uppercase section eyebrows, resting nav & footer links',
+        usage: 'Editorial body prose, uppercase section eyebrows, resting nav links & social icons',
       },
       {
         tokenName: 'outline',
