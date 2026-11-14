@@ -209,7 +209,7 @@ export const BUTTON_VARIANTS: readonly ButtonVariantSpec[] = [
     inkVar: '--color-primary',
     borderVar: '--color-outline-variant',
     hoverNote: 'Compact ghost · subtle primary alpha tint on hover',
-    usage: 'Persistent desktop top-bar conversion action (hidden on /kontakt and mobile drawer)',
+    usage: 'Persistent top-bar conversion action across desktop and mobile (hidden on /kontakt)',
   },
   {
     id: 'channel',
