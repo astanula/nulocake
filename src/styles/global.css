@@ -189,6 +189,12 @@ body {
   --title-sm-mobile-min: 1.5rem;
   --title-sm-mobile-fluid: 3vw;
   --title-sm-mobile-max: 2.25rem;
+
+  /* Subpages — first section top offset (mobile < tablet < desktop) */
+  --subpage-top-offset-desktop: 4rem;
+  --subpage-top-offset-tablet: 3rem;
+  --subpage-top-offset-mobile: 2rem;
+  --subpage-top-offset: var(--subpage-top-offset-desktop);
 }
 
 .section-title-home {
@@ -204,6 +210,10 @@ body {
 }
 
 @media (max-width: 1024px) {
+  :root {
+    --subpage-top-offset: var(--subpage-top-offset-tablet);
+  }
+
   .section-title-home {
     font-size: clamp(var(--title-home-tablet-min), var(--title-home-tablet-fluid), var(--title-home-tablet-max));
   }
@@ -218,6 +228,10 @@ body {
 }
 
 @media (max-width: 768px) {
+  :root {
+    --subpage-top-offset: var(--subpage-top-offset-mobile);
+  }
+
   .section-title-home {
     font-size: clamp(var(--title-home-mobile-min), var(--title-home-mobile-fluid), var(--title-home-mobile-max));
   }

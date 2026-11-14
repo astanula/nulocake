@@ -150,6 +150,10 @@ import { withBase } from '../utils/withBase';
     padding: 4rem 2rem 4rem 4rem;
   }
 
+  .content-section:first-child {
+    padding-top: var(--subpage-top-offset);
+  }
+
   .content-section-inner {
     max-width: none;
     width: 100%;
@@ -287,6 +291,10 @@ import { withBase } from '../utils/withBase';
       padding: 2rem 1.5rem 3rem 1.5rem;
       justify-content: flex-start;
       align-items: center;
+    }
+
+    .content-section:first-child {
+      padding-top: var(--subpage-top-offset);
     }
 
     .steps-list li {

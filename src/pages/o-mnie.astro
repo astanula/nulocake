@@ -95,14 +95,14 @@ import { withBase } from '../utils/withBase';
     width: 100%;
     max-width: 1400px;
     margin: 0 auto;
-    padding: clamp(2.5rem, 6vw, 6rem) clamp(1.5rem, 5vw, 4rem) 0;
+    padding: var(--subpage-top-offset) clamp(1.5rem, 5vw, 4rem) 0;
     flex-shrink: 0;
   }
 
   .about-intro {
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-    align-items: center;
+    align-items: start;
     gap: clamp(2rem, 5vw, 5rem);
     padding-bottom: clamp(3.5rem, 8vw, 7rem);
   }
@@ -122,7 +122,6 @@ import { withBase } from '../utils/withBase';
   }
 
   .intro-heading {
-    line-height: 1.1;
     margin-bottom: 2rem;
   }
 
