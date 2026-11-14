@@ -2,7 +2,7 @@
 
 Section animations where each element's animation duration and start time are derived from a single unit: the **Word Unit (WU)**. All sections live on one **master timeline** measured in px (`PX_PER_WU` per WU). The master timeline is not scroll-driven: it is paused and played by time through **snap navigation** (see [Time-Driven Playback](#time-driven-playback-snap-navigation)).
 
-Code: `src/home/sectionTimeline.ts` (timeline construction), `src/home/snapNavigator.ts` (input and playback), `src/pages/index.astro` (Phase 1 intro, mount/teardown). Constants: `src/config/animation.ts`. Spec: `docs/superpowers/specs/2026-11-13-home-snap-navigation-design.md`.
+Code: `src/home/sectionTimeline.ts` (timeline construction), `src/home/snapNavigator.ts` (edge-gated input and playback), `src/pages/index.astro` (Phase 1 intro, Home mount/teardown), `src/pages/oferta.astro` (immediate Section 0, Oferta mount/teardown). Constants: `src/config/animation.ts`. Specs: `docs/superpowers/specs/2026-11-13-home-snap-navigation-design.md`, `docs/superpowers/specs/2026-11-14-oferta-snap-navigation-design.md`.
 
 ## Constants
 
@@ -12,12 +12,14 @@ Code: `src/home/sectionTimeline.ts` (timeline construction), `src/home/snapNavig
 | `DURGAP` | ≥ 0 | Fraction of the previous element's duration that elapses before the next element starts. `< 1` = elements overlap (e.g. `0.5` means next starts at 50% of previous). `1` = next starts exactly when previous finishes. `> 1` = visible pause between previous finishing and next starting (e.g. `1.5` means a gap equal to 50% of previous duration). |
 | `HOLD` | WU | Timeline length (in WU) between a section's intro and outro. Transitions seek across it instantly, so it has no visible effect. |
 | `FDUR_RATIO` | 0–1 | Fraction of element duration used for the filter/blur tween. E.g. `0.5` means blur clears in half the duration of the main animation. The filter tween runs in parallel with the main tween, starting at the same time. |
-| `MS_PER_WU` | milliseconds | Time-based equivalent of `PX_PER_WU`, used only for section 0's page-load intro animation. `element.duration = element.WU × MS_PER_WU`. |
+| `MS_PER_WU` | milliseconds | Time-based equivalent of `PX_PER_WU`, used only for section 0's page-load intro animation on Home (`/`). `element.duration = element.WU × MS_PER_WU`. |
 | `SNAP_MS_PER_WU` | milliseconds | **Transition speed**: playback time per WU of timeline length. Lower = faster. Applies to every transition and the footer dock slide. |
 | `SNAP_EASE` | GSAP ease | Ease of each played timeline segment. |
 | `TRIGGER_PX` | px | Vertical gesture distance (wheel or touch) needed to trigger a transition. |
 | `WHEEL_QUIET_MS` | milliseconds | Wheel silence that separates two gestures. |
 | `SCROLL_HINT_GAP_PX` | px | Min space between the active section's content and the scroll hint for the hint to show. |
+| `EDGE_EPSILON_PX` | px | Subpixel tolerance for top/bottom `window` scroll-edge detection. |
+| `EDGE_GUARD_MS` | milliseconds | Cooldown after native `window` scroll before a gesture or directional key can trigger a transition. |
 
 ## Element Weights
 
@@ -92,7 +94,7 @@ SW = IntroSpan + HoldSpan + OutroSpan
 
 Sections are placed **end-to-end with zero gap**. The moment one section's outro ends, the next section's intro begins.
 
-Only one section is ever visible at a time. A CSS class (`is-active`) controls `visibility`. The class switches at the exact boundary between sections.
+Only one section is ever visible at a time under `prefers-reduced-motion: no-preference`: inactive sections (`:not(.is-active)`) have `display: none`, while the active section (`.is-active`) has `display: flex; position: relative; min-height: 100dvh; height: auto; overflow: clip` so `document.documentElement.scrollHeight` matches the active section's natural height without creating an inner scroll container. At the exact boundary where `.is-active` switches to the incoming section, `window.scrollTo(0, 0)` runs synchronously so incoming headings and cascades always play from the top of the section.
 
 ### Forward (section A → section B)
 
@@ -192,20 +194,12 @@ activeIndex = index of the section whose range
 
 `is-active` is re-applied on every master timeline render, including instant seeks, so on jumps it switches directly from the source to the target section.
 
-## Section 0: Time-Based Intro
+## Section 0: Initial State & Optional Time-Based Intro
 
-Section 0 is the only section that does **not** have an intro or hold on the master timeline. Its lifecycle is:
+Section 0 is the only section that does **not** have an intro or hold on the master timeline:
 
-### Page Load: Time-Based Intro
-
-On page load, section 0 plays a one-time entrance animation using the **same WU weights, cascade logic, and DURGAP** as the other sections, but durations are in **milliseconds** instead of pixels:
-
-```
-element.duration = element.WU × MS_PER_WU
-element[i].start = element[i-1].start + element[i-1].duration × DURGAP
-```
-
-This is a standalone GSAP animation (`gsap.to()`), not part of the master timeline. It plays once per session (`window.hasSeenIntro`) and blocks input. After it finishes, section 0's inline styles are cleared (fully-visible state, its resting point at timeline position 0), the master timeline is built and snap navigation is mounted.
+- **Home (`/`, `src/pages/index.astro`):** On first visit per session (`window.hasSeenIntro` unset), section 0 plays a standalone time-based entrance animation (`gsap.to()`) using the same WU weights, cascade logic, and `DURGAP`, with durations in milliseconds (`element.duration = element.WU × MS_PER_WU`) while blocking input. Subsequent visits skip Phase 1 and mount snap navigation immediately.
+- **Oferta (`/oferta`, `src/pages/oferta.astro`):** Section 0 carries `.is-active` in server-rendered HTML with no load-time hiding animation, so content is immediately visible and interactive on load (including without JavaScript); snap navigation mounts directly at position `0`.
 
 ### Timeline Budget
 
@@ -252,8 +246,8 @@ The last section has no outro.
 
 A transition is a GSAP timeline of master timeline segments (`masterTl.tweenFromTo(a, b)`) and instant seeks (`masterTl.seek(x)`).
 
-- **Forward `from → to`:** seek `outroStart(from)` → play `outroStart(from) → outroEnd(from)` → if skipping sections, seek `sectionStart[to]` → play `sectionStart[to] → rest(to)`.
-- **Backward `from → to`:** play `rest(from) → sectionStart[from]` → if skipping sections, seek `outroEnd(to)` → play `outroEnd(to) → outroStart(to)` → seek `rest(to)`.
+- **Forward `from → to`:** seek `outroStart(from)` → play `outroStart(from) → outroEnd(from)` at current `window.scrollY` → at boundary, seek `sectionStart[to]`, switch `.is-active` to `to`, and reset `window.scrollTo(0, 0)` → play `sectionStart[to] → rest(to)`.
+- **Backward `from → to`:** play `rest(from) → sectionStart[from]` at current `window.scrollY` → at boundary, seek `outroEnd(to)`, switch `.is-active` to `to`, and reset `window.scrollTo(0, 0)` → play `outroEnd(to) → outroStart(to)` → seek `rest(to)`.
 
 Skipped sections are never shown: at the seek target they are already in their hidden state.
 
@@ -265,19 +259,23 @@ segment duration (s) = (|b − a| / PX_PER_WU) × SNAP_MS_PER_WU / 1000
 
 `SNAP_MS_PER_WU` is the single speed knob; it is independent of `MS_PER_WU` and `PX_PER_WU`.
 
-### Input
+### Edge-Gated Input
 
-- **Wheel / touch:** vertical distance is accumulated per gesture (one touch, or a run of wheel events without a `WHEEL_QUIET_MS` gap). Past `TRIGGER_PX`, one adjacent step fires and the rest of the gesture is ignored. Horizontal-dominant movement does not count.
-- **Keys:** `ArrowDown`/`PageDown`/`Space` next, `ArrowUp`/`PageUp`/`Shift+Space` previous, `Home`/`End` first/last.
+Sections never use inner scroll containers (`overflow-y: auto`). When the active section exceeds `100dvh`, the browser scrolls `window` natively first (`maxScroll = max(0, scrollHeight - innerHeight)`):
+
+- **Short sections (`maxScroll ≤ EDGE_EPSILON_PX`):** Both edges are immediately satisfied (`isAtEdge(±1) === true`), so the first wheel/touch gesture exceeding `TRIGGER_PX` or navigation key press triggers `goTo` immediately.
+- **Tall sections (`maxScroll > EDGE_EPSILON_PX`):**
+  - **Wheel / touch:** Vertical distance is accumulated per gesture (one touch, or a run of wheel events without a `WHEEL_QUIET_MS` gap) only when the gesture starts and stays settled (`now − lastNativeScroll ≥ EDGE_GUARD_MS`) at `isAtEdge(dir)`. Any gesture that scrolls `window` natively or occurs during the `EDGE_GUARD_MS` cooldown is marked as a native scroll gesture and cannot fire a transition; the **next** settled gesture at the edge triggers `goTo` past `TRIGGER_PX`. Horizontal-dominant movement (`|dx| > |dy|`) does not count.
+  - **Keys:** `ArrowDown`/`PageDown`/`Space` (`dir = 1`), `ArrowUp`/`PageUp`/`Shift+Space` (`dir = -1`) scroll `window` natively when `!isAtEdge(dir)` and trigger `goTo(current + dir)` when settled at `isAtEdge(dir)`. `Home`/`End` always jump to first/last. Ignored inside `input, textarea, select, [contenteditable]`; `Space` also ignores `button, summary, a, [role="button"]`.
 - **Section dots** (`[data-section-dot]`, `src/components/section-nav/SectionDots.astro`): click jumps to that section; `aria-current` moves to the destination when a transition starts. Hidden under reduced motion.
-- **Scroll hint** (`[data-scroll-hint]`, `src/components/stack-fade/ScrollHintArrow.astro`): click goes to the next section. Shown only while no transition runs, the active section is not the last, and its content ends at least `SCROLL_HINT_GAP_PX` above the hint (re-checked by a `ResizeObserver`). Spec: `docs/superpowers/specs/2026-11-13-section-dots-scroll-hint-design.md`.
-- Input is ignored (not queued) during a transition, during Phase 1, and while the mobile nav drawer is open.
+- **Scroll hint** (`[data-scroll-hint]`, `src/components/stack-fade/ScrollHintArrow.astro`): click goes to the next section. Shown only while no transition runs, the active section is not the last, and `sec.getBoundingClientRect().top + contentBottom + SCROLL_HINT_GAP_PX <= hint.getBoundingClientRect().top` (re-checked on transition completion, `ResizeObserver`, and `window` `scroll`). Spec: `docs/superpowers/specs/2026-11-13-section-dots-scroll-hint-design.md`.
+- **Transition lock:** While a transition runs (or while the mobile nav drawer `#nav-links.open` is open), `wheel` (excluding `ctrlKey` pinch-zoom) and single-finger vertical `touchmove` call `preventDefault()` so momentum cannot scroll the document mid-animation. Listeners stay in the bubble phase so `#design-system-tooltip` isolates its internal events via `stopPropagation()`.
 
 ### Page and Footer
 
-- While mounted, `html.home-snap-active` locks document scroll (`overflow: hidden`).
-- The footer sits in `.home-footer-dock` (fixed, below the viewport, `inert`). It slides in parallel with the last section's intro segment and is interactive only while the last section is active.
-- Under `prefers-reduced-motion: reduce`, snap navigation is not mounted: all sections are shown statically and the footer is in normal flow.
+- While mounted, `html.home-snap-active` applies `scrollbar-gutter: stable` and `overscroll-behavior-y: none` (allowing native `window` scrolling whenever the active section exceeds `100dvh`).
+- The footer sits in `.home-footer-dock` (fixed below the viewport, `inert`). It slides in parallel with the last section's intro segment and is interactive only while the last section is active.
+- Under `prefers-reduced-motion: reduce`, snap navigation is not mounted: all sections flow statically in document order, dots and scroll hint are hidden, and the footer sits statically in normal flow.
 
 ## GSAP Implementation Mapping
 

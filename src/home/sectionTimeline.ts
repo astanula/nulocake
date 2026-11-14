@@ -1,6 +1,8 @@
 /**
- * Master timeline of the v1 home page sections (word/blur-in cascade).
- * Spec: docs/superpowers/specs/2026-11-13-home-snap-navigation-design.md
+ * Master timeline of the v1 section pages (Home and Oferta word/blur-in cascade).
+ * Specs:
+ * - docs/superpowers/specs/2026-11-13-home-snap-navigation-design.md
+ * - docs/superpowers/specs/2026-11-14-oferta-snap-navigation-design.md
  *
  * Timeline units are px (PX_PER_WU per Word Unit). The timeline is created
  * paused and driven by time (see snapNavigator.ts), never by scroll.

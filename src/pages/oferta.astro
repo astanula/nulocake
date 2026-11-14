@@ -1,30 +1,46 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+import SectionDots from '../components/section-nav/SectionDots.astro';
+import ScrollHintArrow from '../components/stack-fade/ScrollHintArrow.astro';
 import CakeSizeGuide from '../components/offer/CakeSizeGuide.astro';
 import FlavorSelector from '../components/offer/FlavorSelector.astro';
 import { withBase } from '../utils/withBase';
+
+const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić', 'Dodatkowa oferta'];
 ---
 
-<Layout title="Oferta — Nulo Cake" description="Poznaj ofertę artystycznych tortów na zamówienie. Składniki, dekoracje, cennik i sposób zamawiania." isSubpage={true}>
-  <main class="oferta-container">
+<Layout title="Oferta — Nulo Cake" description="Poznaj ofertę artystycznych tortów na zamówienie. Składniki, dekoracje, cennik i sposób zamawiania.">
+  <Navigation />
+
+  <main id="hero-scroll-container" class="oferta-container" tabindex="-1">
+    <SectionDots labels={sectionLabels} class="oferta-dots" />
+
     <!-- Sekcja 1: Co kryje się w środku? -->
-    <section class="content-section">
+    <section class="oferta-section is-active" aria-label={sectionLabels[0]} tabindex="-1">
       <div class="content-section-inner">
-        <h2 class="display-lg section-title-lg section-heading">Co kryje się <span class="section-heading-accent">w środku</span>?</h2>
-        <p class="body-lg section-body">W moich tortach nie znajdziesz gotowych mieszanek – używam tylko prawdziwego masła, belgijskiej czekolady i świeżych owoców.</p>
-        <FlavorSelector />
-        <div class="section-cta-group">
+        <h2 class="display-lg section-title-lg section-heading">
+          <span class="word">Co</span> <span class="word">kryje</span> <span class="word">się</span> <span class="section-heading-accent"><span class="word">w</span> <span class="word">środku<span class="section-heading-punct">?</span></span></span>
+        </h2>
+        <p class="body-lg section-body blur-in">W moich tortach nie znajdziesz gotowych mieszanek – używam tylko prawdziwego masła, belgijskiej czekolady i świeżych owoców.</p>
+        <div class="oferta-block blur-in">
+          <FlavorSelector />
+        </div>
+        <div class="section-cta-group blur-in">
           <a href={withBase('kontakt')} class="btn-primary">Mam pytanie o smaki</a>
         </div>
       </div>
     </section>
 
     <!-- Sekcja 2: Jak dekoruję -->
-    <section class="content-section">
+    <section class="oferta-section" aria-label={sectionLabels[1]} tabindex="-1">
       <div class="content-section-inner">
-        <h2 class="display-lg section-title-lg section-heading">Jak dekoruję?</h2>
-        <p class="body-lg section-body">W moich projektach najczęściej wykorzystuję:</p>
-        <ul class="decor-list">
+        <h2 class="display-lg section-title-lg section-heading">
+          <span class="word">Jak</span> <span class="word">dekoruję?</span>
+        </h2>
+        <p class="body-lg section-body blur-in">W moich projektach najczęściej wykorzystuję:</p>
+        <ul class="decor-list blur-in">
           <li class="decor-item">
             <svg class="decor-check" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
               <path d="m3 12 6 6L21 6" />
@@ -62,36 +78,42 @@ import { withBase } from '../utils/withBase';
             <span>Napisy i Toppery</span>
           </li>
         </ul>
-        <p class="body-lg section-body">Każdy tort wyceniam indywidualnie, ponieważ stopień skomplikowania dekoracji (np. ręczne lepienie figurek) wpływa na czas mojej pracy i ostateczny koszt.</p>
-        <div class="section-cta-group">
+        <p class="body-lg section-body blur-in">Każdy tort wyceniam indywidualnie, ponieważ stopień skomplikowania dekoracji (np. ręczne lepienie figurek) wpływa na czas mojej pracy i ostateczny koszt.</p>
+        <div class="section-cta-group blur-in">
           <a href={withBase('kontakt')} class="btn-primary">Mam pytanie o dekoracje</a>
         </div>
       </div>
     </section>
 
     <!-- Sekcja 3: Przewodnik po porcjach i cennik -->
-    <section class="content-section">
+    <section class="oferta-section" aria-label={sectionLabels[2]} tabindex="-1">
       <div class="content-section-inner">
-        <h2 class="display-lg section-title-lg section-heading">Przewodnik po porcjach i cennik</h2>
-        <div class="portion-pricing">
+        <h2 class="display-lg section-title-lg section-heading">
+          <span class="word">Przewodnik</span> <span class="word">po</span> <span class="word">porcjach</span> <span class="word">i</span> <span class="word">cennik</span>
+        </h2>
+        <div class="portion-pricing blur-in">
           <p class="portion-price">
             <strong>22 <span class="portion-price-currency">zł</span></strong>
             <span class="portion-price-label">za porcję</span>
           </p>
           <p class="body-lg portion-price-note">Ostateczna cena tortu zależy od liczby porcji oraz stopnia skomplikowania dekoracji.</p>
         </div>
-        <CakeSizeGuide />
-        <div class="section-cta-group">
+        <div class="oferta-block blur-in">
+          <CakeSizeGuide />
+        </div>
+        <div class="section-cta-group blur-in">
           <a href={withBase('kontakt')} class="btn-primary">Zapytaj o rozmiar i cenę</a>
         </div>
       </div>
     </section>
 
     <!-- Sekcja 4: Jak zamówić wymarzony tort? -->
-    <section class="content-section">
+    <section class="oferta-section" aria-label={sectionLabels[3]} tabindex="-1">
       <div class="content-section-inner">
-        <h2 class="display-lg section-title-lg section-heading">Jak zamówić wymarzony tort?</h2>
-        <ol class="steps-list">
+        <h2 class="display-lg section-title-lg section-heading">
+          <span class="word">Jak</span> <span class="word">zamówić</span> <span class="word">wymarzony</span> <span class="word">tort?</span>
+        </h2>
+        <ol class="steps-list blur-in">
           <li>
             <h3 class="body-lg section-body">Podaj szczegóły (Zapytanie)</h3>
             <ul class="section-body body-lg">
@@ -107,56 +129,132 @@ import { withBase } from '../utils/withBase';
             <h3 class="body-lg section-body">Zamów i zarezerwuj termin</h3>
           </li>
         </ol>
-        <div class="section-cta-group">
+        <div class="section-cta-group blur-in">
           <a href={withBase('kontakt')} class="btn-primary">Zamów lub zadaj pytanie</a>
         </div>
       </div>
     </section>
 
     <!-- Sekcja 5: Coś więcej niż torty? -->
-    <section class="content-section">
+    <section class="oferta-section oferta-section--last" aria-label={sectionLabels[4]} tabindex="-1">
       <div class="content-section-inner">
-        <h2 class="display-lg section-title-lg section-heading">Coś więcej niż torty?</h2>
-        <p class="body-lg section-body">Opis co oprócz tortów jest w ofercie</p>
-        <ul class="section-body body-lg">
+        <h2 class="display-lg section-title-lg section-heading">
+          <span class="word">Coś</span> <span class="word">więcej</span> <span class="word">niż</span> <span class="word">torty?</span>
+        </h2>
+        <p class="body-lg section-body blur-in">Opis co oprócz tortów jest w ofercie</p>
+        <ul class="section-body body-lg blur-in">
           <li>Babeczki</li>
           <li>Zestawy prezentowe: Bento cake + babeczki</li>
           <li>Zapytaj jeśli potrzebujesz czegoś innego.</li>
         </ul>
-        <div class="section-cta-group">
+        <div class="section-cta-group blur-in">
           <a href={withBase('kontakt')} class="btn-primary">Zapytaj o dodatkową ofertę</a>
         </div>
       </div>
     </section>
+
+    <ScrollHintArrow class="oferta-hint" />
+
+    <div class="home-footer-dock" inert>
+      <Footer />
+    </div>
   </main>
 </Layout>
 
 <style>
-  .oferta-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    width: 100%;
+  :global(html.home-snap-active) {
+    scrollbar-gutter: stable;
+    overscroll-behavior-y: none;
   }
 
-  .content-section {
+  .oferta-container {
+    max-width: var(--layout-max-width);
+    margin: 0 auto;
+    width: 100%;
+    outline: none;
+    --home-footer-h: 0px;
+  }
+
+  .oferta-section {
     position: relative;
-    visibility: visible;
-    pointer-events: auto;
     min-height: 100dvh;
+    height: auto;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    padding: 4rem 2rem 4rem 4rem;
+    padding: calc(4.5rem + var(--subpage-top-offset)) 2rem 4.5rem 4rem;
+    outline: none;
   }
 
-  .content-section:first-child {
-    padding-top: var(--subpage-top-offset);
+  .oferta-section--last {
+    padding-bottom: calc(4.5rem + var(--home-footer-h));
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .oferta-section:not(.is-active) {
+      display: none;
+    }
+
+    .oferta-section.is-active {
+      display: flex;
+      overflow: clip;
+    }
+
+    .home-footer-dock {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 20;
+      transform: translateY(100%);
+    }
+  }
+
+  .oferta-dots {
+    position: fixed;
+    left: max(1.5rem, calc((100% - var(--layout-max-width)) / 2 + 1.5rem));
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+  }
+
+  .oferta-hint {
+    position: fixed;
+    left: 50%;
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    z-index: 4;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .oferta-section {
+      display: flex;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .oferta-dots,
+    .oferta-hint {
+      display: none;
+    }
   }
 
   .content-section-inner {
     max-width: none;
+    min-width: 0;
     width: 100%;
+  }
+
+  .oferta-block {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .word {
+    display: inline-block;
+    will-change: filter, transform, opacity;
+    transform-style: preserve-3d;
   }
 
   .section-heading {
@@ -165,6 +263,10 @@ import { withBase } from '../utils/withBase';
 
   .section-heading-accent {
     color: var(--color-primary);
+  }
+
+  .section-heading-punct {
+    color: var(--color-on-surface);
   }
 
   .section-body {
@@ -286,15 +388,33 @@ import { withBase } from '../utils/withBase';
     height: 1.5rem;
   }
 
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .oferta-section {
+      padding: calc(4.5rem + var(--subpage-top-offset)) 1.5rem 3.5rem 3.5rem;
+    }
+
+    .oferta-section--last {
+      padding-bottom: calc(3.5rem + var(--home-footer-h));
+    }
+
+    .oferta-dots {
+      left: 1rem;
+    }
+  }
+
   @media (max-width: 768px) {
-    .content-section {
-      padding: 2rem 1.5rem 3rem 1.5rem;
+    .oferta-section {
+      padding: calc(4.5rem + var(--subpage-top-offset)) 1.5rem 3.5rem 2.25rem;
       justify-content: flex-start;
       align-items: center;
     }
 
-    .content-section:first-child {
-      padding-top: var(--subpage-top-offset);
+    .oferta-section--last {
+      padding-bottom: calc(3.5rem + var(--home-footer-h));
+    }
+
+    .oferta-dots {
+      left: 0.375rem;
     }
 
     .steps-list li {
@@ -302,3 +422,85 @@ import { withBase } from '../utils/withBase';
     }
   }
 </style>
+
+<script>
+  import gsap from 'gsap';
+  import { computeSectionData, buildSectionTimeline } from '../home/sectionTimeline';
+  import { mountSnapNavigator } from '../home/snapNavigator';
+
+  declare global {
+    interface Window {
+      ofertaPageLoadListenerAdded?: boolean;
+      ofertaPageBeforeSwapListenerAdded?: boolean;
+      ofertaMotionQueryListenerAdded?: boolean;
+    }
+  }
+
+  const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let teardownSnap: (() => void) | null = null;
+
+  const isOfertaPage = () => document.querySelector('.oferta-section') !== null;
+
+  function showStaticOferta() {
+    document.querySelector('.home-footer-dock')?.removeAttribute('inert');
+    document.querySelectorAll<HTMLElement>('.oferta-section').forEach((sec) => {
+      gsap.set(sec, { clearProps: 'all' });
+    });
+    document.querySelectorAll<HTMLElement>('.oferta-section .word, .oferta-section .blur-in').forEach((el) => {
+      gsap.set(el, { clearProps: 'all' });
+    });
+  }
+
+  function stopOfertaAnimation() {
+    teardownSnap?.();
+    teardownSnap = null;
+  }
+
+  function initOfertaPage() {
+    const root = document.getElementById('hero-scroll-container');
+    const sections = gsap.utils.toArray<HTMLElement>('.oferta-section');
+
+    if (!root || sections.length === 0) return;
+
+    stopOfertaAnimation();
+
+    if (motionQuery.matches) {
+      showStaticOferta();
+      return;
+    }
+
+    sections.forEach((sec, i) => sec.classList.toggle('is-active', i === 0));
+    const layout = computeSectionData(sections);
+    layout.sectionData[0].elements.forEach((elem) => {
+      gsap.set(elem.el, { clearProps: 'all' });
+    });
+
+    teardownSnap = mountSnapNavigator(root, buildSectionTimeline(layout));
+  }
+
+  if (!window.ofertaPageLoadListenerAdded) {
+    document.addEventListener('astro:page-load', initOfertaPage);
+    window.ofertaPageLoadListenerAdded = true;
+  }
+
+  if (!window.ofertaPageBeforeSwapListenerAdded) {
+    document.addEventListener('astro:before-swap', () => {
+      if (!isOfertaPage()) return;
+      stopOfertaAnimation();
+    });
+    window.ofertaPageBeforeSwapListenerAdded = true;
+  }
+
+  if (!window.ofertaMotionQueryListenerAdded) {
+    motionQuery.addEventListener('change', (e) => {
+      if (!isOfertaPage()) return;
+      if (e.matches) {
+        stopOfertaAnimation();
+        showStaticOferta();
+      } else {
+        initOfertaPage();
+      }
+    });
+    window.ofertaMotionQueryListenerAdded = true;
+  }
+</script>

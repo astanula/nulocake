@@ -48,24 +48,15 @@ const {
     )}
 
     <script>
-      const basePath = import.meta.env.BASE_URL.replace(/\/?$/, '/').replace(/\/$/, '');
-
       function updateScrollLayout() {
-        const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
-        const isSubpage = basePath
-          ? currentPath !== basePath
-          : currentPath !== '/' && currentPath !== '';
-        if (isSubpage) {
-          document.body.classList.add('scroll-layout-active');
-        } else {
-          document.body.classList.remove('scroll-layout-active');
-        }
-
-        if (window.location.pathname.includes('/galeria')) {
-          document.body.classList.add('gallery-page-active');
-        } else {
-          document.body.classList.remove('gallery-page-active');
-        }
+        document.body.classList.toggle(
+          'scroll-layout-active',
+          Boolean(document.querySelector('.scroll-container')),
+        );
+        document.body.classList.toggle(
+          'gallery-page-active',
+          window.location.pathname.includes('/galeria'),
+        );
       }
 
       if (typeof document !== 'undefined') {

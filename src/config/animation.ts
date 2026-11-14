@@ -16,6 +16,8 @@ export const SNAP_EASE      = 'none'; // Ease applied to each played segment
 export const TRIGGER_PX     = 60;     // Vertical gesture distance needed to trigger a transition
 export const WHEEL_QUIET_MS = 150;    // Wheel silence that separates two gestures
 export const SCROLL_HINT_GAP_PX = 8;  // Min space between section content and the scroll hint
+export const EDGE_EPSILON_PX = 2;     // Subpixel scroll-edge tolerance
+export const EDGE_GUARD_MS  = 180;    // Cooldown after native window scroll before a gesture can trigger a transition
 
 // ── Visual Parameters ────────────────────────────────
 export const FDUR_RATIO = 1.0; // Filter duration = this × element duration

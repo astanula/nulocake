@@ -1,11 +1,14 @@
 /**
- * Snap section navigation for the v1 home page.
- * Spec: docs/superpowers/specs/2026-11-13-home-snap-navigation-design.md
- * Dots and scroll hint: docs/superpowers/specs/2026-11-13-section-dots-scroll-hint-design.md
+ * Snap section navigation with unified edge-gated page scroll (Home v1 & Oferta v1).
+ * Specs:
+ * - docs/superpowers/specs/2026-11-13-home-snap-navigation-design.md
+ * - docs/superpowers/specs/2026-11-13-section-dots-scroll-hint-design.md
+ * - docs/superpowers/specs/2026-11-14-oferta-snap-navigation-design.md
  *
- * Input only requests a transition (one wheel/touch gesture past TRIGGER_PX,
- * or a key press). The transition then plays segments of the paused master
- * timeline by time, at SNAP_MS_PER_WU, to the target section's resting point.
+ * Input only requests a transition (one wheel/touch gesture past TRIGGER_PX at
+ * the active section's scroll edge, or a key press). The transition then plays
+ * segments of the paused master timeline by time, at SNAP_MS_PER_WU, to the
+ * target section's resting point.
  */
 import gsap from 'gsap';
 import {
@@ -15,8 +18,12 @@ import {
   TRIGGER_PX,
   WHEEL_QUIET_MS,
   SCROLL_HINT_GAP_PX,
+  EDGE_EPSILON_PX,
+  EDGE_GUARD_MS,
 } from '../config/animation';
 import type { SectionTimeline } from './sectionTimeline';
+
+type Dir = 1 | -1;
 
 const PAGE_LOCK_CLASS = 'home-snap-active';
 
@@ -24,6 +31,13 @@ const isMenuOpen = () => !!document.getElementById('nav-links')?.classList.conta
 
 const wheelDeltaPx = (e: WheelEvent) =>
   e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1);
+
+const maxScroll = () => Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+
+const isAtEdge = (dir: Dir) =>
+  dir > 0
+    ? maxScroll() - window.scrollY <= EDGE_EPSILON_PX
+    : window.scrollY <= EDGE_EPSILON_PX;
 
 /** Playback time (s) of a master timeline segment; depends only on its length. */
 const segmentDuration = (a: number, b: number) =>
@@ -40,18 +54,35 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
 
   let current = 0;
   let shown = -1;
+  let activeOverride: number | null = null;
   let transition: gsap.core.Timeline | null = null;
+  let lastScrollY = window.scrollY;
+  let lastNativeScroll = -Infinity;
   // A gesture is one touch, or a run of wheel events without a WHEEL_QUIET_MS gap.
-  const wheel = { last: -Infinity, y: 0, done: false };
-  const touch = { x: 0, y: 0, done: true };
+  const wheel = { last: -Infinity, y: 0, scrolled: false, done: false };
+  const touch = {
+    x: 0,
+    y: 0,
+    startScrollY: 0,
+    atTop: false,
+    atBottom: false,
+    scrolled: false,
+    done: true,
+    multi: false,
+  };
 
   const locked = () => !!transition || isMenuOpen();
+
+  function resetScrollTop() {
+    window.scrollTo(0, 0);
+    lastScrollY = window.scrollY;
+  }
 
   // ── State ──────────────────────────────────────────
 
   /** Derives `is-active` from the master timeline position. */
   function applyActive() {
-    const index = activeIndexAt(master.time());
+    const index = activeOverride ?? activeIndexAt(master.time());
     if (index === shown) return;
     shown = index;
     sections.forEach((sec, i) => sec.classList.toggle('is-active', i === index));
@@ -69,12 +100,10 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
 
   /** Content ends above the hint. Layout offsets ignore transforms. */
   function fitsAboveHint(sec: HTMLElement) {
-    const parent = sec.offsetParent;
-    if (!hint || !parent) return false;
+    if (!hint || !sec.getClientRects().length) return false;
     const contentBottom = Array.from(sec.children as HTMLCollectionOf<HTMLElement>)
       .reduce((max, el) => Math.max(max, el.offsetTop + el.offsetHeight), 0);
-    const secTop = parent.getBoundingClientRect().top + sec.offsetTop;
-    return secTop + contentBottom + SCROLL_HINT_GAP_PX <= hint.getBoundingClientRect().top;
+    return sec.getBoundingClientRect().top + contentBottom + SCROLL_HINT_GAP_PX <= hint.getBoundingClientRect().top;
   }
 
   function setHint(visible: boolean) {
@@ -97,12 +126,15 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
     const focusWasInside = sections[from].contains(focused) || (from === last && !!dock?.contains(focused));
     const focusWasOnHint = !!hint?.contains(focused);
     current = to;
+    activeOverride = from;
     setDots(to);
     setHint(false);
 
     const tl = gsap.timeline({
       onComplete: () => {
         transition = null;
+        activeOverride = null;
+        applyActive();
         updateHint();
         if (focusWasInside || (focusWasOnHint && hint?.inert)) sections[to].focus({ preventScroll: true });
         // Hiding the hint (inert) dropped its focus; give it back if it is shown again.
@@ -110,6 +142,12 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
       },
     });
     const seek = (pos: number) => tl.call(() => { master.seek(pos); applyActive(); });
+    const enter = (pos: number) => tl.call(() => {
+      activeOverride = to;
+      master.seek(pos);
+      applyActive();
+      resetScrollTop();
+    });
     const play = (a: number, b: number) =>
       tl.add(master.tweenFromTo(a, b, { duration: segmentDuration(a, b), ease: SNAP_EASE }));
     // Runs in parallel with the segment added just before it.
@@ -120,13 +158,13 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
     if (to > from) {
       seek(outroStart(from));
       play(outroStart(from), outroEnd(from));
-      if (to > from + 1) seek(sectionStarts[to]);
+      enter(sectionStarts[to]);
       play(sectionStarts[to], rest(to));
       if (to === last) slideDock(true, sectionStarts[to], rest(to));
     } else {
       play(rest(from), sectionStarts[from]);
       if (from === last) slideDock(false, rest(from), sectionStarts[from]);
-      if (to < from - 1) seek(outroEnd(to));
+      enter(outroEnd(to));
       play(outroEnd(to), outroStart(to));
       seek(rest(to));
     }
@@ -143,77 +181,142 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
 
   // ── Input ──────────────────────────────────────────
 
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    if (y !== lastScrollY) {
+      lastScrollY = y;
+      if (!transition) {
+        lastNativeScroll = performance.now();
+        touch.scrolled = true;
+      }
+    }
+    updateHint();
+  }, { passive: true, signal });
+
   window.addEventListener('wheel', (e) => {
     const now = performance.now();
     if (now - wheel.last >= WHEEL_QUIET_MS) {
       wheel.y = 0;
+      wheel.scrolled = false;
       wheel.done = false;
     }
     wheel.last = now;
-    if (wheel.done) return;
+
     // ctrl + wheel is pinch-zoom on trackpads.
-    if (locked() || e.ctrlKey) {
+    if (locked()) {
+      if (!e.ctrlKey && e.cancelable) e.preventDefault();
+      wheel.done = true;
+      return;
+    }
+    if (wheel.done || wheel.scrolled) return;
+    if (e.ctrlKey) {
       wheel.done = true;
       return;
     }
     if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
-    wheel.y += wheelDeltaPx(e);
+    const dy = wheelDeltaPx(e);
+    if (dy === 0) return;
+    const dir: Dir = dy > 0 ? 1 : -1;
+    if (!isAtEdge(dir) || now - lastNativeScroll < EDGE_GUARD_MS) {
+      wheel.scrolled = true;
+      return;
+    }
+    wheel.y += dy;
     wheel.done = triggerByDistance(wheel.y);
-  }, { passive: true, signal });
+  }, { passive: false, signal });
 
   window.addEventListener('touchstart', (e) => {
     if (e.touches.length > 1) {
+      touch.multi = true;
       touch.done = true;
       return;
     }
+    const now = performance.now();
+    const settled = now - lastNativeScroll >= EDGE_GUARD_MS;
+    touch.multi = false;
     touch.x = e.touches[0].clientX;
     touch.y = e.touches[0].clientY;
+    touch.startScrollY = window.scrollY;
+    touch.atTop = settled && isAtEdge(-1);
+    touch.atBottom = settled && isAtEdge(1);
+    touch.scrolled = false;
     touch.done = locked();
   }, { passive: true, signal });
 
   window.addEventListener('touchmove', (e) => {
-    if (touch.done) return;
-    if (locked() || e.touches.length > 1) {
+    if (e.touches.length > 1) {
+      touch.multi = true;
       touch.done = true;
       return;
     }
+    if (touch.multi) return;
+
     const dx = touch.x - e.touches[0].clientX;
     const dy = touch.y - e.touches[0].clientY;
-    if (Math.abs(dx) > Math.abs(dy)) return;
+    const vertical = Math.abs(dy) >= Math.abs(dx);
+
+    if (locked()) {
+      if (vertical && e.cancelable) e.preventDefault();
+      touch.done = true;
+      return;
+    }
+
+    if (touch.done || touch.scrolled) return;
+    if (window.scrollY !== touch.startScrollY) {
+      touch.scrolled = true;
+      return;
+    }
+    if (!vertical || Math.abs(dy) <= TRIGGER_PX) return;
+
+    const dir: Dir = dy > 0 ? 1 : -1;
+    const startedAtEdge = dir > 0 ? touch.atBottom : touch.atTop;
+    if (!startedAtEdge || !isAtEdge(dir)) {
+      touch.scrolled = true;
+      return;
+    }
     touch.done = triggerByDistance(dy);
-  }, { passive: true, signal });
+    if (locked() && e.cancelable) e.preventDefault();
+  }, { passive: false, signal });
 
   document.addEventListener('keydown', (e) => {
     if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || isMenuOpen()) return;
     const el = e.target as HTMLElement;
-    if (el.isContentEditable || el.closest?.('input, textarea, select')) return;
+    if (el.isContentEditable || el.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) return;
 
-    let target: number;
+    if (e.key === 'Home' || e.key === 'End') {
+      e.preventDefault();
+      goTo(e.key === 'Home' ? 0 : last);
+      return;
+    }
+
+    let dir: Dir | 0 = 0;
     switch (e.key) {
       case 'ArrowDown':
       case 'PageDown':
-        target = current + 1;
+        dir = 1;
         break;
       case 'ArrowUp':
       case 'PageUp':
-        target = current - 1;
-        break;
-      case 'Home':
-        target = 0;
-        break;
-      case 'End':
-        target = last;
+        dir = -1;
         break;
       case ' ':
-        if (el.closest?.('button, [role="button"]')) return;
-        target = current + (e.shiftKey ? -1 : 1);
+        if (el.closest?.('button, summary, a, [role="button"]')) return;
+        dir = e.shiftKey ? -1 : 1;
         break;
       default:
         return;
     }
 
+    if (transition) {
+      e.preventDefault();
+      return;
+    }
+    if (!isAtEdge(dir)) return;
+
     e.preventDefault();
-    goTo(target);
+    if (performance.now() - lastNativeScroll >= EDGE_GUARD_MS) {
+      goTo(current + dir);
+    }
   }, { signal });
 
   dots.forEach((dot) => {
@@ -241,7 +344,8 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
   // ── Initial state ──────────────────────────────────
 
   document.documentElement.classList.add(PAGE_LOCK_CLASS);
-  window.scrollTo(0, 0);
+  resetScrollTop();
+  lastNativeScroll = -Infinity;
   if (dock) gsap.set(dock, { y: 0, yPercent: 100 });
   master.eventCallback('onUpdate', applyActive);
   master.seek(0);
@@ -252,6 +356,7 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
   return () => {
     transition?.kill();
     transition = null;
+    activeOverride = null;
     master.kill();
     controller.abort();
     footerObserver?.disconnect();
