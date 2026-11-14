@@ -2,6 +2,7 @@
 import logo from '../assets/nulocake logo.svg';
 import { Image } from 'astro:assets';
 import { withBase } from '../utils/withBase';
+import DesignSystemTooltip from './DesignSystemTooltip.astro';
 ---
 <footer class="footer">
   <div class="footer-inner">
@@ -18,8 +19,11 @@ import { withBase } from '../utils/withBase';
   </div>
 
   <div class="footer-bottom">
-    <p class="footer-copy">&copy; 2026 Nulo Cake. The Digital Gallery of Edible Art.</p>
+    <p class="footer-copy">
+      <span class="footer-copy-trigger" data-ds-trigger>&copy; 2026 Nulo Cake.</span> The Digital Gallery of Edible Art.
+    </p>
   </div>
+  <DesignSystemTooltip />
 </footer>
 
 <style>
@@ -28,14 +32,14 @@ import { withBase } from '../utils/withBase';
     margin-top: auto;
     padding: 1.75rem 2rem 1rem;
     background: var(--color-background);
-    border-top: 1px solid rgba(68, 66, 65, 0.15);
+    border-top: 1px solid var(--ghost-border);
   }
 
   .footer-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    max-width: 1400px;
+    max-width: var(--layout-max-width);
     margin: 0 auto;
     padding-bottom: 1.125rem;
   }
@@ -78,10 +82,10 @@ import { withBase } from '../utils/withBase';
   }
 
   .footer-bottom {
-    max-width: 1400px;
+    max-width: var(--layout-max-width);
     margin: 0 auto;
     padding-top: 0.875rem;
-    border-top: 1px solid rgba(68, 66, 65, 0.15);
+    border-top: 1px solid var(--ghost-border);
   }
 
   .footer-copy {
@@ -89,6 +93,11 @@ import { withBase } from '../utils/withBase';
     font-size: 0.75rem;
     color: var(--color-outline);
     letter-spacing: 0.02em;
+  }
+
+  .footer-copy-trigger {
+    color: inherit;
+    cursor: inherit;
   }
 
   @media (max-width: 768px) {

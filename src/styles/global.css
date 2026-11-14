@@ -55,48 +55,99 @@ body {
 }
 
 /* ──────────────────────────────────────────────
+   TYPOGRAPHY, LAYOUT & MATERIALITY TOKENS
+   ────────────────────────────────────────────── */
+:root {
+  /* Type scale */
+  --type-display-lg-size: clamp(2.5rem, 5vw, 4rem);
+  --type-display-lg-weight: 700;
+  --type-display-lg-leading: 1.05;
+  --type-display-lg-tracking: -0.02em;
+
+  --type-display-sm-size: clamp(1.5rem, 3vw, 2.25rem);
+  --type-display-sm-weight: 600;
+  --type-display-sm-leading: 1.1;
+  --type-display-sm-tracking: -0.02em;
+
+  --type-title-lg-size: clamp(1.125rem, 2vw, 1.375rem);
+  --type-title-lg-weight: 600;
+  --type-title-lg-leading: 1.4;
+
+  --type-body-lg-size: 1rem;
+  --type-body-lg-weight: 400;
+  --type-body-lg-leading: 1.7;
+  --prose-max-width: 65ch;
+
+  --type-label-md-size: 0.75rem;
+  --type-label-md-weight: 600;
+  --type-label-md-tracking: 0.1em;
+
+  /* Button geometry & states */
+  --btn-padding-y: 0.875rem;
+  --btn-padding-x: 1.75rem;
+  --btn-font-size: 0.875rem;
+  --btn-font-weight: 600;
+  --btn-hover-scale: 1.02;
+  --btn-active-scale: 0.98;
+
+  /* Layout, radii, materiality & motion */
+  --layout-max-width: 1400px;
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-pill: 9999px;
+  --glass-bg: rgba(19, 19, 19, 0.6);
+  --glass-blur: 24px;
+  --ghost-border: rgba(68, 66, 65, 0.15);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 3px;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ──────────────────────────────────────────────
    TYPOGRAPHY SYSTEM
    ────────────────────────────────────────────── */
 .display-lg {
   font-family: var(--font-family-display);
-  font-weight: 700;
-  font-size: clamp(2.5rem, 5vw, 4rem);
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  font-weight: var(--type-display-lg-weight);
+  font-size: var(--type-display-lg-size);
+  line-height: var(--type-display-lg-leading);
+  letter-spacing: var(--type-display-lg-tracking);
   color: var(--color-on-surface);
 }
 
 .display-sm {
   font-family: var(--font-family-display);
-  font-weight: 600;
-  font-size: clamp(1.5rem, 3vw, 2.25rem);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  font-weight: var(--type-display-sm-weight);
+  font-size: var(--type-display-sm-size);
+  line-height: var(--type-display-sm-leading);
+  letter-spacing: var(--type-display-sm-tracking);
   color: var(--color-on-surface);
 }
 
 .title-lg {
   font-family: var(--font-family-body);
-  font-weight: 600;
-  font-size: clamp(1.125rem, 2vw, 1.375rem);
-  line-height: 1.4;
+  font-weight: var(--type-title-lg-weight);
+  font-size: var(--type-title-lg-size);
+  line-height: var(--type-title-lg-leading);
 }
 
 .body-lg {
   font-family: var(--font-family-body);
-  font-weight: 400;
-  font-size: 1rem;
-  line-height: 1.7;
+  font-weight: var(--type-body-lg-weight);
+  font-size: var(--type-body-lg-size);
+  line-height: var(--type-body-lg-leading);
   color: var(--color-on-surface-variant);
-  max-width: 65ch;
+  max-width: var(--prose-max-width);
 }
 
 .label-md {
   font-family: var(--font-family-body);
-  font-weight: 600;
-  font-size: 0.75rem;
+  font-weight: var(--type-label-md-weight);
+  font-size: var(--type-label-md-size);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--type-label-md-tracking);
   color: var(--color-on-surface-variant);
 }
 
@@ -195,57 +246,57 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.875rem 1.75rem;
+  padding: var(--btn-padding-y) var(--btn-padding-x);
   background: linear-gradient(135deg, var(--color-primary-container), var(--color-primary-gradient-end));
   color: var(--color-on-primary);
   font-family: var(--font-family-body);
-  font-weight: 600;
-  font-size: 0.875rem;
+  font-weight: var(--btn-font-weight);
+  font-size: var(--btn-font-size);
   border: none;
-  border-radius: 0.125rem;
+  border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s var(--ease-standard),
+              filter 0.3s var(--ease-standard);
   text-decoration: none;
   will-change: transform;
 }
 
 .btn-primary:hover {
-  transform: scale(1.02);
+  transform: scale(var(--btn-hover-scale));
   filter: brightness(1.1);
 }
 
 .btn-primary:active {
-  transform: scale(0.98) translateY(1px);
+  transform: scale(var(--btn-active-scale)) translateY(1px);
 }
 
 .btn-secondary {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.875rem 1.75rem;
+  padding: var(--btn-padding-y) var(--btn-padding-x);
   background: transparent;
   color: var(--color-primary);
   font-family: var(--font-family-body);
-  font-weight: 600;
-  font-size: 0.875rem;
+  font-weight: var(--btn-font-weight);
+  font-size: var(--btn-font-size);
   border: 1px solid var(--color-outline-variant);
-  border-radius: 0.125rem;
+  border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s var(--ease-standard),
+              border-color 0.3s var(--ease-standard),
+              color 0.3s var(--ease-standard);
   text-decoration: none;
   will-change: transform;
 }
 
 .btn-secondary:hover {
   border-color: var(--color-primary);
-  transform: scale(1.02);
+  transform: scale(var(--btn-hover-scale));
 }
 
 .btn-secondary:active {
-  transform: scale(0.98) translateY(1px);
+  transform: scale(var(--btn-active-scale)) translateY(1px);
 }
 
 /* ──────────────────────────────────────────────
@@ -298,9 +349,9 @@ body {
    FOCUS RINGS
    ────────────────────────────────────────────── */
 :focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 3px;
-  border-radius: 2px;
+  outline: var(--focus-ring-width) solid var(--color-primary);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-xs);
 }
 
 .btn-primary:focus-visible,

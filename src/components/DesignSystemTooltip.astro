@@ -1,0 +1,1225 @@
+---
+import {
+  BUTTON_VARIANTS,
+  COLOR_TOKEN_GROUPS,
+  ELEVATION_STRIP_VARS,
+  MATERIALITY_RULES,
+  RESPONSIVE_TIERS,
+  SECTION_TITLE_SCALES,
+  TYPOGRAPHY_SCALE,
+} from '../config/designSystem';
+
+const totalColorTokens = COLOR_TOKEN_GROUPS.reduce((sum, group) => sum + group.tokens.length, 0);
+---
+
+<div
+  id="design-system-tooltip"
+  class="ds-tooltip"
+  popover="manual"
+  role="dialog"
+  aria-label="Noir Patisserie Design System Specification"
+  data-ds-tooltip
+>
+  <header class="ds-header">
+    <div class="ds-header-titles">
+      <p class="ds-eyebrow">Design System Specification · Live Token Inspector</p>
+      <h2 class="ds-title">Noir Patisserie — UI Architecture &amp; Tokens</h2>
+    </div>
+    <div class="ds-header-meta">
+      <span class="ds-viewport-pill" data-ds-viewport aria-live="polite"></span>
+      <span class="ds-dismiss-hint">Click token value to copy · Click outside or press Esc to dismiss</span>
+    </div>
+  </header>
+
+  <div class="ds-bento">
+    <!-- LEFT COLUMN: 01 COLOR PALETTE -->
+    <section class="ds-card ds-card--colors" aria-labelledby="ds-heading-colors">
+      <div class="ds-section-head">
+        <h3 id="ds-heading-colors" class="ds-section-title">
+          01 · Color Palette &amp; Semantic Tokens ({totalColorTokens})
+        </h3>
+        <code class="ds-source-tag">global.css (@theme)</code>
+      </div>
+
+      {COLOR_TOKEN_GROUPS.map((group) => (
+        <div class="ds-color-group">
+          <h4 class="ds-group-label">
+            {group.title} ({group.tokens.length})
+          </h4>
+          <ul class="ds-color-list">
+            {group.tokens.map((token) => (
+              <li class="ds-color-row">
+                <span
+                  class:list={['ds-swatch', { 'ds-swatch--keyline': token.needsKeyline }]}
+                  style={`background: var(${token.cssVar});`}
+                  aria-hidden="true"
+                />
+                <button
+                  type="button"
+                  class="ds-hex-btn"
+                  data-ds-copy-var={token.cssVar}
+                  title={`Click to copy resolved value of ${token.cssVar}`}
+                >
+                  <code data-ds-var={token.cssVar} />
+                </button>
+                <code class="ds-token-name" title={token.cssVar}>
+                  {token.tokenName}
+                </code>
+                <span class="ds-usage">{token.usage}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </section>
+
+    <!-- RIGHT COLUMN: 02 BUTTONS + 03 TYPOGRAPHY + 04 MATERIALITY + 05 RESPONSIVE -->
+    <div class="ds-right-stack">
+      <!-- 02 BUTTON VARIANTS -->
+      <section class="ds-card" aria-labelledby="ds-heading-buttons">
+        <div class="ds-section-head">
+          <h3 id="ds-heading-buttons" class="ds-section-title">
+            02 · Button Variants ({BUTTON_VARIANTS.length} Live Specimens)
+          </h3>
+          <code class="ds-source-tag" data-ds-btn-geometry />
+        </div>
+
+        <ul class="ds-btn-list">
+          {BUTTON_VARIANTS.map((variant) => (
+            <li class="ds-btn-row">
+              <div class="ds-btn-specimen-cell">
+                {variant.id === 'primary' && (
+                  <button type="button" class="btn-primary ds-specimen-btn">
+                    {variant.specimenLabel}
+                  </button>
+                )}
+                {variant.id === 'secondary' && (
+                  <button type="button" class="btn-secondary ds-specimen-btn">
+                    {variant.specimenLabel}
+                  </button>
+                )}
+                {variant.id === 'nav-cta' && (
+                  <button type="button" class="ds-specimen-nav-cta">
+                    {variant.specimenLabel}
+                  </button>
+                )}
+                {variant.id === 'channel' && (
+                  <button type="button" class="ds-specimen-channel">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" />
+                    </svg>
+                    <span>{variant.specimenLabel}</span>
+                  </button>
+                )}
+                {variant.id === 'icon-circle' && (
+                  <div class="ds-specimen-icon-pair">
+                    <button type="button" class="ds-specimen-circle" aria-label="Previous specimen">
+                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="m15 18-6-6 6-6" />
+                      </svg>
+                    </button>
+                    <button type="button" class="ds-specimen-circle" aria-label="Next specimen">
+                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="m9 18 6-6-6-6" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div class="ds-btn-meta">
+                <div class="ds-btn-meta-top">
+                  <strong class="ds-item-title">{variant.name}</strong>
+                  <code class="ds-selector">{variant.selector}</code>
+                </div>
+                <p
+                  class="ds-token-recipe"
+                  data-ds-btn-recipe
+                  data-fill-vars={variant.fillVars.join(',')}
+                  data-ink-var={variant.inkVar}
+                  data-border-var={variant.borderVar ?? ''}
+                  data-hover-note={variant.hoverNote}
+                />
+                <p class="ds-usage">{variant.usage}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <!-- 03 TYPOGRAPHY & FLUID TYPE SCALE -->
+      <section class="ds-card" aria-labelledby="ds-heading-type">
+        <div class="ds-section-head">
+          <h3 id="ds-heading-type" class="ds-section-title">03 · Typography &amp; Fluid Type Scale</h3>
+          <code class="ds-source-tag" data-ds-font-families />
+        </div>
+
+        <ul class="ds-type-list">
+          {TYPOGRAPHY_SCALE.map((entry) => (
+            <li class="ds-type-row">
+              <div class="ds-type-specimen-wrap">
+                {entry.id === 'display-lg' ? (
+                  <span class="ds-specimen-display-lg">
+                    Display <em class="accent-italic">Accent</em>
+                  </span>
+                ) : entry.id === 'display-sm' ? (
+                  <span class="ds-specimen-display-sm">{entry.label}</span>
+                ) : entry.id === 'title-lg' ? (
+                  <span class="ds-specimen-title-lg">{entry.label}</span>
+                ) : entry.id === 'label-md' ? (
+                  <span class="label-md ds-specimen-label">{entry.label}</span>
+                ) : (
+                  <span class="ds-specimen-body">{entry.label} — Editorial copy</span>
+                )}
+                <code class="ds-selector">{entry.selector}</code>
+              </div>
+              <div class="ds-type-details">
+                <code
+                  class="ds-type-formula"
+                  data-ds-type-spec
+                  data-family-var={entry.familyVar}
+                  data-size-var={entry.sizeVar}
+                  data-weight-var={entry.weightVar}
+                  data-leading-var={entry.leadingVar ?? ''}
+                  data-tracking-var={entry.trackingVar ?? ''}
+                  data-extra-var={entry.extraVar ?? ''}
+                />
+                <span class="ds-usage">{entry.usage}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        <div class="ds-subsection">
+          <h4 class="ds-group-label">Responsive Section Title Clamps (:root)</h4>
+          <ul class="ds-clamp-list">
+            {SECTION_TITLE_SCALES.map((scale) => (
+              <li class="ds-clamp-row">
+                <span class="ds-clamp-label">
+                  <strong>{scale.label}</strong>
+                  <code class="ds-selector">{scale.selector}</code>
+                </span>
+                <code
+                  class="ds-type-formula"
+                  data-ds-section-clamp
+                  data-desktop-vars={scale.desktopVars.join(',')}
+                  data-mobile-vars={scale.mobileVars.join(',')}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <!-- 04 MATERIALITY, ELEVATION & MOTION -->
+      <section class="ds-card" aria-labelledby="ds-heading-materiality">
+        <div class="ds-section-head">
+          <h3 id="ds-heading-materiality" class="ds-section-title">
+            04 · Materiality, Elevation &amp; Motion Standards
+          </h3>
+          <code class="ds-source-tag">No-Line Gallery System</code>
+        </div>
+
+        <div class="ds-elevation-strip" aria-label="Surface elevation progression from lowest to highest">
+          {ELEVATION_STRIP_VARS.map((step) => (
+            <div
+              class="ds-elevation-step"
+              style={`background: var(${step.cssVar});`}
+              data-ds-elevation-step={step.cssVar}
+            >
+              <span>{step.name}</span>
+            </div>
+          ))}
+        </div>
+
+        <div class="ds-rules-grid">
+          {MATERIALITY_RULES.map((rule) => (
+            <div class="ds-rule-cell">
+              <div class="ds-rule-head">
+                <strong class="ds-item-title">{rule.title}</strong>
+                <code class="ds-rule-values" data-ds-rule-vars={rule.cssVars.join(',')} />
+              </div>
+              <p class="ds-usage">{rule.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- 05 RESPONSIVE DESIGN & VIEWPORT ARCHITECTURE -->
+      <section class="ds-card" aria-labelledby="ds-heading-responsive">
+        <div class="ds-section-head">
+          <h3 id="ds-heading-responsive" class="ds-section-title">
+            05 · Responsive Design &amp; Viewport Architecture
+          </h3>
+          <code class="ds-source-tag" data-ds-container-cap />
+        </div>
+
+        <ul class="ds-tier-list">
+          {RESPONSIVE_TIERS.map((tier) => (
+            <li class="ds-tier-row" data-ds-tier={tier.id}>
+              <div class="ds-tier-badge-col">
+                <span class="ds-tier-name">{tier.tierName}</span>
+                <code class="ds-tier-range">{tier.rangeLabel}</code>
+                {tier.dynamicVars && (
+                  <code class="ds-tier-dynamic" data-ds-tier-vars={tier.dynamicVars.join(',')} />
+                )}
+              </div>
+              <ul class="ds-tier-points">
+                {tier.highlights.map((point) => (
+                  <li>{point}</li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+  import {
+    HOVER_INTENT_MS,
+    TOOLTIP_ANCHOR_GAP_PX,
+    TOOLTIP_VIEWPORT_MARGIN_PX,
+  } from '../config/designSystem';
+  import { getViewportTier } from '../config/responsive';
+
+  let lifecycleController: AbortController | null = null;
+  let hoverTimer: number | null = null;
+
+  function cleanFontName(raw: string): string {
+    return raw.split(',')[0].replace(/['"]/g, '').trim();
+  }
+
+  function readVar(styles: CSSStyleDeclaration, name: string): string {
+    return styles.getPropertyValue(name).trim();
+  }
+
+  function hydrateDesignTokens(tooltip: HTMLElement): void {
+    const styles = getComputedStyle(document.documentElement);
+
+    tooltip.querySelectorAll<HTMLElement>('[data-ds-var]').forEach((el) => {
+      const cssVar = el.dataset.dsVar;
+      if (cssVar) el.textContent = readVar(styles, cssVar);
+    });
+
+    tooltip.querySelectorAll<HTMLElement>('[data-ds-elevation-step]').forEach((el) => {
+      const cssVar = el.dataset.dsElevationStep;
+      if (cssVar) el.title = `${cssVar}: ${readVar(styles, cssVar)}`;
+    });
+
+    const btnGeometry = tooltip.querySelector<HTMLElement>('[data-ds-btn-geometry]');
+    if (btnGeometry) {
+      const py = readVar(styles, '--btn-padding-y');
+      const px = readVar(styles, '--btn-padding-x');
+      const radius = readVar(styles, '--radius-xs');
+      btnGeometry.textContent = `pad ${py} ${px} · radius ${radius}`;
+    }
+
+    tooltip.querySelectorAll<HTMLElement>('[data-ds-btn-recipe]').forEach((el) => {
+      const fillVars = (el.dataset.fillVars ?? '').split(',').filter(Boolean);
+      const inkVar = el.dataset.inkVar ?? '';
+      const borderVar = el.dataset.borderVar ?? '';
+      const hoverNote = el.dataset.hoverNote ?? '';
+
+      const parts: string[] = [];
+      if (fillVars.length > 1) {
+        parts.push(`Fill: ${fillVars.map((v) => readVar(styles, v)).join(' → ')}`);
+      } else if (fillVars.length === 1) {
+        parts.push(`Fill: ${readVar(styles, fillVars[0])}`);
+      } else {
+        parts.push('Fill: transparent');
+      }
+      if (inkVar) parts.push(`Ink: ${readVar(styles, inkVar)}`);
+      if (borderVar) parts.push(`Border: ${readVar(styles, borderVar)}`);
+      if (hoverNote) parts.push(hoverNote);
+      el.textContent = parts.join(' · ');
+    });
+
+    const fontFamilies = tooltip.querySelector<HTMLElement>('[data-ds-font-families]');
+    if (fontFamilies) {
+      const display = cleanFontName(readVar(styles, '--font-family-display'));
+      const body = cleanFontName(readVar(styles, '--font-family-body'));
+      fontFamilies.textContent = `${display} + ${body}`;
+    }
+
+    tooltip.querySelectorAll<HTMLElement>('[data-ds-type-spec]').forEach((el) => {
+      const family = cleanFontName(readVar(styles, el.dataset.familyVar ?? ''));
+      const size = readVar(styles, el.dataset.sizeVar ?? '');
+      const weight = readVar(styles, el.dataset.weightVar ?? '');
+      const leading = el.dataset.leadingVar ? readVar(styles, el.dataset.leadingVar) : '';
+      const tracking = el.dataset.trackingVar ? readVar(styles, el.dataset.trackingVar) : '';
+      const extra = el.dataset.extraVar ? readVar(styles, el.dataset.extraVar) : '';
+
+      const segments = [`${family} ${weight}`, size];
+      if (leading) segments.push(`lh ${leading}`);
+      if (tracking) segments.push(`ls ${tracking}`);
+      if (extra) segments.push(`max ${extra}`);
+      el.textContent = segments.join(' · ');
+    });
+
+    tooltip.querySelectorAll<HTMLElement>('[data-ds-section-clamp]').forEach((el) => {
+      const dVars = (el.dataset.desktopVars ?? '').split(',').map((v) => readVar(styles, v));
+      const mVars = (el.dataset.mobileVars ?? '').split(',').map((v) => readVar(styles, v));
+      const dClamp = `clamp(${dVars.join(', ')})`;
+      const mClamp = `clamp(${mVars.join(', ')})`;
+      el.textContent = dClamp === mClamp ? `All tiers: ${dClamp}` : `Desktop: ${dClamp} · Mobile: ${mClamp}`;
+    });
+
+    tooltip.querySelectorAll<HTMLElement>('[data-ds-rule-vars]').forEach((el) => {
+      const vars = (el.dataset.dsRuleVars ?? '').split(',').filter(Boolean);
+      el.textContent = vars.map((v) => readVar(styles, v)).join(' · ');
+    });
+
+    const containerCap = tooltip.querySelector<HTMLElement>('[data-ds-container-cap]');
+    if (containerCap) {
+      containerCap.textContent = `container max ${readVar(styles, '--layout-max-width')}`;
+    }
+
+    tooltip.querySelectorAll<HTMLElement>('[data-ds-tier-vars]').forEach((el) => {
+      const vars = (el.dataset.dsTierVars ?? '').split(',').filter(Boolean);
+      if (vars.length === 1) {
+        el.textContent = `max-width: ${readVar(styles, vars[0])}`;
+      } else if (vars.length === 3) {
+        el.textContent = `hero clamp(${vars.map((v) => readVar(styles, v)).join(', ')})`;
+      }
+    });
+  }
+
+  function updateViewportState(tooltip: HTMLElement): void {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const tier = getViewportTier(w);
+
+    const badge = tooltip.querySelector<HTMLElement>('[data-ds-viewport]');
+    if (badge) {
+      badge.textContent = `Viewport: ${w}×${h}px · Active: ${tier.label} (${tier.range})`;
+    }
+
+    tooltip.querySelectorAll<HTMLElement>('[data-ds-tier]').forEach((row) => {
+      if (row.dataset.dsTier === tier.id) {
+        row.setAttribute('data-active', 'true');
+      } else {
+        row.removeAttribute('data-active');
+      }
+    });
+  }
+
+  function positionTooltip(tooltip: HTMLElement, trigger: HTMLElement): void {
+    const rect = trigger.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const margin = TOOLTIP_VIEWPORT_MARGIN_PX;
+
+    const availableAbove = rect.top - TOOLTIP_ANCHOR_GAP_PX - margin;
+    if (availableAbove >= 260) {
+      tooltip.style.bottom = `${Math.round(vh - rect.top + TOOLTIP_ANCHOR_GAP_PX)}px`;
+      tooltip.style.maxHeight = `${Math.min(740, Math.floor(availableAbove))}px`;
+    } else {
+      tooltip.style.bottom = `${margin}px`;
+      tooltip.style.maxHeight = `${Math.min(740, vh - margin * 2)}px`;
+    }
+
+    const sheetWidth = tooltip.offsetWidth;
+    const maxLeft = Math.max(margin, vw - sheetWidth - margin);
+    const clampedLeft = Math.min(Math.max(margin, Math.round(rect.left)), maxLeft);
+    tooltip.style.left = `${clampedLeft}px`;
+  }
+
+  function teardownDesignSystemTooltip(): void {
+    if (hoverTimer !== null) {
+      window.clearTimeout(hoverTimer);
+      hoverTimer = null;
+    }
+    const openTooltip = document.querySelector<HTMLElement>('[data-ds-tooltip]');
+    if (openTooltip?.matches(':popover-open')) {
+      openTooltip.hidePopover();
+    }
+    lifecycleController?.abort();
+    lifecycleController = null;
+  }
+
+  function initDesignSystemTooltip(): void {
+    teardownDesignSystemTooltip();
+
+    const trigger = document.querySelector<HTMLElement>('[data-ds-trigger]');
+    const tooltip = document.querySelector<HTMLElement>('[data-ds-tooltip]');
+    if (!trigger || !tooltip || typeof tooltip.showPopover !== 'function') return;
+
+    lifecycleController = new AbortController();
+    const { signal } = lifecycleController;
+
+    const isOpen = () => tooltip.matches(':popover-open');
+
+    const openTooltip = () => {
+      if (hoverTimer !== null) {
+        window.clearTimeout(hoverTimer);
+        hoverTimer = null;
+      }
+      hydrateDesignTokens(tooltip);
+      updateViewportState(tooltip);
+      if (!isOpen()) {
+        tooltip.showPopover();
+      }
+      positionTooltip(tooltip, trigger);
+    };
+
+    const closeTooltip = () => {
+      if (hoverTimer !== null) {
+        window.clearTimeout(hoverTimer);
+        hoverTimer = null;
+      }
+      if (isOpen()) {
+        tooltip.hidePopover();
+      }
+    };
+
+    trigger.addEventListener(
+      'pointerenter',
+      (e) => {
+        if (e.pointerType !== 'mouse' || isOpen()) return;
+        if (hoverTimer !== null) window.clearTimeout(hoverTimer);
+        hoverTimer = window.setTimeout(() => {
+          hoverTimer = null;
+          openTooltip();
+        }, HOVER_INTENT_MS);
+      },
+      { signal },
+    );
+
+    trigger.addEventListener(
+      'pointerleave',
+      () => {
+        if (hoverTimer !== null) {
+          window.clearTimeout(hoverTimer);
+          hoverTimer = null;
+        }
+      },
+      { signal },
+    );
+
+    trigger.addEventListener(
+      'click',
+      () => {
+        if (!isOpen()) openTooltip();
+      },
+      { signal },
+    );
+
+    tooltip.addEventListener(
+      'click',
+      (e) => {
+        const copyBtn = (e.target as HTMLElement | null)?.closest<HTMLButtonElement>('[data-ds-copy-var]');
+        if (!copyBtn) return;
+        const cssVar = copyBtn.dataset.dsCopyVar;
+        if (!cssVar) return;
+        const value = readVar(getComputedStyle(document.documentElement), cssVar);
+        if (!value) return;
+        navigator.clipboard?.writeText(value).catch(() => {});
+        const codeEl = copyBtn.querySelector('code');
+        if (codeEl) {
+          codeEl.textContent = 'Copied';
+          window.setTimeout(() => {
+            if (tooltip.isConnected) codeEl.textContent = value;
+          }, 1100);
+        }
+      },
+      { signal },
+    );
+
+    // Isolate scroll/touch/navigation-key events inside the open sheet so
+    // home snapNavigator and v2 stackFade never fire underneath.
+    const stopBubble = (e: Event) => {
+      if (isOpen()) e.stopPropagation();
+    };
+    tooltip.addEventListener('wheel', stopBubble, { passive: true, signal });
+    tooltip.addEventListener('touchstart', stopBubble, { passive: true, signal });
+    tooltip.addEventListener('touchmove', stopBubble, { passive: true, signal });
+    tooltip.addEventListener(
+      'keydown',
+      (e) => {
+        if (!isOpen()) return;
+        if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(e.key)) {
+          e.stopPropagation();
+        }
+      },
+      { signal },
+    );
+
+    document.addEventListener(
+      'pointerdown',
+      (e) => {
+        if (!isOpen()) return;
+        const target = e.target as Node | null;
+        if (target && (tooltip.contains(target) || trigger.contains(target))) return;
+        closeTooltip();
+      },
+      { signal },
+    );
+
+    document.addEventListener(
+      'keydown',
+      (e) => {
+        if (e.key === 'Escape' && isOpen()) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          closeTooltip();
+        }
+      },
+      { capture: true, signal },
+    );
+
+    window.addEventListener(
+      'resize',
+      () => {
+        if (!isOpen()) return;
+        updateViewportState(tooltip);
+        positionTooltip(tooltip, trigger);
+      },
+      { passive: true, signal },
+    );
+  }
+
+  document.addEventListener('astro:page-load', initDesignSystemTooltip);
+  document.addEventListener('astro:before-swap', teardownDesignSystemTooltip);
+</script>
+
+<style>
+  .ds-tooltip {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    padding: 1.25rem 1.375rem;
+    width: min(1140px, calc(100vw - 2rem));
+    max-height: min(78dvh, 740px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: color-mix(in srgb, var(--color-surface-dim) 95%, transparent);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid color-mix(in srgb, var(--color-outline) 26%, transparent);
+    border-radius: var(--radius-sm);
+    box-shadow:
+      0 24px 56px rgba(0, 0, 0, 0.68),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    color: var(--color-on-surface);
+    font-family: var(--font-family-body);
+    line-height: 1.45;
+    opacity: 0;
+    transform: translateY(6px);
+    transition:
+      opacity 0.22s var(--ease-standard),
+      transform 0.22s var(--ease-standard),
+      display 0.22s allow-discrete,
+      overlay 0.22s allow-discrete;
+  }
+
+  .ds-tooltip:popover-open {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @starting-style {
+    .ds-tooltip:popover-open {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+
+  /* ── Header ────────────────────────────────────── */
+  .ds-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    padding-bottom: 0.875rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-outline-variant) 55%, transparent);
+  }
+
+  .ds-eyebrow {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.11em;
+    color: var(--color-primary);
+    margin-bottom: 0.1875rem;
+  }
+
+  .ds-title {
+    font-family: var(--font-family-display);
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--color-on-surface);
+  }
+
+  .ds-header-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.625rem 0.875rem;
+  }
+
+  .ds-viewport-pill {
+    padding: 0.25rem 0.625rem;
+    background: var(--color-surface-container);
+    border: 1px solid var(--color-outline-variant);
+    border-radius: var(--radius-xs);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.6875rem;
+    color: var(--color-primary);
+  }
+
+  .ds-dismiss-hint {
+    font-size: 0.6875rem;
+    color: var(--color-outline);
+  }
+
+  /* ── Bento Grid ────────────────────────────────── */
+  .ds-bento {
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+    gap: 0.875rem;
+    align-items: start;
+  }
+
+  .ds-right-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    min-width: 0;
+  }
+
+  .ds-card {
+    background: var(--color-surface);
+    border: 1px solid color-mix(in srgb, var(--color-outline-variant) 50%, transparent);
+    border-radius: var(--radius-xs);
+    padding: 0.875rem 1rem;
+    min-width: 0;
+  }
+
+  .ds-section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.625rem;
+  }
+
+  .ds-section-title {
+    font-family: var(--font-family-body);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-primary);
+  }
+
+  .ds-source-tag {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.625rem;
+    color: var(--color-outline);
+  }
+
+  .ds-group-label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-outline);
+    margin: 0.625rem 0 0.375rem;
+  }
+
+  .ds-color-group:first-of-type .ds-group-label {
+    margin-top: 0.125rem;
+  }
+
+  /* ── 01 Colors ─────────────────────────────────── */
+  .ds-color-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3125rem;
+  }
+
+  .ds-color-row {
+    display: grid;
+    grid-template-columns: 18px 5.5rem 9.25rem minmax(0, 1fr);
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.71875rem;
+  }
+
+  .ds-swatch {
+    width: 18px;
+    height: 18px;
+    border-radius: var(--radius-xs);
+    flex-shrink: 0;
+  }
+
+  .ds-swatch--keyline {
+    border: 1px solid var(--color-outline-variant);
+  }
+
+  .ds-hex-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0.125rem 0.3125rem;
+    background: var(--color-surface-container-low);
+    border: 1px solid transparent;
+    border-radius: var(--radius-xs);
+    color: var(--color-primary);
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: border-color 0.2s var(--ease-standard), background 0.2s var(--ease-standard);
+  }
+
+  .ds-hex-btn:hover {
+    border-color: var(--color-primary);
+    background: var(--color-surface-container);
+  }
+
+  .ds-hex-btn code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.65rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ds-token-name {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.65rem;
+    color: var(--color-on-surface);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ds-usage {
+    font-size: 0.6875rem;
+    color: var(--color-on-surface-variant);
+    line-height: 1.4;
+  }
+
+  /* ── 02 Buttons ────────────────────────────────── */
+  .ds-btn-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5625rem;
+  }
+
+  .ds-btn-row {
+    display: grid;
+    grid-template-columns: 8.75rem minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: center;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-outline-variant) 30%, transparent);
+  }
+
+  .ds-btn-row:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .ds-btn-specimen-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .ds-specimen-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .ds-specimen-nav-cta {
+    width: 100%;
+    padding: 0.4375rem 0.75rem;
+    background: transparent;
+    color: var(--color-primary);
+    border: 1px solid var(--color-outline-variant);
+    border-radius: var(--radius-xs);
+    font-family: var(--font-family-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: border-color 0.3s var(--ease-standard), background 0.3s var(--ease-standard);
+  }
+
+  .ds-specimen-nav-cta:hover {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+  }
+
+  .ds-specimen-channel {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0.4375rem 0.625rem;
+    background: transparent;
+    color: var(--color-on-surface);
+    border: 1px solid var(--color-outline-variant);
+    border-radius: var(--radius-xs);
+    font-family: var(--font-family-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      transform 0.2s var(--ease-standard),
+      border-color 0.2s var(--ease-standard),
+      color 0.2s var(--ease-standard);
+  }
+
+  .ds-specimen-channel svg {
+    width: 0.9375rem;
+    height: 0.9375rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  .ds-specimen-channel:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    transform: scale(var(--btn-hover-scale));
+  }
+
+  .ds-specimen-icon-pair {
+    display: inline-flex;
+    gap: 0.5rem;
+  }
+
+  .ds-specimen-circle {
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-container-low);
+    border: 1px solid var(--color-outline);
+    color: var(--color-on-surface);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition:
+      background 0.25s var(--ease-standard),
+      border-color 0.25s var(--ease-standard),
+      transform 0.25s var(--ease-standard);
+  }
+
+  .ds-specimen-circle svg {
+    width: 0.9375rem;
+    height: 0.9375rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .ds-specimen-circle:hover {
+    background: var(--color-surface-container);
+    border-color: var(--color-primary);
+    transform: scale(1.05);
+  }
+
+  .ds-btn-meta {
+    min-width: 0;
+  }
+
+  .ds-btn-meta-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .ds-item-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-on-surface);
+  }
+
+  .ds-selector {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.625rem;
+    color: var(--color-outline);
+  }
+
+  .ds-token-recipe {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.6375rem;
+    color: var(--color-primary);
+    margin: 0.125rem 0;
+  }
+
+  /* ── 03 Typography ─────────────────────────────── */
+  .ds-type-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4375rem;
+  }
+
+  .ds-type-row {
+    display: grid;
+    grid-template-columns: 10.5rem minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: baseline;
+  }
+
+  .ds-type-specimen-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.0625rem;
+    min-width: 0;
+  }
+
+  .ds-specimen-display-lg {
+    font-family: var(--font-family-display);
+    font-weight: var(--type-display-lg-weight);
+    font-size: 1.0625rem;
+    line-height: var(--type-display-lg-leading);
+    letter-spacing: var(--type-display-lg-tracking);
+    color: var(--color-on-surface);
+  }
+
+  .ds-specimen-display-sm {
+    font-family: var(--font-family-display);
+    font-weight: var(--type-display-sm-weight);
+    font-size: 0.9375rem;
+    line-height: var(--type-display-sm-leading);
+    letter-spacing: var(--type-display-sm-tracking);
+    color: var(--color-on-surface);
+  }
+
+  .ds-specimen-title-lg {
+    font-family: var(--font-family-body);
+    font-weight: var(--type-title-lg-weight);
+    font-size: 0.84375rem;
+    line-height: var(--type-title-lg-leading);
+    color: var(--color-on-surface);
+  }
+
+  .ds-specimen-body {
+    font-family: var(--font-family-body);
+    font-weight: var(--type-body-lg-weight);
+    font-size: 0.78125rem;
+    color: var(--color-on-surface-variant);
+  }
+
+  .ds-specimen-label {
+    font-size: 0.6875rem;
+  }
+
+  .ds-type-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.0625rem;
+    min-width: 0;
+  }
+
+  .ds-type-formula {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.6375rem;
+    color: var(--color-primary);
+  }
+
+  .ds-subsection {
+    margin-top: 0.5625rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid color-mix(in srgb, var(--color-outline-variant) 35%, transparent);
+  }
+
+  .ds-subsection .ds-group-label {
+    margin-top: 0;
+  }
+
+  .ds-clamp-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .ds-clamp-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.625rem;
+    font-size: 0.6875rem;
+  }
+
+  .ds-clamp-label {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.375rem;
+  }
+
+  .ds-clamp-label strong {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--color-on-surface);
+  }
+
+  /* ── 04 Materiality & Elevation ────────────────── */
+  .ds-elevation-strip {
+    display: grid;
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    gap: 2px;
+    margin-bottom: 0.625rem;
+    border: 1px solid var(--color-outline-variant);
+    border-radius: var(--radius-xs);
+    overflow: hidden;
+  }
+
+  .ds-elevation-step {
+    padding: 0.3125rem 0.125rem;
+    text-align: center;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.5625rem;
+    color: var(--color-outline);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ds-rules-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem 0.75rem;
+  }
+
+  .ds-rule-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.0625rem;
+    margin-bottom: 0.125rem;
+  }
+
+  .ds-rule-values {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.625rem;
+    color: var(--color-primary);
+    word-break: break-word;
+  }
+
+  /* ── 05 Responsive Architecture ────────────────── */
+  .ds-tier-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .ds-tier-row {
+    display: grid;
+    grid-template-columns: 9.25rem minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.4375rem 0.5625rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-xs);
+    background: var(--color-surface-dim);
+  }
+
+  .ds-tier-row[data-active='true'] {
+    border-color: color-mix(in srgb, var(--color-primary) 55%, transparent);
+    background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface-dim));
+  }
+
+  .ds-tier-badge-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .ds-tier-name {
+    font-size: 0.71875rem;
+    font-weight: 700;
+    color: var(--color-on-surface);
+  }
+
+  .ds-tier-row[data-active='true'] .ds-tier-name {
+    color: var(--color-primary);
+  }
+
+  .ds-tier-range {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.65rem;
+    color: var(--color-on-surface-variant);
+  }
+
+  .ds-tier-dynamic {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.6rem;
+    color: var(--color-primary);
+  }
+
+  .ds-tier-points {
+    margin: 0;
+    padding-left: 0.9375rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    font-size: 0.6875rem;
+    color: var(--color-on-surface-variant);
+  }
+
+  /* ── Responsive Adaptation of the Sheet Itself ─── */
+  @media (max-width: 960px) {
+    .ds-bento {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .ds-tooltip {
+      padding: 1rem;
+    }
+
+    .ds-color-row {
+      grid-template-columns: 18px 5rem minmax(0, 1fr);
+    }
+
+    .ds-color-row .ds-usage {
+      grid-column: 2 / -1;
+    }
+
+    .ds-btn-row,
+    .ds-type-row,
+    .ds-tier-row,
+    .ds-rules-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .ds-elevation-strip {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ds-tooltip {
+      transition: none;
+      transform: none;
+    }
+  }
+</style>
