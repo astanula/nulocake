@@ -40,19 +40,15 @@ test.describe('Homepage cleanup on leave', () => {
   }
 
   /**
-   * Helper: Get ScrollTrigger instances pinned to hero-sticky-wrapper
+   * Helper: Get snap navigation mount state on the current document
    */
-  async function getHomepageScrollTriggers(page: any): Promise<number> {
-    return await page.evaluate(() => {
-      const allTriggers = (window as any).ScrollTrigger?.getAll() ?? [];
-      const filtered = allTriggers.filter((t: any) => {
-        const pin = t.pin;
-        if (!pin) return false;
-        const el = pin instanceof HTMLElement ? pin : document.querySelector(pin);
-        return el && el.classList.contains('hero-sticky-wrapper');
-      });
-      return filtered.length;
-    });
+  async function getHomepageSnapState(page: any): Promise<{ hasSnapClass: boolean; interceptsHomeKey: boolean }> {
+    return await page.evaluate(() => ({
+      hasSnapClass: document.documentElement.classList.contains('home-snap-active'),
+      interceptsHomeKey: !document.body.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Home', bubbles: true, cancelable: true }),
+      ),
+    }));
   }
 
   /**
@@ -92,24 +88,28 @@ test.describe('Homepage cleanup on leave', () => {
     expect(guardSet).toBe(true);
   });
 
-  test('ScrollTrigger instances are killed when navigating away', async ({ page }) => {
+  test('snap navigation is torn down when navigating away', async ({ page }) => {
     // Start at homepage
     await navigateAndHydrate(page, testConfig.routes.landing);
 
-    // Wait for animations to initialize
-    await page.waitForTimeout(2000);
+    // Wait for Phase 1 intro to complete and snap navigation to mount
+    await expect(page.locator('body')).toHaveCSS('overflow', 'visible');
+    await expect(page.locator('html')).toHaveClass(/home-snap-active/);
 
-    // Get initial ScrollTrigger count for homepage
-    const initialTriggersCount = await getHomepageScrollTriggers(page);
-    expect(initialTriggersCount).toBeGreaterThan(0);
+    expect(await getHomepageSnapState(page)).toEqual({
+      hasSnapClass: true,
+      interceptsHomeKey: true,
+    });
 
-    // Navigate away from homepage
-    await page.click(navLinkSelector('oferta'));
-    await page.waitForURL('**/oferta');
+    // Navigate away from homepage to a non-snap subpage
+    await page.click(navLinkSelector('galeria'));
+    await page.waitForURL('**/galeria');
     await waitForHydration(page);
 
-    // Wait a bit for cleanup to happen
-    await page.waitForTimeout(500);
+    expect(await getHomepageSnapState(page)).toEqual({
+      hasSnapClass: false,
+      interceptsHomeKey: false,
+    });
 
     // Navigate back to homepage
     await page.click(navLinkSelector('landing'));
@@ -117,14 +117,13 @@ test.describe('Homepage cleanup on leave', () => {
     await waitForHydration(page);
 
     // Wait for re-initialization
-    await page.waitForTimeout(2000);
+    await expect(page.locator('body')).toHaveCSS('overflow', 'visible');
+    await expect(page.locator('html')).toHaveClass(/home-snap-active/);
 
-    // Get ScrollTrigger count after re-visit
-    const afterRevisitTriggersCount = await getHomepageScrollTriggers(page);
-
-    // Should have fresh instances (old ones were killed)
-    // The count should be the same as initial (not accumulated)
-    expect(afterRevisitTriggersCount).toBe(initialTriggersCount);
+    expect(await getHomepageSnapState(page)).toEqual({
+      hasSnapClass: true,
+      interceptsHomeKey: true,
+    });
   });
 
   test('testimonials interval is cleared on leave', async ({ page }) => {

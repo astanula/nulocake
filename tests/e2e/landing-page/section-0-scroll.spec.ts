@@ -1,95 +1,160 @@
 import { test, expect } from '../fixtures/base-fixture';
 import { testConfig } from '../test-config';
 import { waitForHydration } from '../helpers/hydration';
+import { scrollToDeterministicPosition } from '../helpers/scroll';
 import { Section0Simulation } from './section-0-simulation';
-import { computeExpectedStates, isSection0Active } from '../helpers/animation-calculator';
+import { computeExpectedStates } from '../helpers/animation-calculator';
+import {
+  EDGE_EPSILON_PX,
+  TRIGGER_PX,
+  WHEEL_QUIET_MS,
+} from '../../../src/config/animation';
 
-test.describe('Section 0 (Hero) Scroll Animation', () => {
+const VIEWPORT_HEIGHT = 900;
+
+test.describe('Home Snap Section Navigation', () => {
   let hero: Section0Simulation;
 
   test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: VIEWPORT_HEIGHT });
     hero = new Section0Simulation(page);
     await page.goto(testConfig.routes.landing);
     await waitForHydration(page);
-    await expect(page.locator('body')).toHaveCSS('overflow', 'visible');
+    await hero.waitForSnapReady();
   });
 
-  test('Step 1: Initial State (Scroll: 0 WU)', async () => {
-    await hero.scrollToWU(0);
-    await hero.assertActive(isSection0Active(0));
+  test('initial resting state shows Section 0, dot 0 current, scroll hint active, and footer dock inert', async ({ page }) => {
+    await hero.assertActive(true);
+    await hero.assertStates(computeExpectedStates(0));
+    await expect(page.locator('[data-section-dot="0"]')).toHaveAttribute('aria-current', 'true');
+    await expect(page.locator('[data-section-dot][aria-current="true"]')).toHaveCount(1);
+    await expect(hero.hint).not.toHaveClass(/is-hidden/);
+    await expect(hero.hint).toHaveJSProperty('inert', false);
+    await expect(hero.dock).toHaveJSProperty('inert', true);
+    await expect.poll(async () => (await hero.dock.boundingBox())?.y ?? 0).toBeGreaterThanOrEqual(VIEWPORT_HEIGHT);
+  });
+
+  test('ArrowDown / ArrowUp and PageDown / PageUp snap cleanly between adjacent sections', async ({ page }) => {
+    await page.keyboard.press('ArrowDown');
+    await expect(page.locator('#section-story')).toHaveClass(/is-active/);
+    await hero.assertActive(false);
+    await expect(page.locator('[data-section-dot="1"]')).toHaveAttribute('aria-current', 'true');
+    await expect(hero.hint).not.toHaveClass(/is-hidden/);
+    await expect(page.locator('#section-story .section-cta-group')).toHaveCSS('opacity', '1');
+
+    await page.keyboard.press('PageDown');
+    await expect(page.locator('#section-gallery')).toHaveClass(/is-active/);
+    await expect(page.locator('[data-section-dot="2"]')).toHaveAttribute('aria-current', 'true');
+    await expect(hero.hint).not.toHaveClass(/is-hidden/);
+
+    await page.keyboard.press('PageUp');
+    await expect(page.locator('#section-story')).toHaveClass(/is-active/);
+    await expect(hero.hint).not.toHaveClass(/is-hidden/);
+
+    await page.keyboard.press('ArrowUp');
+    await hero.assertActive(true);
+    await expect(page.locator('[data-section-dot="0"]')).toHaveAttribute('aria-current', 'true');
+    await expect(hero.hint).not.toHaveClass(/is-hidden/);
     await hero.assertStates(computeExpectedStates(0));
   });
 
-  test('Step 1.1: Press Arrow Down (Scroll: 1 WU)', async () => {
-    await hero.scrollToWU(1);
-    await hero.assertActive(isSection0Active(1));
-    await hero.assertStates(computeExpectedStates(1));
+  test('Space and Shift+Space step sections while ignoring interactive controls', async ({ page }) => {
+    await page.locator('#cta-oferta').focus();
+    await page.keyboard.press('Space');
+    await hero.assertActive(true);
+    await expect(page.locator('[data-section-dot="0"]')).toHaveAttribute('aria-current', 'true');
+
+    await hero.section0.focus();
+    await page.keyboard.press('Space');
+    await expect(page.locator('#section-story')).toHaveClass(/is-active/);
+    await expect(hero.hint).not.toHaveClass(/is-hidden/);
+
+    await page.keyboard.press('Shift+Space');
+    await hero.assertActive(true);
+    await expect(hero.hint).not.toHaveClass(/is-hidden/);
   });
 
-  test('Step 1.2: Press Arrow Down (Scroll: 2 WU)', async () => {
-    await hero.scrollToWU(2);
-    await hero.assertActive(isSection0Active(2));
-    await hero.assertStates(computeExpectedStates(2));
+  test('End and Home clamp at boundaries, toggle scroll hint, and slide the footer dock', async ({ page }) => {
+    await page.keyboard.press('ArrowUp');
+    await hero.assertActive(true);
+    await expect(page.locator('[data-section-dot="0"]')).toHaveAttribute('aria-current', 'true');
+
+    const contact = page.locator('#section-contact');
+    await page.keyboard.press('End');
+    await expect(contact).toHaveClass(/is-active/);
+    await expect(contact.locator('.section-cta-group')).toHaveCSS('opacity', '1');
+    await expect(page.locator('[data-section-dot="4"]')).toHaveAttribute('aria-current', 'true');
+    await expect(hero.hint).toHaveClass(/is-hidden/);
+    await expect(hero.hint).toHaveJSProperty('inert', true);
+    await expect(hero.dock).toHaveJSProperty('inert', false);
+    await expect.poll(async () => (await hero.dock.boundingBox())?.y ?? Infinity).toBeLessThan(VIEWPORT_HEIGHT);
+
+    await page.keyboard.press('ArrowDown');
+    await expect(contact).toHaveClass(/is-active/);
+
+    await page.keyboard.press('Home');
+    await hero.assertActive(true);
+    await expect(hero.hint).not.toHaveClass(/is-hidden/);
+    await expect(hero.hint).toHaveJSProperty('inert', false);
+    await expect(hero.dock).toHaveJSProperty('inert', true);
+    await expect.poll(async () => (await hero.dock.boundingBox())?.y ?? 0).toBeGreaterThanOrEqual(VIEWPORT_HEIGHT);
   });
 
-  test('Step 1.3: Press Arrow Down (Scroll: 3 WU)', async () => {
-    await hero.scrollToWU(3);
-    await hero.assertActive(isSection0Active(3));
-    await hero.assertStates(computeExpectedStates(3));
+  test('section dots and scroll hint arrow navigate directly to target sections', async ({ page }) => {
+    await hero.hint.click();
+    await expect(page.locator('#section-story')).toHaveClass(/is-active/);
+    await expect(hero.hint).not.toHaveClass(/is-hidden/);
+
+    await page.locator('[data-section-dot="3"]').click();
+    await expect(page.locator('#section-testimonials')).toHaveClass(/is-active/);
+    await expect(page.locator('[data-section-dot="3"]')).toHaveAttribute('aria-current', 'true');
+    await expect(hero.hint).not.toHaveClass(/is-hidden/);
   });
 
-  test('Step 1.4: Press Arrow Down (Scroll: 4 WU)', async () => {
-    await hero.scrollToWU(4);
-    await hero.assertActive(isSection0Active(4));
-    await hero.assertStates(computeExpectedStates(4));
+  test('wheel gestures require exceeding TRIGGER_PX in one gesture and coalesce momentum', async ({ page }) => {
+    await page.mouse.wheel(0, TRIGGER_PX - 20);
+    await hero.assertActive(true);
+
+    await page.waitForTimeout(WHEEL_QUIET_MS + 40);
+    await page.mouse.wheel(0, TRIGGER_PX - 20);
+    await hero.assertActive(true);
+    await expect(page.locator('[data-section-dot="0"]')).toHaveAttribute('aria-current', 'true');
+
+    await page.waitForTimeout(WHEEL_QUIET_MS + 40);
+    await page.evaluate(() => {
+      for (const deltaY of [35, 35, 200]) {
+        window.dispatchEvent(new WheelEvent('wheel', { deltaY, deltaMode: 0, bubbles: true, cancelable: true }));
+      }
+    });
+
+    await expect(page.locator('#section-story')).toHaveClass(/is-active/);
+    await expect(page.locator('[data-section-dot="1"]')).toHaveAttribute('aria-current', 'true');
+    await expect(hero.hint).not.toHaveClass(/is-hidden/);
+
+    await page.waitForTimeout(WHEEL_QUIET_MS + 40);
+    await page.mouse.wheel(0, -(TRIGGER_PX + 20));
+    await hero.assertActive(true);
+    await expect(hero.hint).not.toHaveClass(/is-hidden/);
   });
 
-  test('Step 1.5: Press Arrow Down (Scroll: 5 WU)', async () => {
-    await hero.scrollToWU(5);
-    await hero.assertActive(isSection0Active(5));
-    await hero.assertStates(computeExpectedStates(5));
-  });
+  test('tall sections scroll window natively first and snap only after settling at the scroll edge', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 480 });
+    await page.evaluate(() => document.fonts.ready);
+    const maxScroll = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight);
+    expect(maxScroll).toBeGreaterThan(EDGE_EPSILON_PX);
 
-  test('Step 2.1: Press Arrow Up (Scroll: 4 WU)', async () => {
-    // First scroll down past the section
-    await hero.scrollToWU(5);
-    // Then scroll back up
-    await hero.scrollToWU(4);
-    
-    await hero.assertActive(isSection0Active(4));
-    await hero.assertStates(computeExpectedStates(4));
-  });
+    await page.evaluate((deltaY) => {
+      window.dispatchEvent(new WheelEvent('wheel', { deltaY, deltaMode: 0, bubbles: true, cancelable: true }));
+    }, TRIGGER_PX + 20);
+    await hero.assertActive(true);
+    await expect(page.locator('[data-section-dot="0"]')).toHaveAttribute('aria-current', 'true');
 
-  test('Step 2.2: Press Arrow Up (Scroll: 3 WU)', async () => {
-    await hero.scrollToWU(5);
-    await hero.scrollToWU(3);
+    await scrollToDeterministicPosition(page, maxScroll);
 
-    await hero.assertActive(isSection0Active(3));
-    await hero.assertStates(computeExpectedStates(3));
-  });
-
-  test('Step 2.3: Press Arrow Up (Scroll: 2 WU)', async () => {
-    await hero.scrollToWU(5);
-    await hero.scrollToWU(2);
-
-    await hero.assertActive(isSection0Active(2));
-    await hero.assertStates(computeExpectedStates(2));
-  });
-
-  test('Step 2.4: Press Arrow Up (Scroll: 1 WU)', async () => {
-    await hero.scrollToWU(5);
-    await hero.scrollToWU(1);
-
-    await hero.assertActive(isSection0Active(1));
-    await hero.assertStates(computeExpectedStates(1));
-  });
-
-  test('Step 2.5: Press Arrow Up (Scroll: 0 WU)', async () => {
-    await hero.scrollToWU(5);
-    await hero.scrollToWU(0);
-
-    await hero.assertActive(isSection0Active(0));
-    await hero.assertStates(computeExpectedStates(0));
+    await page.keyboard.press('ArrowDown');
+    await expect(page.locator('#section-story')).toHaveClass(/is-active/);
+    await expect(hero.hint).not.toHaveClass(/is-hidden/);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
   });
 });
 

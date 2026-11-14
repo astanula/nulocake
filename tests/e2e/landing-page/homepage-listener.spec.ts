@@ -143,17 +143,13 @@ test.describe('Homepage page-load listener accumulation fix', () => {
     expect(errors).toHaveLength(0);
   });
 
-  test('ScrollTrigger instances are properly managed', async ({ page }) => {
+  test('snap navigation instances are properly managed across navigations', async ({ page }) => {
     await navigateAndHydrate(page, testConfig.routes.landing);
     await waitForHomePageGuard(page);
 
     // Wait for body overflow to be restored (indicating initHomePage completed)
     await expect(page.locator('body')).toHaveCSS('overflow', 'visible');
-
-    // Get initial ScrollTrigger count
-    const initialCount = await page.evaluate(() => {
-      return (window as any).ScrollTrigger?.getAll()?.length ?? 0;
-    });
+    await expect(page.locator('html')).toHaveClass(/home-snap-active/);
 
     // Navigate away and back
     await page.click(navLinkSelector('oferta'));
@@ -166,13 +162,25 @@ test.describe('Homepage page-load listener accumulation fix', () => {
 
     // Wait for initialization
     await expect(page.locator('body')).toHaveCSS('overflow', 'visible');
+    await expect(page.locator('html')).toHaveClass(/home-snap-active/);
 
-    // Get ScrollTrigger count after navigation
-    const afterNavCount = await page.evaluate(() => {
-      return (window as any).ScrollTrigger?.getAll()?.length ?? 0;
+    await page.evaluate(() => {
+      const gsap = (window as any).gsap;
+      const originalTimeline = gsap.timeline;
+      (window as any).__snapTransitionCount = 0;
+      gsap.timeline = function (vars?: any) {
+        if (vars && typeof vars.onComplete === 'function') {
+          (window as any).__snapTransitionCount++;
+        }
+        return originalTimeline.call(this, vars);
+      };
     });
 
-    // The count should be the same (not accumulated)
-    expect(afterNavCount).toBe(initialCount);
+    await page.locator('[data-scroll-hint]').click();
+    await expect(page.locator('#section-story')).toHaveClass(/is-active/);
+
+    // Only one snap transition should fire (not accumulated)
+    const transitionCount = await page.evaluate(() => (window as any).__snapTransitionCount);
+    expect(transitionCount).toBe(1);
   });
 });

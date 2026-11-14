@@ -1,13 +1,17 @@
 import { expect } from '../fixtures/base-fixture';
-import type { Locator, Page } from '@playwright/test';
-import { scrollToDeterministicPosition } from '../helpers/scroll';
+import type { JSHandle, Locator, Page } from '@playwright/test';
+import type { gsap as GSAP } from 'gsap';
+import { wuToSnapSeconds } from '../helpers/animation-calculator';
 
 import {
-  PX_PER_WU,
   BLUR_MAX_PX,
   BRIGHTNESS_MIN,
   BRIGHTNESS_MAX,
 } from '../../../src/config/animation';
+
+export type TransitionHandle = JSHandle<{
+  tl: ReturnType<(typeof GSAP)['timeline']> | null;
+}>;
 
 // Pre-compute expected CSS values for each state
 const PARTIAL_BLUR_EXPECTED = BLUR_MAX_PX * 0.5; // 8px
@@ -32,6 +36,9 @@ const INVISIBLE_FILTER_BLUR = new RegExp(`blur\\(${BLUR_MAX_PX}(?:\\.\\d+)?px\\)
 export type ElementState = 'visible' | 'partially' | 'invisible';
 
 export class Section0Simulation {
+  public section0: Locator;
+  public hint: Locator;
+  public dock: Locator;
   public w1: Locator;
   public w2: Locator;
   public w3: Locator;
@@ -46,6 +53,9 @@ export class Section0Simulation {
     const words = section0.locator('.word');
     const blurIns = section0.locator('.blur-in');
 
+    this.section0 = section0;
+    this.hint = page.locator('[data-scroll-hint]');
+    this.dock = page.locator('.home-footer-dock');
     this.w1 = words.nth(0);
     this.w2 = words.nth(1);
     this.w3 = words.nth(2);
@@ -56,16 +66,61 @@ export class Section0Simulation {
     this.cta1 = blurIns.nth(1);
   }
 
-  async scrollToWU(wu: number) {
-    await scrollToDeterministicPosition(this.page, wu * PX_PER_WU);
+  async waitForSnapReady() {
+    await expect(this.page.locator('body')).toHaveCSS('overflow', 'visible');
+    await expect(this.page.locator('html')).toHaveClass(/home-snap-active/);
+    await expect(this.hint).not.toHaveClass(/is-hidden/);
+    await this.page.evaluate(() => document.fonts.ready);
+  }
+
+  async captureNextTransition(): Promise<TransitionHandle> {
+    return await this.page.evaluateHandle(() => {
+      const gsap = (window as Window & { gsap: typeof GSAP }).gsap;
+      const originalTimeline = gsap.timeline;
+      const state = { tl: null as ReturnType<typeof originalTimeline> | null };
+
+      gsap.timeline = function (vars?: gsap.TimelineVars) {
+        const tl = originalTimeline.call(this, vars);
+        if (vars && typeof vars.onComplete === 'function') {
+          state.tl = tl.pause();
+          gsap.timeline = originalTimeline;
+        }
+        return tl;
+      };
+
+      return state;
+    });
+  }
+
+  async seekForwardWU(handle: TransitionHandle, wu: number) {
+    const timeS = wuToSnapSeconds(wu);
+    await handle.evaluate((state, t) => {
+      if (!state.tl) throw new Error('Expected a captured snap transition timeline');
+      state.tl.totalTime(t, false);
+    }, timeS);
+  }
+
+  async seekBackwardWU(handle: TransitionHandle, wu: number) {
+    const remainingS = wuToSnapSeconds(wu);
+    await handle.evaluate((state, rem) => {
+      if (!state.tl) throw new Error('Expected a captured snap transition timeline');
+      const target = Math.max(0, state.tl.duration() - rem);
+      state.tl.totalTime(target, false);
+    }, remainingS);
+  }
+
+  async finishTransition(handle: TransitionHandle) {
+    await handle.evaluate((state) => {
+      state.tl?.progress(1);
+    });
+    await handle.dispose();
   }
 
   async assertActive(isActive: boolean) {
-    const section0 = this.page.locator('#section-hero');
     if (isActive) {
-      await expect(section0).toHaveClass(/is-active/);
+      await expect(this.section0).toHaveClass(/is-active/);
     } else {
-      await expect(section0).not.toHaveClass(/is-active/);
+      await expect(this.section0).not.toHaveClass(/is-active/);
     }
   }
 

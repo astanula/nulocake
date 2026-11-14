@@ -1,12 +1,11 @@
 import { test, expect } from '../fixtures/base-fixture';
 import { testConfig } from '../test-config';
 import { waitForHydration } from '../helpers/hydration';
-import { scrollToDeterministicPosition } from '../helpers/scroll';
 
 /**
  * Smoke test — validates that the E2E infrastructure is wired correctly.
  *
- * Proves: server starts, page loads, hydration completes, scrolling works.
+ * Proves: server starts, page loads, hydration completes, snap navigation works.
  * No animation assertions — those will come in dedicated test files.
  */
 test.describe('Landing page smoke', () => {
@@ -27,12 +26,13 @@ test.describe('Landing page smoke', () => {
 
     // 4.5 Wait for the time-based intro to finish (body overflow is restored)
     await expect(page.locator('body')).toHaveCSS('overflow', 'visible');
+    await expect(page.locator('html')).toHaveClass(/home-snap-active/);
 
-    // 5. Scroll to a new position
-    await scrollToDeterministicPosition(page, 500);
+    // 5. Advance to the next section via snap navigation
+    await page.locator('[data-scroll-hint]').click();
 
-    // 6. Assert scroll position actually changed
-    const scrollY = await page.evaluate(() => window.scrollY);
-    expect(scrollY).toBeGreaterThanOrEqual(500);
+    // 6. Assert active section transitioned
+    await expect(page.locator('#section-story')).toHaveClass(/is-active/);
+    await expect(hero).not.toHaveClass(/is-active/);
   });
 });

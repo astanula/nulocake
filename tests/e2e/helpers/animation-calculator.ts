@@ -1,12 +1,7 @@
 import {
   PX_PER_WU,
   DURGAP,
-  FDUR_RATIO,
-  BLUR_MAX_PX,
-  BLUR_MIN_PX,
-  BLUR_RANGE,
-  BRIGHTNESS_MIN,
-  BRIGHTNESS_MAX,
+  SNAP_MS_PER_WU,
   WU_WORD,
   WU_BODY,
   WU_CTA,
@@ -100,4 +95,23 @@ export function isSection0Active(scrollWU: number): boolean {
   const lastEl = elements.cta1;
   const section0Width = lastEl.start + lastEl.duration; // outro span = intro span (no hold for section 0)
   return scrollPx < section0Width;
+}
+
+export function getSection0SpanWU(): number {
+  const elements = buildSection0Elements();
+  const lastEl = elements.cta1;
+  return (lastEl.start + lastEl.duration) / PX_PER_WU;
+}
+
+export function wuToSnapSeconds(wu: number): number {
+  return (wu * SNAP_MS_PER_WU) / 1000;
+}
+
+export function getSection0HalfWUCheckpoints(): number[] {
+  const endWU = Math.ceil(getSection0SpanWU() * 2) / 2;
+  const steps: number[] = [];
+  for (let wu = 0; wu <= endWU + 1e-9; wu += 0.5) {
+    steps.push(Number(wu.toFixed(2)));
+  }
+  return steps;
 }

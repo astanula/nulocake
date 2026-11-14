@@ -17,6 +17,8 @@ export async function scrollToDeterministicPosition(
   await page.evaluate((y) => {
     window.scrollTo({ top: y, behavior: 'instant' as ScrollBehavior });
     // Wait 100ms for ScrollTrigger scrub to update
-    return new Promise<void>((resolve) => setTimeout(resolve, 500));
+    return new Promise<void>((resolve) =>
+      requestAnimationFrame(() => setTimeout(resolve, 500)),
+    );
   }, yOffset);
 }

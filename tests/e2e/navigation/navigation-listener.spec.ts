@@ -28,7 +28,8 @@ test.describe('Navigation', () => {
     await waitForHydration(page);
 
     // Check Oferta page styling on first visit
-    const contentSection1 = page.locator('.content-section').first();
+    await page.evaluate(() => document.fonts.ready);
+    const contentSection1 = page.locator('.oferta-section').first();
     await expect(contentSection1).toBeVisible();
     const box1 = await contentSection1.boundingBox();
     expect(box1).not.toBeNull();
@@ -44,7 +45,8 @@ test.describe('Navigation', () => {
     await waitForHydration(page);
 
     // Check Oferta page styling on second visit - should still be correct
-    const contentSection2 = page.locator('.content-section').first();
+    await page.evaluate(() => document.fonts.ready);
+    const contentSection2 = page.locator('.oferta-section').first();
     await expect(contentSection2).toBeVisible();
     const box2 = await contentSection2.boundingBox();
     expect(box2).not.toBeNull();
