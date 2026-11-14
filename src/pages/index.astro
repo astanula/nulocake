@@ -280,6 +280,10 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
       overflow: clip;
     }
 
+    .hero-section:not(.hero-section--last) {
+      padding-bottom: var(--scroll-hint-clearance);
+    }
+
     .home-footer-dock {
       position: fixed;
       left: 0;
@@ -300,9 +304,9 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
   }
 
   .home-hint {
-    position: fixed;
-    left: calc(50% - min(25%, calc(var(--layout-max-width) / 4)));
-    bottom: calc(1.5rem + env(safe-area-inset-bottom));
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--scroll-hint-bottom) + env(safe-area-inset-bottom));
     transform: translateX(-50%);
     z-index: 4;
   }
@@ -634,10 +638,6 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
 
     .home-dots {
       left: 0.375rem;
-    }
-
-    .home-hint {
-      left: 50%;
     }
   }
 </style>

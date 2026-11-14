@@ -2,7 +2,7 @@
 
 Section animations where each element's animation duration and start time are derived from a single unit: the **Word Unit (WU)**. All sections live on one **master timeline** measured in px (`PX_PER_WU` per WU). The master timeline is not scroll-driven: it is paused and played by time through **snap navigation** (see [Time-Driven Playback](#time-driven-playback-snap-navigation)).
 
-Code: `src/home/sectionTimeline.ts` (timeline construction), `src/home/snapNavigator.ts` (edge-gated input and playback), `src/pages/index.astro` (Phase 1 intro, Home mount/teardown), `src/pages/oferta.astro` (immediate Section 0, Oferta mount/teardown). Constants: `src/config/animation.ts`. Specs: `docs/superpowers/specs/2026-11-13-home-snap-navigation-design.md`, `docs/superpowers/specs/2026-11-14-oferta-snap-navigation-design.md`.
+Code: `src/home/sectionTimeline.ts` (timeline construction), `src/home/snapNavigator.ts` (edge-gated input and playback), `src/pages/index.astro` (Phase 1 intro, Home mount/teardown), `src/pages/oferta.astro` (immediate Section 0, Oferta mount/teardown). Constants: `src/config/animation.ts`. Specs: `docs/superpowers/specs/2026-11-13-home-snap-navigation-design.md`, `docs/superpowers/specs/2026-11-14-oferta-snap-navigation-design.md`, `docs/superpowers/specs/2026-11-14-scroll-hint-tall-sections-design.md`.
 
 ## Constants
 
@@ -17,7 +17,6 @@ Code: `src/home/sectionTimeline.ts` (timeline construction), `src/home/snapNavig
 | `SNAP_EASE` | GSAP ease | Ease of each played timeline segment. |
 | `TRIGGER_PX` | px | Vertical gesture distance (wheel or touch) needed to trigger a transition. |
 | `WHEEL_QUIET_MS` | milliseconds | Wheel silence that separates two gestures. |
-| `SCROLL_HINT_GAP_PX` | px | Min space between the active section's content and the scroll hint for the hint to show. |
 | `EDGE_EPSILON_PX` | px | Subpixel tolerance for top/bottom `window` scroll-edge detection. |
 | `EDGE_GUARD_MS` | milliseconds | Cooldown after native `window` scroll before a gesture or directional key can trigger a transition. |
 
@@ -268,7 +267,7 @@ Sections never use inner scroll containers (`overflow-y: auto`). When the active
   - **Wheel / touch:** Vertical distance is accumulated per gesture (one touch, or a run of wheel events without a `WHEEL_QUIET_MS` gap) only when the gesture starts and stays settled (`now − lastNativeScroll ≥ EDGE_GUARD_MS`) at `isAtEdge(dir)`. Any gesture that scrolls `window` natively or occurs during the `EDGE_GUARD_MS` cooldown is marked as a native scroll gesture and cannot fire a transition; the **next** settled gesture at the edge triggers `goTo` past `TRIGGER_PX`. Horizontal-dominant movement (`|dx| > |dy|`) does not count.
   - **Keys:** `ArrowDown`/`PageDown`/`Space` (`dir = 1`), `ArrowUp`/`PageUp`/`Shift+Space` (`dir = -1`) scroll `window` natively when `!isAtEdge(dir)` and trigger `goTo(current + dir)` when settled at `isAtEdge(dir)`. `Home`/`End` always jump to first/last. Ignored inside `input, textarea, select, [contenteditable]`; `Space` also ignores `button, summary, a, [role="button"]`.
 - **Section dots** (`[data-section-dot]`, `src/components/section-nav/SectionDots.astro`): click jumps to that section; `aria-current` moves to the destination when a transition starts. Hidden under reduced motion.
-- **Scroll hint** (`[data-scroll-hint]`, `src/components/stack-fade/ScrollHintArrow.astro`): click goes to the next section. Shown only while no transition runs, the active section is not the last, and `sec.getBoundingClientRect().top + contentBottom + SCROLL_HINT_GAP_PX <= hint.getBoundingClientRect().top` (re-checked on transition completion, `ResizeObserver`, and `window` `scroll`). Spec: `docs/superpowers/specs/2026-11-13-section-dots-scroll-hint-design.md`.
+- **Scroll hint** (`[data-scroll-hint]`, `src/components/stack-fade/ScrollHintArrow.astro`): click goes to the next section. Anchored with `position: absolute` at the bottom of the active section's flow container (`.oferta-container` / `.hero-text-col`), with non-last sections reserving `padding-bottom: var(--scroll-hint-clearance)` (`src/styles/global.css`) under `prefers-reduced-motion: no-preference` so short sections keep the hint at the viewport bottom and taller sections grow to scroll the hint naturally into view below content. Shown whenever no transition runs and `current !== last`. Specs: `docs/superpowers/specs/2026-11-13-section-dots-scroll-hint-design.md`, `docs/superpowers/specs/2026-11-14-scroll-hint-tall-sections-design.md`.
 - **Transition lock:** While a transition runs (or while the mobile nav drawer `#nav-links.open` is open), `wheel` (excluding `ctrlKey` pinch-zoom) and single-finger vertical `touchmove` call `preventDefault()` so momentum cannot scroll the document mid-animation. Listeners stay in the bubble phase so `#design-system-tooltip` isolates its internal events via `stopPropagation()`.
 
 ### Page and Footer

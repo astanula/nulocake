@@ -17,7 +17,6 @@ import {
   SNAP_EASE,
   TRIGGER_PX,
   WHEEL_QUIET_MS,
-  SCROLL_HINT_GAP_PX,
   EDGE_EPSILON_PX,
   EDGE_GUARD_MS,
 } from '../config/animation';
@@ -98,14 +97,6 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
 
   // ── Scroll hint ────────────────────────────────────
 
-  /** Content ends above the hint. Layout offsets ignore transforms. */
-  function fitsAboveHint(sec: HTMLElement) {
-    if (!hint || !sec.getClientRects().length) return false;
-    const contentBottom = Array.from(sec.children as HTMLCollectionOf<HTMLElement>)
-      .reduce((max, el) => Math.max(max, el.offsetTop + el.offsetHeight), 0);
-    return sec.getBoundingClientRect().top + contentBottom + SCROLL_HINT_GAP_PX <= hint.getBoundingClientRect().top;
-  }
-
   function setHint(visible: boolean) {
     if (!hint) return;
     hint.classList.toggle('is-hidden', !visible);
@@ -113,7 +104,7 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
   }
 
   const updateHint = () => {
-    if (!transition) setHint(current !== last && fitsAboveHint(sections[current]));
+    if (!transition) setHint(current !== last);
   };
 
   // ── Transition ─────────────────────────────────────
@@ -136,7 +127,8 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
         activeOverride = null;
         applyActive();
         updateHint();
-        if (focusWasInside || (focusWasOnHint && hint?.inert)) sections[to].focus({ preventScroll: true });
+        const hintInViewport = !!hint && !hint.inert && maxScroll() <= EDGE_EPSILON_PX;
+        if (focusWasInside || (focusWasOnHint && !hintInViewport)) sections[to].focus({ preventScroll: true });
         // Hiding the hint (inert) dropped its focus; give it back if it is shown again.
         else if (focusWasOnHint) hint?.focus({ preventScroll: true });
       },
@@ -190,7 +182,6 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
         touch.scrolled = true;
       }
     }
-    updateHint();
   }, { passive: true, signal });
 
   window.addEventListener('wheel', (e) => {
@@ -334,13 +325,6 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
     : null;
   if (dock) footerObserver?.observe(dock);
 
-  // Re-check the hint when sections resize (viewport) or their content does (fonts, images).
-  const hintObserver = hint ? new ResizeObserver(updateHint) : null;
-  sections.forEach((sec) => {
-    hintObserver?.observe(sec);
-    Array.from(sec.children).forEach((el) => hintObserver?.observe(el));
-  });
-
   // ── Initial state ──────────────────────────────────
 
   document.documentElement.classList.add(PAGE_LOCK_CLASS);
@@ -360,7 +344,6 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
     master.kill();
     controller.abort();
     footerObserver?.disconnect();
-    hintObserver?.disconnect();
     setHint(false);
     setDots(0);
     document.documentElement.classList.remove(PAGE_LOCK_CLASS);

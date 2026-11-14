@@ -195,6 +195,13 @@ body {
   --subpage-top-offset-tablet: 3rem;
   --subpage-top-offset-mobile: 2rem;
   --subpage-top-offset: var(--subpage-top-offset-desktop);
+
+  --scroll-hint-bottom: 1.5rem;
+  --scroll-hint-height: 3.75rem;
+  --scroll-hint-gap: 2rem;
+  --scroll-hint-clearance: calc(
+    var(--scroll-hint-bottom) + var(--scroll-hint-height) + var(--scroll-hint-gap) + env(safe-area-inset-bottom)
+  );
 }
 
 .section-title-home {
@@ -230,6 +237,7 @@ body {
 @media (max-width: 768px) {
   :root {
     --subpage-top-offset: var(--subpage-top-offset-mobile);
+    --scroll-hint-height: 3rem;
   }
 
   .section-title-home {
