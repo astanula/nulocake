@@ -1,9 +1,11 @@
 ---
+import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
 import SectionDots from '../components/section-nav/SectionDots.astro';
 import ScrollHintArrow from '../components/stack-fade/ScrollHintArrow.astro';
+import { homeGalleryImages } from '../config/homeGallery';
 import { withBase } from '../utils/withBase';
 
 const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów', 'Kontakt'];
@@ -68,24 +70,23 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
               <span class="word accent-italic">dzieła</span> <span class="word">sztuki</span>
             </h2>
             <div class="gallery-carousel blur-in">
-              <div class="gallery-item">
-                <img src={withBase('gallery-1.webp')} alt="Artystyczny tort weselny z różowymi różami" width="400" height="400" loading="lazy" />
+              <div class="gallery-track" id="gallery-track">
+                {homeGalleryImages.map((img) => (
+                  <div class="gallery-item">
+                    <Image src={img.src} alt={img.alt} width={400} loading="lazy" />
+                  </div>
+                ))}
               </div>
-              <div class="gallery-item">
-                <img src={withBase('gallery-2.webp')} alt="Kolorowy tort urodzinowy z akwarelowym wzorem" width="400" height="400" loading="lazy" />
-              </div>
-              <div class="gallery-item">
-                <img src={withBase('gallery-3.webp')} alt="Elegancki minimalistyczny tort ze złotymi detalami" width="400" height="400" loading="lazy" />
-              </div>
-              <div class="gallery-item">
-                <img src={withBase('gallery-4.webp')} alt="Fantazyjny tort dziecięcy z figurkami" width="400" height="400" loading="lazy" />
-              </div>
-              <div class="gallery-item">
-                <img src={withBase('gallery-1.webp')} alt="Artystyczny tort weselny z różowymi różami" width="400" height="400" loading="lazy" />
-              </div>
-              <div class="gallery-item">
-                <img src={withBase('gallery-2.webp')} alt="Kolorowy tort urodzinowy z akwarelowym wzorem" width="400" height="400" loading="lazy" />
-              </div>
+              <button type="button" class="carousel-btn carousel-prev" aria-label="Poprzednie zdjęcia" aria-controls="gallery-track" aria-disabled="true" data-gallery-prev>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10 3L5 8l5 5"/>
+                </svg>
+              </button>
+              <button type="button" class="carousel-btn carousel-next" aria-label="Następne zdjęcia" aria-controls="gallery-track" data-gallery-next>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 3l5 5-5 5"/>
+                </svg>
+              </button>
             </div>
             <div class="section-cta-group blur-in">
               <a href={withBase('galeria')} class="btn-secondary" id="cta-full-galeria">Pełna Galeria</a>
@@ -415,9 +416,13 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
 
   /* ── Gallery Carousel ──────────────────────── */
   .gallery-carousel {
+    position: relative;
+    margin-top: 1.5rem;
+  }
+
+  .gallery-track {
     display: flex;
     gap: 0.75rem;
-    margin-top: 1.5rem;
     padding-bottom: 0.5rem; /* Room for focus/hover rings */
     overflow-x: auto;
     overflow-y: hidden;
@@ -426,7 +431,7 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
     -ms-overflow-style: none; /* IE and Edge */
   }
 
-  .gallery-carousel::-webkit-scrollbar {
+  .gallery-track::-webkit-scrollbar {
     display: none;
   }
 
@@ -515,6 +520,15 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
 
   .carousel-btn:active {
     transform: translateY(-50%) scale(0.95);
+  }
+
+  .gallery-carousel .carousel-btn:not([aria-disabled="true"]) {
+    opacity: 0.8;
+  }
+
+  .carousel-btn[aria-disabled="true"] {
+    opacity: 0.4;
+    cursor: default;
   }
 
   .carousel-prev {
@@ -666,6 +680,7 @@ let testimonialsAutoPlayInterval: ReturnType<typeof setInterval> | null = null;
   let phase1Call: gsap.core.Tween | null = null;
   let introTweens: gsap.core.Tween[] = [];
   let teardownSnap: (() => void) | null = null;
+  let teardownGallery: (() => void) | null = null;
 
   // `#hero-scroll-container` alone is not a home page signal (o-mnie.astro uses it too).
   const isHomePage = () => document.querySelector('.hero-section') !== null;
@@ -790,6 +805,8 @@ let testimonialsAutoPlayInterval: ReturnType<typeof setInterval> | null = null;
     if (!root || sections.length === 0) return;
 
     stopHomeAnimation();
+    teardownGallery?.();
+    teardownGallery = initGalleryCarousel();
 
     if (motionQuery.matches) {
       showStaticHome();
@@ -832,6 +849,8 @@ let testimonialsAutoPlayInterval: ReturnType<typeof setInterval> | null = null;
       if (!isHomePage()) return;
 
       stopHomeAnimation();
+      teardownGallery?.();
+      teardownGallery = null;
 
       // Clear testimonials auto-play interval
       if (testimonialsAutoPlayInterval) {
@@ -854,6 +873,51 @@ let testimonialsAutoPlayInterval: ReturnType<typeof setInterval> | null = null;
       }
     });
     window.motionQueryListenerAdded = true;
+  }
+
+  function initGalleryCarousel(): () => void {
+    const carousel = document.querySelector<HTMLElement>('.gallery-carousel');
+    const track = carousel?.querySelector<HTMLElement>('.gallery-track');
+    const prevBtn = carousel?.querySelector<HTMLButtonElement>('[data-gallery-prev]');
+    const nextBtn = carousel?.querySelector<HTMLButtonElement>('[data-gallery-next]');
+    const items = track ? Array.from(track.querySelectorAll<HTMLElement>('.gallery-item')) : [];
+    if (!carousel || !track || !prevBtn || !nextBtn || items.length === 0) return () => {};
+
+    const controller = new AbortController();
+    const { signal } = controller;
+    const updateButtons = () => {
+      const maxScroll = track.scrollWidth - track.clientWidth;
+      prevBtn.setAttribute('aria-disabled', String(track.scrollLeft <= 1));
+      nextBtn.setAttribute('aria-disabled', String(maxScroll <= 1 || track.scrollLeft >= maxScroll - 1));
+    };
+
+    const move = (direction: -1 | 1) => {
+      const button = direction === -1 ? prevBtn : nextBtn;
+      if (button.getAttribute('aria-disabled') === 'true') return;
+      const positions = items.map((item) => item.offsetLeft - items[0].offsetLeft);
+      const target = direction === 1
+        ? positions.find((position) => position > track.scrollLeft + 1)
+        : positions.findLast((position) => position < track.scrollLeft - 1);
+      if (target === undefined) return;
+      track.scrollTo({ left: target, behavior: motionQuery.matches ? 'instant' : 'smooth' });
+    };
+
+    prevBtn.addEventListener('click', () => move(-1), { signal });
+    nextBtn.addEventListener('click', () => move(1), { signal });
+    carousel.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      move(event.key === 'ArrowLeft' ? -1 : 1);
+    }, { signal });
+    track.addEventListener('scroll', updateButtons, { passive: true, signal });
+    const observer = new ResizeObserver(updateButtons);
+    observer.observe(track);
+    updateButtons();
+
+    return () => {
+      controller.abort();
+      observer.disconnect();
+    };
   }
 
   /* ═══════════════════════════════════════════
