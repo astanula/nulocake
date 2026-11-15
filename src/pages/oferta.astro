@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
 import SectionDots from '../components/section-nav/SectionDots.astro';
-import SectionNavRail from '../components/section-nav/SectionNavRail.astro';
+import ScrollHintArrow from '../components/stack-fade/ScrollHintArrow.astro';
 import CakeSizeGuide from '../components/offer/CakeSizeGuide.astro';
 import FlavorSelector from '../components/offer/FlavorSelector.astro';
 import { withBase } from '../utils/withBase';
@@ -15,9 +15,8 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
   <Navigation />
 
   <main id="hero-scroll-container" class="oferta-container" tabindex="-1">
-    <SectionNavRail class="oferta-nav-rail">
-      <SectionDots labels={sectionLabels} />
-    </SectionNavRail>
+    <SectionDots labels={sectionLabels} class="oferta-dots" />
+    <ScrollHintArrow class="oferta-hint" />
 
     <!-- Sekcja 1: Co kryje się w środku? -->
     <section class="oferta-section is-active" aria-label={sectionLabels[0]} tabindex="-1">
@@ -176,6 +175,24 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
     --home-footer-h: 0px;
   }
 
+  .oferta-container .oferta-dots {
+    position: fixed;
+    left: calc(
+      var(--section-dots-offset) + var(--section-dot-mark-size) * (var(--section-dot-active-scale) - 1) / 2
+    );
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+  }
+
+  .oferta-container .oferta-hint {
+    position: fixed;
+    left: 50%;
+    bottom: calc(var(--scroll-hint-bottom) + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    z-index: 5;
+  }
+
   .oferta-section {
     position: relative;
     min-height: 100dvh;
@@ -219,7 +236,8 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
       pointer-events: auto;
     }
 
-    .oferta-nav-rail {
+    .oferta-container .oferta-dots,
+    .oferta-container .oferta-hint {
       display: none;
     }
   }

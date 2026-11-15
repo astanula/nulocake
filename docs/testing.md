@@ -27,7 +27,8 @@ before running the suite; tests do not reuse an existing server.
 
 In the default dev mode, the test server rebuilds Vite's dependency
 optimizations at startup in `node_modules/.vite-e2e`, separate from the normal
-dev server's cache. Startup can take longer, and dependencies discovered later
+dev server's cache. It also disables Astro's dev toolbar so it cannot cover
+site controls. Startup can take longer, and dependencies discovered later
 can still trigger re-optimization. `TEST_MODE=preview` uses a production build
 instead and does not use this test dev-server cache.
 

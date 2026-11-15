@@ -11,6 +11,7 @@ import { waitForHydration } from '../helpers/hydration';
 test.describe('Landing page smoke', () => {
   test('page loads and basic infrastructure works', async ({ page }) => {
     // 1. Navigate to the landing page
+    await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto(testConfig.routes.landing);
 
     // 2. Wait for Astro hydration

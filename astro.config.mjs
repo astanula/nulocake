@@ -17,6 +17,7 @@ export default defineConfig({
     port: 4321,
     host: '127.0.0.1',
   },
+  ...(isE2eDevServer ? { devToolbar: { enabled: false } } : {}),
   vite: {
     ...(isE2eDevServer ? { cacheDir: e2eViteCacheDir } : {}),
     plugins: [responsiveMediaPlugin(), tailwindcss()],

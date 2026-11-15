@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
 import SectionDots from '../components/section-nav/SectionDots.astro';
-import SectionNavRail from '../components/section-nav/SectionNavRail.astro';
+import ScrollHintArrow from '../components/stack-fade/ScrollHintArrow.astro';
 import { withBase } from '../utils/withBase';
 
 const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów', 'Kontakt'];
@@ -17,13 +17,11 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
        Split-screen: Left = text sections, Right = pinned video
        ═══════════════════════════════════════════ -->
   <main id="hero-scroll-container" class="hero-container" tabindex="-1">
+    <SectionDots labels={sectionLabels} class="home-dots" />
+    <ScrollHintArrow class="home-hint" />
     <div class="hero-sticky-wrapper">
       <!-- ── LEFT: Scrolling Text Sections ──────── -->
       <div class="hero-text-col">
-        <SectionNavRail class="home-nav-rail">
-          <SectionDots labels={sectionLabels} />
-        </SectionNavRail>
-
         <!-- Section 1: Hero / Above the Fold -->
         <section id="section-hero" class="hero-section" aria-label="Strona główna" tabindex="-1">
           <div class="hero-section-inner">
@@ -228,6 +226,24 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
     --home-footer-h: 0px;
   }
 
+  .hero-container .home-dots {
+    position: fixed;
+    left: calc(
+      var(--section-dots-offset) + var(--section-dot-mark-size) * (var(--section-dot-active-scale) - 1) / 2
+    );
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+  }
+
+  .hero-container .home-hint {
+    position: fixed;
+    left: 50%;
+    bottom: calc(var(--scroll-hint-bottom) + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    z-index: 5;
+  }
+
   .hero-sticky-wrapper {
     min-height: 100dvh;
     display: grid;
@@ -297,7 +313,8 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
       pointer-events: auto;
     }
 
-    .home-nav-rail {
+    .hero-container .home-dots,
+    .hero-container .home-hint {
       display: none;
     }
 

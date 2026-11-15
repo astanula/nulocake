@@ -243,10 +243,7 @@ body {
   --md-scroll-hint-width: 16px;
   --lg-scroll-hint-width: 16px;
   --scroll-hint-width: var(--lg-scroll-hint-width);
-  --sm-scroll-hint-gap: 0.5rem;
-  --md-scroll-hint-gap: 1rem;
-  --lg-scroll-hint-gap: 1.5rem;
-  --scroll-hint-gap: var(--lg-scroll-hint-gap);
+  --scroll-hint-bottom: 1.5rem;
 
   --title-home-min: var(--title-home-large-desktop-min);
   --title-home-fluid: var(--title-home-large-desktop-fluid);
@@ -303,7 +300,6 @@ body {
     --subpage-top-offset: var(--subpage-top-offset-laptop);
     --layout-max-width: var(--layout-max-width-laptop);
     --scroll-hint-width: var(--md-scroll-hint-width);
-    --scroll-hint-gap: var(--md-scroll-hint-gap);
   }
 }
 
@@ -341,7 +337,6 @@ body {
     --section-dot-size: 1.25rem;
     --section-dot-mark-size: 6px;
     --scroll-hint-width: var(--sm-scroll-hint-width);
-    --scroll-hint-gap: var(--sm-scroll-hint-gap);
   }
 }
 

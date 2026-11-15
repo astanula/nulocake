@@ -15,6 +15,7 @@ const { class: className, ...rest } = Astro.props;
 
 <style>
   .section-nav-rail {
+    --scroll-hint-gap: 1.5rem;
     /* Preserve the configured edge gap when a centered dot scales up. */
     --dot-mark-offset: calc(
       var(--section-dots-offset) + var(--section-dot-mark-size) * (var(--section-dot-active-scale) - 1) / 2
@@ -52,5 +53,17 @@ const { class: className, ...rest } = Astro.props;
     justify-self: start;
     margin-top: var(--hint-start-gap);
     pointer-events: auto;
+  }
+
+  @media (--below-desktop) {
+    .section-nav-rail {
+      --scroll-hint-gap: 1rem;
+    }
+  }
+
+  @media (--below-tablet) {
+    .section-nav-rail {
+      --scroll-hint-gap: 0.5rem;
+    }
   }
 </style>

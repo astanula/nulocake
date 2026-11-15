@@ -1,6 +1,7 @@
 import { test, expect } from '../fixtures/base-fixture';
 import { testConfig, navLinkSelector } from '../test-config';
 import { waitForHydration } from '../helpers/hydration';
+import { scrollToDeterministicPosition } from '../helpers/scroll';
 
 /**
  * Tests for homepage astro:page-load listener accumulation fix.
@@ -176,7 +177,14 @@ test.describe('Homepage page-load listener accumulation fix', () => {
       };
     });
 
-    await page.locator('[data-scroll-hint]').click();
+    const hint = page.locator('[data-scroll-hint]');
+    const ctaDistance = await page.locator('#section-hero .section-cta-group').evaluate(
+      (el) => Math.max(0, el.getBoundingClientRect().bottom - window.innerHeight),
+    );
+    if (ctaDistance > 0) {
+      await scrollToDeterministicPosition(page, Math.ceil(ctaDistance) + 1);
+    }
+    await hint.click();
     await expect(page.locator('#section-story')).toHaveClass(/is-active/);
 
     // Only one snap transition should fire (not accumulated)

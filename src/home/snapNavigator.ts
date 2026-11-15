@@ -4,6 +4,7 @@
  * - docs/superpowers/specs/2026-11-13-home-snap-navigation-design.md
  * - docs/superpowers/specs/2026-11-13-section-dots-scroll-hint-design.md
  * - docs/superpowers/specs/2026-11-14-oferta-snap-navigation-design.md
+ * - docs/superpowers/specs/2026-11-15-scroll-hint-bottom-overlay-design.md
  *
  * Input only requests a transition (one wheel/touch gesture past TRIGGER_PX at
  * the active section's scroll edge, or a key press). The transition then plays
@@ -25,6 +26,7 @@ import type { SectionTimeline } from './sectionTimeline';
 type Dir = 1 | -1;
 
 const PAGE_LOCK_CLASS = 'home-snap-active';
+const SUBPIXEL_EPSILON_PX = 0.5;
 
 const isMenuOpen = () => !!document.getElementById('nav-links')?.classList.contains('open');
 
@@ -42,6 +44,21 @@ const isAtEdge = (dir: Dir) =>
 const segmentDuration = (a: number, b: number) =>
   (Math.abs(b - a) / PX_PER_WU) * SNAP_MS_PER_WU / 1000;
 
+function getContentRoot(section: HTMLElement): HTMLElement {
+  return section.querySelector<HTMLElement>(':scope > .hero-section-inner, :scope > .content-section-inner') ?? section;
+}
+
+function isLastItemFullyVisible(section: HTMLElement): boolean {
+  const children = Array.from(getContentRoot(section).children) as HTMLElement[];
+  for (let i = children.length - 1; i >= 0; i--) {
+    const item = children[i];
+    if (item.hidden || item.classList.contains('visually-hidden') || item.getClientRects().length === 0) continue;
+    const rect = item.getBoundingClientRect();
+    return rect.height > 0 && rect.bottom <= window.innerHeight + SUBPIXEL_EPSILON_PX;
+  }
+  return false;
+}
+
 export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline): () => void {
   const { tl: master, sections, sectionStarts, rest, outroStart, outroEnd, activeIndexAt } = timeline;
   const last = sections.length - 1;
@@ -55,6 +72,7 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
   let shown = -1;
   let activeOverride: number | null = null;
   let transition: gsap.core.Timeline | null = null;
+  let hintVisible: boolean | null = null;
   let lastScrollY = window.scrollY;
   let lastNativeScroll = -Infinity;
   // A gesture is one touch, or a run of wheel events without a WHEEL_QUIET_MS gap.
@@ -98,13 +116,14 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
   // ── Scroll hint ────────────────────────────────────
 
   function setHint(visible: boolean) {
-    if (!hint) return;
+    if (!hint || visible === hintVisible) return;
+    hintVisible = visible;
     hint.classList.toggle('is-hidden', !visible);
     hint.inert = !visible;
   }
 
   const updateHint = () => {
-    if (!transition) setHint(current !== last);
+    if (!transition) setHint(current !== last && isLastItemFullyVisible(sections[current]));
   };
 
   // ── Transition ─────────────────────────────────────
@@ -127,8 +146,7 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
         activeOverride = null;
         applyActive();
         updateHint();
-        const hintInViewport = !!hint && !hint.inert && maxScroll() <= EDGE_EPSILON_PX;
-        if (focusWasInside || (focusWasOnHint && !hintInViewport)) sections[to].focus({ preventScroll: true });
+        if (focusWasInside || (focusWasOnHint && (!hint || hint.inert))) sections[to].focus({ preventScroll: true });
         // Hiding the hint (inert) dropped its focus; give it back if it is shown again.
         else if (focusWasOnHint) hint?.focus({ preventScroll: true });
       },
@@ -180,9 +198,13 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
       if (!transition) {
         lastNativeScroll = performance.now();
         touch.scrolled = true;
+        updateHint();
       }
     }
   }, { passive: true, signal });
+
+  window.addEventListener('resize', updateHint, { passive: true, signal });
+  window.visualViewport?.addEventListener('resize', updateHint, { passive: true, signal });
 
   window.addEventListener('wheel', (e) => {
     const now = performance.now();
@@ -324,6 +346,12 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
     ? new ResizeObserver(() => root.style.setProperty('--home-footer-h', `${dock.offsetHeight}px`))
     : null;
   if (dock) footerObserver?.observe(dock);
+  const hintObserver = hint ? new ResizeObserver(updateHint) : null;
+  sections.forEach((section) => {
+    hintObserver?.observe(section);
+    const content = getContentRoot(section);
+    if (content !== section) hintObserver?.observe(content);
+  });
 
   // ── Initial state ──────────────────────────────────
 
@@ -344,6 +372,7 @@ export function mountSnapNavigator(root: HTMLElement, timeline: SectionTimeline)
     master.kill();
     controller.abort();
     footerObserver?.disconnect();
+    hintObserver?.disconnect();
     setHint(false);
     setDots(0);
     document.documentElement.classList.remove(PAGE_LOCK_CLASS);

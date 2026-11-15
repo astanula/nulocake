@@ -153,8 +153,8 @@ test.describe('Home Snap Section Navigation', () => {
 
     await page.keyboard.press('ArrowDown');
     await expect(page.locator('#section-story')).toHaveClass(/is-active/);
-    await expect(hero.hint).not.toHaveClass(/is-hidden/);
+    await expect(hero.hint).toHaveClass(/is-hidden/);
+    await expect(hero.hint).toHaveJSProperty('inert', true);
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
   });
 });
-

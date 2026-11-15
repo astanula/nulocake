@@ -2,7 +2,7 @@
 /**
  * Animated "scroll down" hint for section navigation.
  * Page controllers wire `[data-scroll-hint]` and toggle its visibility.
- * The navigation rail supplies the sizing and alignment variables.
+ * Sizing follows the global scroll-hint width token.
  */
 interface Props {
   label?: string;
@@ -28,9 +28,12 @@ const { label = 'Następna sekcja', class: className, ...rest } = Astro.props;
 
 <style>
   .scroll-hint {
+    --hint-travel: calc(var(--scroll-hint-width) * 1.325825);
+    --hint-track-height: calc(var(--scroll-hint-width) + 2 * var(--hint-travel));
+    --hint-target-height: max(44px, var(--hint-track-height));
     position: relative;
     display: block;
-    width: 44px;
+    width: max(44px, var(--scroll-hint-width));
     height: var(--hint-target-height);
     padding: 0;
     color: var(--color-on-surface);
@@ -70,7 +73,7 @@ const { label = 'Następna sekcja', class: className, ...rest } = Astro.props;
   /* Down chevron: right + bottom borders of a square rotated 45°. */
   .scroll-hint-chevron {
     position: absolute;
-    left: var(--hint-axis);
+    left: var(--hint-axis, 50%);
     top: 50%;
     width: calc(var(--scroll-hint-width) * 0.707107);
     height: calc(var(--scroll-hint-width) * 0.707107);
