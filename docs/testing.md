@@ -25,6 +25,12 @@ Playwright starts its own server on port 4350, separate from the usual
 development server on port 4321. Stop any process already using port 4350
 before running the suite; tests do not reuse an existing server.
 
+In the default dev mode, the test server rebuilds Vite's dependency
+optimizations at startup in `node_modules/.vite-e2e`, separate from the normal
+dev server's cache. Startup can take longer, and dependencies discovered later
+can still trigger re-optimization. `TEST_MODE=preview` uses a production build
+instead and does not use this test dev-server cache.
+
 ### Run single test by exact name
 `npx playwright test -g "^exact test name$" --config=tests/e2e/playwright.config.ts`
 

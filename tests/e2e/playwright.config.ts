@@ -16,6 +16,7 @@ const port = 4350;
 const webServerByMode = {
   dev: {
     command: `npm run dev -- --port ${port}`,
+    env: { NULO_E2E_VITE: '1' },
   },
   preview: {
     command: `npm run build && npm run preview -- --port ${port}`,
@@ -44,7 +45,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: webServerByMode[mode].command,
+    ...webServerByMode[mode],
     port,
     // A reused server may be running an older build or different configuration.
     reuseExistingServer: false,
