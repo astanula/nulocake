@@ -90,7 +90,7 @@ const { label = 'Następna sekcja', class: className, ...rest } = Astro.props;
     100% { opacity: 0; transform: translateY(0.75em) rotate(45deg); }
   }
 
-  @media (max-width: 768px) {
+  @media (--below-tablet) {
     .scroll-hint {
       font-size: 2rem;
     }

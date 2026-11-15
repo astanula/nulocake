@@ -8,13 +8,16 @@
  */
 
 import {
-  BREAKPOINTS as GALLERY_BREAKPOINTS,
-  GALLERY_PADDING_DESKTOP,
-  GALLERY_PADDING_MOBILE,
+  GALLERY_COLUMNS_BY_TIER,
+  GALLERY_PADDING_BY_TIER,
   IMAGE_BORDER_RADIUS,
   IMAGE_GAP,
 } from './gallery';
-import { BREAKPOINTS, LAYOUT_METRICS, type ViewportTierId } from './responsive';
+import {
+  LAYOUT_METRICS,
+  VIEWPORT_TIERS,
+  type ViewportTierId,
+} from './responsive';
 
 export const HOVER_INTENT_MS = 180;
 export const TOOLTIP_ANCHOR_GAP_PX = 12;
@@ -307,28 +310,45 @@ export const TYPOGRAPHY_SCALE: readonly TypographyScaleEntry[] = [
 export interface SectionTitleScaleEntry {
   selector: string;
   label: string;
-  desktopVars: readonly [string, string, string];
-  mobileVars: readonly [string, string, string];
+  varsByTier: Record<ViewportTierId, readonly [string, string, string]>;
 }
 
 export const SECTION_TITLE_SCALES: readonly SectionTitleScaleEntry[] = [
   {
     selector: '.section-title-home',
     label: 'Home Section Title',
-    desktopVars: ['--title-home-desktop-min', '--title-home-desktop-fluid', '--title-home-desktop-max'],
-    mobileVars: ['--title-home-mobile-min', '--title-home-mobile-fluid', '--title-home-mobile-max'],
+    varsByTier: {
+      'large-desktop': ['--title-home-large-desktop-min', '--title-home-large-desktop-fluid', '--title-home-large-desktop-max'],
+      desktop: ['--title-home-desktop-min', '--title-home-desktop-fluid', '--title-home-desktop-max'],
+      laptop: ['--title-home-laptop-min', '--title-home-laptop-fluid', '--title-home-laptop-max'],
+      tablet: ['--title-home-tablet-min', '--title-home-tablet-fluid', '--title-home-tablet-max'],
+      mobile: ['--title-home-mobile-min', '--title-home-mobile-fluid', '--title-home-mobile-max'],
+      'small-mobile': ['--title-home-small-mobile-min', '--title-home-small-mobile-fluid', '--title-home-small-mobile-max'],
+    },
   },
   {
     selector: '.section-title-lg',
     label: 'Subpage Title LG',
-    desktopVars: ['--title-lg-desktop-min', '--title-lg-desktop-fluid', '--title-lg-desktop-max'],
-    mobileVars: ['--title-lg-mobile-min', '--title-lg-mobile-fluid', '--title-lg-mobile-max'],
+    varsByTier: {
+      'large-desktop': ['--title-lg-large-desktop-min', '--title-lg-large-desktop-fluid', '--title-lg-large-desktop-max'],
+      desktop: ['--title-lg-desktop-min', '--title-lg-desktop-fluid', '--title-lg-desktop-max'],
+      laptop: ['--title-lg-laptop-min', '--title-lg-laptop-fluid', '--title-lg-laptop-max'],
+      tablet: ['--title-lg-tablet-min', '--title-lg-tablet-fluid', '--title-lg-tablet-max'],
+      mobile: ['--title-lg-mobile-min', '--title-lg-mobile-fluid', '--title-lg-mobile-max'],
+      'small-mobile': ['--title-lg-small-mobile-min', '--title-lg-small-mobile-fluid', '--title-lg-small-mobile-max'],
+    },
   },
   {
     selector: '.section-title-sm',
     label: 'Subpage Title SM',
-    desktopVars: ['--title-sm-desktop-min', '--title-sm-desktop-fluid', '--title-sm-desktop-max'],
-    mobileVars: ['--title-sm-mobile-min', '--title-sm-mobile-fluid', '--title-sm-mobile-max'],
+    varsByTier: {
+      'large-desktop': ['--title-sm-large-desktop-min', '--title-sm-large-desktop-fluid', '--title-sm-large-desktop-max'],
+      desktop: ['--title-sm-desktop-min', '--title-sm-desktop-fluid', '--title-sm-desktop-max'],
+      laptop: ['--title-sm-laptop-min', '--title-sm-laptop-fluid', '--title-sm-laptop-max'],
+      tablet: ['--title-sm-tablet-min', '--title-sm-tablet-fluid', '--title-sm-tablet-max'],
+      mobile: ['--title-sm-mobile-min', '--title-sm-mobile-fluid', '--title-sm-mobile-max'],
+      'small-mobile': ['--title-sm-small-mobile-min', '--title-sm-small-mobile-fluid', '--title-sm-small-mobile-max'],
+    },
   },
 ];
 
@@ -367,54 +387,59 @@ export const MATERIALITY_RULES: readonly MaterialityRule[] = [
 ];
 
 export interface ResponsiveTierSpec {
-  id: ViewportTierId | 'subtiers';
+  id: ViewportTierId;
   tierName: string;
   rangeLabel: string;
   highlights: readonly string[];
   dynamicVars?: readonly string[];
 }
 
-export const RESPONSIVE_TIERS: readonly ResponsiveTierSpec[] = [
-  {
-    id: 'desktop',
-    tierName: 'Desktop Tier',
-    rangeLabel: `≥ ${BREAKPOINTS.desktopMin}px`,
-    dynamicVars: ['--layout-max-width'],
-    highlights: [
-      `1fr / 1fr split-screen Hero (${LAYOUT_METRICS.homeSplitColDesktopMaxPx}px max column measure)`,
-      'Horizontal top bar with GSAP limelight indicator & Header CTA',
-      `4-column infinite gallery (≥${GALLERY_BREAKPOINTS.desktop}px, ${GALLERY_PADDING_DESKTOP} inline padding, ${IMAGE_GAP} gap)`,
-    ],
-  },
-  {
-    id: 'tablet',
-    tierName: 'Tablet Tier',
-    rangeLabel: `${BREAKPOINTS.tabletMin}px – ${BREAKPOINTS.tabletMax}px`,
-    highlights: [
-      `Compact 2-column split on Home (${LAYOUT_METRICS.homeSplitTextTabletMaxPx}px text / ${LAYOUT_METRICS.homeSplitMediaTabletMaxPx}px media)`,
-      `Contact 2-column layout stacks into single column at ≤${BREAKPOINTS.contactStackMax}px`,
-      `3-column infinite gallery (${GALLERY_BREAKPOINTS.tablet}px–${GALLERY_BREAKPOINTS.desktop - 1}px)`,
-    ],
-  },
-  {
-    id: 'mobile',
-    tierName: 'Mobile Tier',
-    rangeLabel: `≤ ${BREAKPOINTS.mobileMax}px`,
-    dynamicVars: ['--title-home-mobile-min', '--title-home-mobile-fluid', '--title-home-mobile-max'],
-    highlights: [
-      `Single-column stack; off-canvas glass drawer (${LAYOUT_METRICS.mobileDrawerWidthPct}% width, max ${LAYOUT_METRICS.mobileDrawerMaxWidthPx}px, ${LAYOUT_METRICS.dynamicViewportUnit})`,
-      'Flavor Selector switches from master-detail radio grid to native <details> accordion',
-      `2-column infinite gallery (<${GALLERY_BREAKPOINTS.tablet}px, ${GALLERY_PADDING_MOBILE} inline padding, ${IMAGE_BORDER_RADIUS} radius)`,
-    ],
-  },
-  {
-    id: 'subtiers',
-    tierName: 'Compact & Device Resilience',
-    rangeLabel: `≤ ${BREAKPOINTS.smallMobileMax}px / ≤ ${BREAKPOINTS.compactMobileMax}px`,
-    highlights: [
-      `Full-width chat channel tiles at ≤${BREAKPOINTS.smallMobileMax}px; condensed size-guide cells at ≤${BREAKPOINTS.compactMobileMax}px`,
-      `Viewport stability via ${LAYOUT_METRICS.dynamicViewportUnit} + iOS ${LAYOUT_METRICS.safeAreaBottomExpr}`,
-      `Touch optimization: min ${LAYOUT_METRICS.minTouchTargetPx}px hit targets, touch-action: manipulation, prefers-reduced-motion fallback`,
-    ],
-  },
+const RESPONSIVE_TIER_ORDER_DESCENDING: readonly ViewportTierId[] = [
+  'large-desktop',
+  'desktop',
+  'laptop',
+  'tablet',
+  'mobile',
+  'small-mobile',
 ];
+
+function galleryHighlight(tier: ViewportTierId): string {
+  return `${GALLERY_COLUMNS_BY_TIER[tier]}-column infinite gallery (${GALLERY_PADDING_BY_TIER[tier]} inline padding, ${IMAGE_GAP} gap, ${IMAGE_BORDER_RADIUS} radius)`;
+}
+
+function splitHighlight(tier: 'tablet' | 'laptop' | 'desktop' | 'large-desktop'): string {
+  return `Home split layout (${LAYOUT_METRICS.homeSplitTextMaxPx[tier]}px text / ${LAYOUT_METRICS.homeSplitMediaMaxPx[tier]}px media max measure)`;
+}
+
+function mobileHighlights(tier: 'mobile' | 'small-mobile'): readonly string[] {
+  return [
+    `Single-column stack; off-canvas glass drawer (${LAYOUT_METRICS.mobileDrawerWidthPct[tier]}% width, max ${LAYOUT_METRICS.mobileDrawerMaxWidthPx[tier]}px)`,
+    'Flavor Selector switches from master-detail radio grid to native <details> accordion',
+    galleryHighlight(tier),
+    `Viewport stability via ${LAYOUT_METRICS.dynamicViewportUnit} + iOS ${LAYOUT_METRICS.safeAreaBottomExpr}`,
+    `Touch optimization: min ${LAYOUT_METRICS.minTouchTargetPx}px hit targets, touch-action: manipulation, prefers-reduced-motion fallback`,
+  ];
+}
+
+function tierHighlights(tier: ViewportTierId): readonly string[] {
+  if (tier === 'small-mobile' || tier === 'mobile') return mobileHighlights(tier);
+  return [
+    splitHighlight(tier),
+    tier === 'tablet'
+      ? 'Compact 2-column split on Home'
+      : 'Horizontal top bar with GSAP limelight indicator & Header CTA',
+    galleryHighlight(tier),
+  ];
+}
+
+export const RESPONSIVE_TIERS: readonly ResponsiveTierSpec[] = RESPONSIVE_TIER_ORDER_DESCENDING.map(
+  (id) => ({
+    id,
+    tierName: `${VIEWPORT_TIERS[id].label} Tier`,
+    rangeLabel: VIEWPORT_TIERS[id].range,
+    dynamicVars: id === 'mobile'
+      ? ['--title-home-mobile-min', '--title-home-mobile-fluid', '--title-home-mobile-max']
+      : ['--layout-max-width'],
+    highlights: tierHighlights(id),
+  }),
+);

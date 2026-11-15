@@ -3,6 +3,8 @@
  * Shared between build-time layout and client-side GSAP animation.
  */
 
+import { CUSTOM_MEDIA, type ViewportTierId } from './responsive';
+
 /** Duration (seconds) for one full loop cycle per column. */
 export const COLUMN_SPEEDS = [200, 220, 250, 150] as const;
 
@@ -12,20 +14,26 @@ export const IMAGE_GAP = '16px';
 /** Border radius for the gallery images. E.g. '8px', '12px', '16px' etc. */
 export const IMAGE_BORDER_RADIUS = '8px';
 
-/** Side padding for the gallery container on desktop viewports. */
-export const GALLERY_PADDING_DESKTOP = '12rem';
+export const GALLERY_COLUMNS_BY_TIER: Record<ViewportTierId, number> = {
+  'small-mobile': 2,
+  mobile: 2,
+  tablet: 3,
+  laptop: 4,
+  desktop: 4,
+  'large-desktop': 4,
+};
 
-/** Side padding for the gallery container on mobile viewports. */
-export const GALLERY_PADDING_MOBILE = '1.5rem';
+export const GALLERY_PADDING_BY_TIER: Record<ViewportTierId, string> = {
+  'small-mobile': '1.5rem',
+  mobile: '1.5rem',
+  tablet: '12rem',
+  laptop: '12rem',
+  desktop: '12rem',
+  'large-desktop': '12rem',
+};
 
-/** Responsive breakpoints for column count. */
-export const BREAKPOINTS = {
-  /** ≥1024px → 4 columns */
-  desktop: 1024,
-  /** ≥640px → 3 columns */
-  tablet: 640,
-  // Below 640px → 2 columns (implicit)
-} as const;
+export const GALLERY_IMAGE_SIZES =
+  `${CUSTOM_MEDIA['--below-tablet']} 50vw, ${CUSTOM_MEDIA['--below-laptop']} 33vw, 25vw`;
 
 /** Duration (seconds) for smooth timeScale transitions on hover. */
 export const HOVER_TRANSITION_DURATION = 0.4;
@@ -126,4 +134,3 @@ export const PREVIEW_THUMB_RES = 160;
 
 /** Generated width for side-peek images. */
 export const PREVIEW_PEEK_RES = 600;
-

@@ -23,6 +23,7 @@ Clean, modern sans-serif fonts that balance editorial elegance with readability.
 - **Editorial Split-Screen:** Favor asymmetrical and split-screen layouts (e.g., text sections scrolling on one side, imagery/video pinned on the other).
 - **Whitespace:** Generous use of padding and whitespace to let content breathe and feel premium.
 - **Dark Canvas:** Elements should blend seamlessly into the dark background, with glowing accents used sparingly for emphasis (e.g., radial gradients behind media).
+- **Viewport Tiers:** Use the six canonical, non-overlapping tiers: `small-mobile` `<420px`, `mobile` `420–767px`, `tablet` `768–1023px`, `laptop` `1024–1279px`, `desktop` `1280–1535px`, and `large-desktop` `≥1536px`.
 
 ## Interactions & Animation
 - **Scroll-Driven Storytelling:** Leverage GSAP & ScrollTrigger to reveal content smoothly as the user scrolls.
@@ -31,4 +32,6 @@ Clean, modern sans-serif fonts that balance editorial elegance with readability.
 
 ## Implementation Rules
 - Core design tokens are maintained in `src/styles/global.css`.
+- `src/config/responsive.ts` is the responsive single source of truth: use `TIER_MIN_WIDTH_PX`, `CUSTOM_MEDIA`, `VIEWPORT_TIERS`, `getViewportTier()`, and `LAYOUT_METRICS`. Its six-tier CSS custom properties are maintained alongside the global design tokens in `src/styles/global.css`.
+- Write responsive CSS with `@media (--...)` tokens only. `src/build/responsiveMediaPlugin.ts` expands these custom-media tokens and enforces the rule at build time.
 - GSAP is the standard for complex scroll animations and staggering elements.

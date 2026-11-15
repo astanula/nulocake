@@ -565,9 +565,9 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
   }
 
   /* ═══════════════════════════════════════════
-     RESPONSIVE — TABLET (769px–1024px)
+     RESPONSIVE — TABLET TIER
      ═══════════════════════════════════════════ */
-  @media (min-width: 769px) and (max-width: 1024px) {
+  @media (--tablet-only) {
     .hero-section {
       padding: 3rem 1.5rem 3rem 3.5rem;
     }
@@ -589,7 +589,7 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
   /* ═══════════════════════════════════════════
      RESPONSIVE — MOBILE COLLAPSE
      ═══════════════════════════════════════════ */
-  @media (max-width: 768px) {
+  @media (--below-tablet) {
     .hero-sticky-wrapper {
       display: grid;
       grid-template-columns: 1fr;

@@ -201,9 +201,7 @@ const totalColorTokens = COLOR_TOKEN_GROUPS.reduce((sum, group) => sum + group.t
                 </span>
                 <code
                   class="ds-type-formula"
-                  data-ds-section-clamp
-                  data-desktop-vars={scale.desktopVars.join(',')}
-                  data-mobile-vars={scale.mobileVars.join(',')}
+                  data-ds-section-clamp={JSON.stringify(scale.varsByTier)}
                 />
               </li>
             ))}
@@ -360,11 +358,36 @@ const totalColorTokens = COLOR_TOKEN_GROUPS.reduce((sum, group) => sum + group.t
     });
 
     tooltip.querySelectorAll<HTMLElement>('[data-ds-section-clamp]').forEach((el) => {
-      const dVars = (el.dataset.desktopVars ?? '').split(',').map((v) => readVar(styles, v));
-      const mVars = (el.dataset.mobileVars ?? '').split(',').map((v) => readVar(styles, v));
-      const dClamp = `clamp(${dVars.join(', ')})`;
-      const mClamp = `clamp(${mVars.join(', ')})`;
-      el.textContent = dClamp === mClamp ? `All tiers: ${dClamp}` : `Desktop: ${dClamp} · Mobile: ${mClamp}`;
+      const tierOrder = [
+        'large-desktop',
+        'desktop',
+        'laptop',
+        'tablet',
+        'mobile',
+        'small-mobile',
+      ];
+      const varsByTier = JSON.parse(el.dataset.dsSectionClamp ?? '{}') as Record<string, string[]>;
+      const formulas = tierOrder.map((tier) => ({
+        tier,
+        formula: `clamp(${(varsByTier[tier] ?? []).map((cssVar) => readVar(styles, cssVar)).join(', ')})`,
+      }));
+      const groups: { start: string; end: string; formula: string; count: number }[] = [];
+
+      formulas.forEach(({ tier, formula }) => {
+        const previous = groups[groups.length - 1];
+        if (previous?.formula === formula) {
+          previous.end = tier;
+          previous.count += 1;
+        } else {
+          groups.push({ start: tier, end: tier, formula, count: 1 });
+        }
+      });
+
+      el.textContent = groups.length === 1
+        ? `All tiers: ${groups[0].formula}`
+        : groups
+          .map((group) => `${group.count === 1 ? group.start : `${group.start}–${group.end}`}: ${group.formula}`)
+          .join(' · ');
     });
 
     tooltip.querySelectorAll<HTMLElement>('[data-ds-rule-vars]').forEach((el) => {
@@ -1185,13 +1208,13 @@ const totalColorTokens = COLOR_TOKEN_GROUPS.reduce((sum, group) => sum + group.t
   }
 
   /* ── Responsive Adaptation of the Sheet Itself ─── */
-  @media (max-width: 960px) {
+  @media (--below-laptop) {
     .ds-bento {
       grid-template-columns: 1fr;
     }
   }
 
-  @media (max-width: 640px) {
+  @media (--below-tablet) {
     .ds-tooltip {
       padding: 1rem;
     }

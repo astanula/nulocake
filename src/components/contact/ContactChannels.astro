@@ -168,7 +168,7 @@ const activeChannels = CONTACT_CHANNELS.filter((channel) => channel.recipient);
     display: none;
   }
 
-  @media (max-width: 480px) {
+  @media (--below-mobile) {
     .channel-list li {
       flex-basis: 6rem;
     }

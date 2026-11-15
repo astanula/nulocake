@@ -393,7 +393,7 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
     height: 1.5rem;
   }
 
-  @media (min-width: 769px) and (max-width: 1024px) {
+  @media (--tablet-only) {
     .oferta-section {
       padding: calc(4.5rem + var(--subpage-top-offset)) 1.5rem 3.5rem 3.5rem;
     }
@@ -407,7 +407,7 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
     }
   }
 
-  @media (max-width: 768px) {
+  @media (--below-tablet) {
     .oferta-section {
       padding: calc(4.5rem + var(--subpage-top-offset)) 1.5rem 3.5rem 2.25rem;
       justify-content: flex-start;

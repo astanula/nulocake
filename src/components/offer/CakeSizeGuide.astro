@@ -237,7 +237,7 @@ const multiTierSizes = [
     line-height: 1.6;
   }
 
-  @media (max-width: 768px) {
+  @media (--below-tablet) {
     .cake-size-guide {
       grid-template-columns: minmax(0, 1fr);
     }
@@ -247,7 +247,7 @@ const multiTierSizes = [
     }
   }
 
-  @media (max-width: 360px) {
+  @media (--below-mobile) {
     .cake-size-guide__portion-number {
       font-size: 1.125rem;
     }

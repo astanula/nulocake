@@ -3,35 +3,24 @@
  * components and the live Design System Inspector.
  */
 
-export const BREAKPOINTS = {
-  /** Desktop layout starts at ≥1025px */
-  desktopMin: 1025,
-  /** Tablet upper bound (≤1024px) */
-  tabletMax: 1024,
-  /** Tablet lower bound (≥769px) */
-  tabletMin: 769,
-  /** Primary mobile breakpoint (≤768px) */
-  mobileMax: 768,
-  /** Contact 2-column grid stacks at ≤900px */
-  contactStackMax: 900,
-  /** Contact channel tiles stack full-width at ≤480px */
-  smallMobileMax: 480,
-  /** Compact table spacing on narrow handsets (≤360px) */
-  compactMobileMax: 360,
+export const TIER_MIN_WIDTH_PX = {
+  mobile: 420,
+  tablet: 768,
+  laptop: 1024,
+  desktop: 1280,
+  largeDesktop: 1536,
 } as const;
 
-export const LAYOUT_METRICS = {
-  homeSplitColDesktopMaxPx: 560,
-  homeSplitTextTabletMaxPx: 420,
-  homeSplitMediaTabletMaxPx: 400,
-  mobileDrawerMaxWidthPx: 320,
-  mobileDrawerWidthPct: 75,
-  minTouchTargetPx: 44,
-  dynamicViewportUnit: '100dvh',
-  safeAreaBottomExpr: 'env(safe-area-inset-bottom)',
-} as const;
+export const VIEWPORT_TIER_ORDER = [
+  'small-mobile',
+  'mobile',
+  'tablet',
+  'laptop',
+  'desktop',
+  'large-desktop',
+] as const;
 
-export type ViewportTierId = 'desktop' | 'tablet' | 'mobile';
+export type ViewportTierId = (typeof VIEWPORT_TIER_ORDER)[number];
 
 export interface ActiveViewportTier {
   id: ViewportTierId;
@@ -39,24 +28,95 @@ export interface ActiveViewportTier {
   range: string;
 }
 
-export function getViewportTier(widthPx: number): ActiveViewportTier {
-  if (widthPx >= BREAKPOINTS.desktopMin) {
-    return {
-      id: 'desktop',
-      label: 'Desktop',
-      range: `≥${BREAKPOINTS.desktopMin}px`,
-    };
-  }
-  if (widthPx >= BREAKPOINTS.tabletMin) {
-    return {
-      id: 'tablet',
-      label: 'Tablet',
-      range: `${BREAKPOINTS.tabletMin}–${BREAKPOINTS.tabletMax}px`,
-    };
-  }
-  return {
+export const VIEWPORT_TIERS: Record<ViewportTierId, ActiveViewportTier> = {
+  'small-mobile': {
+    id: 'small-mobile',
+    label: 'Small Mobile',
+    range: `<${TIER_MIN_WIDTH_PX.mobile}px`,
+  },
+  mobile: {
     id: 'mobile',
     label: 'Mobile',
-    range: `≤${BREAKPOINTS.mobileMax}px`,
-  };
+    range: `${TIER_MIN_WIDTH_PX.mobile}–${TIER_MIN_WIDTH_PX.tablet - 1}px`,
+  },
+  tablet: {
+    id: 'tablet',
+    label: 'Tablet',
+    range: `${TIER_MIN_WIDTH_PX.tablet}–${TIER_MIN_WIDTH_PX.laptop - 1}px`,
+  },
+  laptop: {
+    id: 'laptop',
+    label: 'Laptop',
+    range: `${TIER_MIN_WIDTH_PX.laptop}–${TIER_MIN_WIDTH_PX.desktop - 1}px`,
+  },
+  desktop: {
+    id: 'desktop',
+    label: 'Desktop',
+    range: `${TIER_MIN_WIDTH_PX.desktop}–${TIER_MIN_WIDTH_PX.largeDesktop - 1}px`,
+  },
+  'large-desktop': {
+    id: 'large-desktop',
+    label: 'Large Desktop',
+    range: `≥${TIER_MIN_WIDTH_PX.largeDesktop}px`,
+  },
+};
+
+export function getViewportTier(widthPx: number): ActiveViewportTier {
+  if (widthPx >= TIER_MIN_WIDTH_PX.largeDesktop) return VIEWPORT_TIERS['large-desktop'];
+  if (widthPx >= TIER_MIN_WIDTH_PX.desktop) return VIEWPORT_TIERS.desktop;
+  if (widthPx >= TIER_MIN_WIDTH_PX.laptop) return VIEWPORT_TIERS.laptop;
+  if (widthPx >= TIER_MIN_WIDTH_PX.tablet) return VIEWPORT_TIERS.tablet;
+  if (widthPx >= TIER_MIN_WIDTH_PX.mobile) return VIEWPORT_TIERS.mobile;
+  return VIEWPORT_TIERS['small-mobile'];
 }
+
+export const CUSTOM_MEDIA = {
+  '--below-large-desktop': `(width < ${TIER_MIN_WIDTH_PX.largeDesktop}px)`,
+  '--below-desktop': `(width < ${TIER_MIN_WIDTH_PX.desktop}px)`,
+  '--below-laptop': `(width < ${TIER_MIN_WIDTH_PX.laptop}px)`,
+  '--below-tablet': `(width < ${TIER_MIN_WIDTH_PX.tablet}px)`,
+  '--below-mobile': `(width < ${TIER_MIN_WIDTH_PX.mobile}px)`,
+  '--from-mobile': `(width >= ${TIER_MIN_WIDTH_PX.mobile}px)`,
+  '--from-tablet': `(width >= ${TIER_MIN_WIDTH_PX.tablet}px)`,
+  '--from-laptop': `(width >= ${TIER_MIN_WIDTH_PX.laptop}px)`,
+  '--from-desktop': `(width >= ${TIER_MIN_WIDTH_PX.desktop}px)`,
+  '--from-large-desktop': `(width >= ${TIER_MIN_WIDTH_PX.largeDesktop}px)`,
+  '--small-mobile-only': `(width < ${TIER_MIN_WIDTH_PX.mobile}px)`,
+  '--mobile-only': `(${TIER_MIN_WIDTH_PX.mobile}px <= width < ${TIER_MIN_WIDTH_PX.tablet}px)`,
+  '--tablet-only': `(${TIER_MIN_WIDTH_PX.tablet}px <= width < ${TIER_MIN_WIDTH_PX.laptop}px)`,
+  '--laptop-only': `(${TIER_MIN_WIDTH_PX.laptop}px <= width < ${TIER_MIN_WIDTH_PX.desktop}px)`,
+  '--desktop-only': `(${TIER_MIN_WIDTH_PX.desktop}px <= width < ${TIER_MIN_WIDTH_PX.largeDesktop}px)`,
+  '--large-desktop-only': `(width >= ${TIER_MIN_WIDTH_PX.largeDesktop}px)`,
+} as const;
+
+export type CustomMediaToken = keyof typeof CUSTOM_MEDIA;
+
+const HOME_SPLIT_TEXT_MAX_PX = {
+  tablet: 420,
+  laptop: 560,
+  desktop: 560,
+  'large-desktop': 560,
+} as const;
+
+const HOME_SPLIT_MEDIA_MAX_PX = {
+  tablet: 400,
+  laptop: 560,
+  desktop: 560,
+  'large-desktop': 560,
+} as const;
+
+export const LAYOUT_METRICS = {
+  homeSplitTextMaxPx: HOME_SPLIT_TEXT_MAX_PX,
+  homeSplitMediaMaxPx: HOME_SPLIT_MEDIA_MAX_PX,
+  mobileDrawerMaxWidthPx: {
+    'small-mobile': 320,
+    mobile: 320,
+  },
+  mobileDrawerWidthPct: {
+    'small-mobile': 75,
+    mobile: 75,
+  },
+  minTouchTargetPx: 44,
+  dynamicViewportUnit: '100dvh',
+  safeAreaBottomExpr: 'env(safe-area-inset-bottom)',
+} as const;

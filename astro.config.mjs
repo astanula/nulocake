@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 
 import tailwindcss from '@tailwindcss/vite';
+import { responsiveMediaPlugin } from './src/build/responsiveMediaPlugin';
 
 // https://astro.build/config
 export default defineConfig({
@@ -12,7 +13,7 @@ export default defineConfig({
     host: '127.0.0.1',
   },
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [responsiveMediaPlugin(), tailwindcss()],
     optimizeDeps: {
       // Astro's client scripts and transition virtual modules are missed by Vite's initial scan.
       include: [

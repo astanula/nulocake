@@ -11,6 +11,12 @@ Always load and reference `DESIGN.md` for design-related tasks including:
 - Interactions & animation implementation
 - Any UI/UX changes
 
+## Responsive Viewport Tiers
+- Use the six canonical, non-overlapping tiers: `small-mobile` `<420px`, `mobile` `420–767px`, `tablet` `768–1023px`, `laptop` `1024–1279px`, `desktop` `1280–1535px`, and `large-desktop` `≥1536px`.
+- Define viewport pixel thresholds only in `TIER_MIN_WIDTH_PX` within `src/config/responsive.ts`; it is the sole breakpoint source of truth.
+- Write CSS with `@media (--...)` tokens from `CUSTOM_MEDIA`. `src/build/responsiveMediaPlugin.ts` expands them, synchronizes Tailwind `@theme` `--breakpoint-*` tokens, and fails builds for raw `min-width`/`max-width`/`width` media rules and unknown `--*` tokens.
+- In JS and Astro templates, use `CUSTOM_MEDIA` with `window.matchMedia` or `<Image sizes>`, or use `getViewportTier()` for tier-based logic.
+
 ## Snap Section Pages (`src/pages/index.astro`, `src/pages/oferta.astro`)
 
 Read `docs/architecture/word-based-scroll-animation-system.md` before changing section animations, timelines, or snap navigation.

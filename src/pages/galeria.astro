@@ -3,7 +3,7 @@ import { Image, getImage } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import GalleryPreview from '../components/gallery/GalleryPreview.astro';
 
-import { COLUMN_SPEEDS, IMAGE_GAP, IMAGE_BORDER_RADIUS, GALLERY_PADDING_DESKTOP, GALLERY_PADDING_MOBILE, GALLERY_FADE_HEIGHT, GALLERY_FADE_MIDPOINT_RATIO, FLOAT_HOVER_DELAY_MS, FLOAT_SCALE_AMOUNT, FLOAT_ZOOM_AMOUNT, FLOAT_ANIMATION_DURATION, FLOAT_EASE, PREVIEW_MAX_WIDTH, PREVIEW_THUMB_RES, PREVIEW_PEEK_RES } from '../config/gallery';
+import { COLUMN_SPEEDS, IMAGE_GAP, IMAGE_BORDER_RADIUS, GALLERY_IMAGE_SIZES, GALLERY_PADDING_BY_TIER, GALLERY_FADE_HEIGHT, GALLERY_FADE_MIDPOINT_RATIO, PREVIEW_MAX_WIDTH, PREVIEW_THUMB_RES, PREVIEW_PEEK_RES } from '../config/gallery';
 
 // ── Fetch all gallery images at build time ──────────────
 const imageModules = import.meta.glob<{ default: ImageMetadata }>(
@@ -81,7 +81,7 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
 <Layout title="Galeria — Nulo Cake" description="Galeria artystycznych tortów na zamówienie. Torty weselne, urodzinowe i okolicznościowe." isSubpage={true}>
   <main class="gallery-page" id="gallery-page">
     <script type="application/json" id="gallery-manifest" set:html={JSON.stringify(galleryManifest)} is:inline></script>
-    <div class="gallery-container" id="gallery-container" style={`gap: ${IMAGE_GAP}; --gallery-image-radius: ${IMAGE_BORDER_RADIUS}; --gallery-padding-desktop: ${GALLERY_PADDING_DESKTOP}; --gallery-padding-mobile: ${GALLERY_PADDING_MOBILE}; --gallery-fade-height: ${GALLERY_FADE_HEIGHT}; --gallery-fade-midpoint-ratio: ${GALLERY_FADE_MIDPOINT_RATIO};`}>
+    <div class="gallery-container" id="gallery-container" style={`gap: ${IMAGE_GAP}; --gallery-image-radius: ${IMAGE_BORDER_RADIUS}; --gallery-padding-large-desktop: ${GALLERY_PADDING_BY_TIER['large-desktop']}; --gallery-padding-desktop: ${GALLERY_PADDING_BY_TIER.desktop}; --gallery-padding-laptop: ${GALLERY_PADDING_BY_TIER.laptop}; --gallery-padding-tablet: ${GALLERY_PADDING_BY_TIER.tablet}; --gallery-padding-mobile: ${GALLERY_PADDING_BY_TIER.mobile}; --gallery-padding-small-mobile: ${GALLERY_PADDING_BY_TIER['small-mobile']}; --gallery-fade-height: ${GALLERY_FADE_HEIGHT}; --gallery-fade-midpoint-ratio: ${GALLERY_FADE_MIDPOINT_RATIO};`}>
       {columns.map((colImages, colIndex) => (
         <div
           class="gallery-column"
@@ -98,7 +98,7 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
                     src={img.src}
                     alt={`Tort ${colIndex + 1}-${imgIndex + 1}`}
                     widths={[300, 500]}
-                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    sizes={GALLERY_IMAGE_SIZES}
                     loading="lazy"
                     class="gallery-image"
                   />
@@ -113,7 +113,7 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
                     src={img.src}
                     alt=""
                     widths={[300, 500]}
-                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    sizes={GALLERY_IMAGE_SIZES}
                     loading="lazy"
                     class="gallery-image"
                   />
@@ -141,7 +141,7 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
     width: 100%;
     max-width: 1400px;
     margin: 0 auto;
-    --gallery-current-padding: var(--gallery-padding-desktop, 4rem);
+    --gallery-current-padding: var(--gallery-padding-large-desktop);
     padding: 0 var(--gallery-current-padding);
     position: relative;
     overflow: clip;
@@ -244,7 +244,25 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
     backface-visibility: hidden;
   }
 
-  @media (max-width: 768px) {
+  @media (--below-large-desktop) {
+    .gallery-container {
+      --gallery-current-padding: var(--gallery-padding-desktop);
+    }
+  }
+
+  @media (--below-desktop) {
+    .gallery-container {
+      --gallery-current-padding: var(--gallery-padding-laptop);
+    }
+  }
+
+  @media (--below-laptop) {
+    .gallery-container {
+      --gallery-current-padding: var(--gallery-padding-tablet);
+    }
+  }
+
+  @media (--below-tablet) {
     :global(body.gallery-page-active) :global(.scroll-container) {
       --gallery-top-gap: 1.5rem;
     }
@@ -254,7 +272,13 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
     }
 
     .gallery-container {
-      --gallery-current-padding: var(--gallery-padding-mobile, 1.5rem);
+      --gallery-current-padding: var(--gallery-padding-mobile);
+    }
+  }
+
+  @media (--below-mobile) {
+    .gallery-container {
+      --gallery-current-padding: var(--gallery-padding-small-mobile);
     }
   }
 </style>
@@ -262,7 +286,7 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
 <script>
   import gsap from 'gsap';
   import {
-    BREAKPOINTS,
+    GALLERY_COLUMNS_BY_TIER,
     HOVER_TRANSITION_DURATION,
     FLOAT_HOVER_DELAY_MS,
     FLOAT_SCALE_AMOUNT,
@@ -271,6 +295,7 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
     FLOAT_EASE,
     IMAGE_GAP,
   } from '../config/gallery';
+  import { getViewportTier } from '../config/responsive';
 
   let activeTweens: gsap.core.Tween[] = [];
   let resizeTimer: ReturnType<typeof setTimeout> | null = null;
@@ -286,10 +311,7 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
    * Determine how many columns should be visible based on viewport width.
    */
   function getColumnCount(): number {
-    const w = window.innerWidth;
-    if (w >= BREAKPOINTS.desktop) return 4;
-    if (w >= BREAKPOINTS.tablet) return 3;
-    return 2;
+    return GALLERY_COLUMNS_BY_TIER[getViewportTier(window.innerWidth).id];
   }
 
   /**

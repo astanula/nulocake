@@ -91,7 +91,6 @@ body {
   --btn-active-scale: 0.98;
 
   /* Layout, radii, materiality & motion */
-  --layout-max-width: 1400px;
   --radius-xs: 0.125rem;
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
@@ -154,47 +153,95 @@ body {
 /* ──────────────────────────────────────────────
    SECTION TITLE SIZES
    font-size: clamp(min, fluid, max)
-   desktop ≥1025px · tablet 769–1024px · mobile ≤768px
+   large-desktop · desktop · laptop · tablet · mobile · small-mobile
    ────────────────────────────────────────────── */
 :root {
   /* Home (v1 + v2) */
+  --title-home-large-desktop-min: 2.5rem;
+  --title-home-large-desktop-fluid: 5vw;
+  --title-home-large-desktop-max: 4rem;
   --title-home-desktop-min: 2.5rem;
   --title-home-desktop-fluid: 5vw;
   --title-home-desktop-max: 4rem;
+  --title-home-laptop-min: 2.5rem;
+  --title-home-laptop-fluid: 5vw;
+  --title-home-laptop-max: 4rem;
   --title-home-tablet-min: 2.5rem;
   --title-home-tablet-fluid: 5vw;
   --title-home-tablet-max: 4rem;
   --title-home-mobile-min: 1.75rem;
   --title-home-mobile-fluid: 6vw;
   --title-home-mobile-max: 2.5rem;
+  --title-home-small-mobile-min: 1.75rem;
+  --title-home-small-mobile-fluid: 6vw;
+  --title-home-small-mobile-max: 2.5rem;
 
   /* Subpages — large titles */
+  --title-lg-large-desktop-min: 2.125rem;
+  --title-lg-large-desktop-fluid: 4.3vw;
+  --title-lg-large-desktop-max: 3.5rem;
   --title-lg-desktop-min: 2.125rem;
   --title-lg-desktop-fluid: 4.3vw;
   --title-lg-desktop-max: 3.5rem;
+  --title-lg-laptop-min: 2.125rem;
+  --title-lg-laptop-fluid: 4.3vw;
+  --title-lg-laptop-max: 3.5rem;
   --title-lg-tablet-min: 2.125rem;
   --title-lg-tablet-fluid: 4.3vw;
   --title-lg-tablet-max: 3.5rem;
   --title-lg-mobile-min: 2.125rem;
   --title-lg-mobile-fluid: 4.3vw;
   --title-lg-mobile-max: 3.5rem;
+  --title-lg-small-mobile-min: 2.125rem;
+  --title-lg-small-mobile-fluid: 4.3vw;
+  --title-lg-small-mobile-max: 3.5rem;
 
   /* Subpages — small titles */
+  --title-sm-large-desktop-min: 1.5rem;
+  --title-sm-large-desktop-fluid: 3vw;
+  --title-sm-large-desktop-max: 2.25rem;
   --title-sm-desktop-min: 1.5rem;
   --title-sm-desktop-fluid: 3vw;
   --title-sm-desktop-max: 2.25rem;
+  --title-sm-laptop-min: 1.5rem;
+  --title-sm-laptop-fluid: 3vw;
+  --title-sm-laptop-max: 2.25rem;
   --title-sm-tablet-min: 1.5rem;
   --title-sm-tablet-fluid: 3vw;
   --title-sm-tablet-max: 2.25rem;
   --title-sm-mobile-min: 1.5rem;
   --title-sm-mobile-fluid: 3vw;
   --title-sm-mobile-max: 2.25rem;
+  --title-sm-small-mobile-min: 1.5rem;
+  --title-sm-small-mobile-fluid: 3vw;
+  --title-sm-small-mobile-max: 2.25rem;
 
   /* Subpages — first section top offset (mobile < tablet < desktop) */
+  --subpage-top-offset-large-desktop: 4rem;
   --subpage-top-offset-desktop: 4rem;
+  --subpage-top-offset-laptop: 4rem;
   --subpage-top-offset-tablet: 3rem;
   --subpage-top-offset-mobile: 2rem;
-  --subpage-top-offset: var(--subpage-top-offset-desktop);
+  --subpage-top-offset-small-mobile: 2rem;
+
+  --layout-max-width-large-desktop: 1400px;
+  --layout-max-width-desktop: 1400px;
+  --layout-max-width-laptop: 1400px;
+  --layout-max-width-tablet: 1400px;
+  --layout-max-width-mobile: 1400px;
+  --layout-max-width-small-mobile: 1400px;
+
+  --title-home-min: var(--title-home-large-desktop-min);
+  --title-home-fluid: var(--title-home-large-desktop-fluid);
+  --title-home-max: var(--title-home-large-desktop-max);
+  --title-lg-min: var(--title-lg-large-desktop-min);
+  --title-lg-fluid: var(--title-lg-large-desktop-fluid);
+  --title-lg-max: var(--title-lg-large-desktop-max);
+  --title-sm-min: var(--title-sm-large-desktop-min);
+  --title-sm-fluid: var(--title-sm-large-desktop-fluid);
+  --title-sm-max: var(--title-sm-large-desktop-max);
+  --subpage-top-offset: var(--subpage-top-offset-large-desktop);
+  --layout-max-width: var(--layout-max-width-large-desktop);
 
   --scroll-hint-bottom: 1.5rem;
   --scroll-hint-height: 3.75rem;
@@ -205,51 +252,95 @@ body {
 }
 
 .section-title-home {
-  font-size: clamp(var(--title-home-desktop-min), var(--title-home-desktop-fluid), var(--title-home-desktop-max));
+  font-size: clamp(var(--title-home-min), var(--title-home-fluid), var(--title-home-max));
 }
 
 .section-title-lg {
-  font-size: clamp(var(--title-lg-desktop-min), var(--title-lg-desktop-fluid), var(--title-lg-desktop-max));
+  font-size: clamp(var(--title-lg-min), var(--title-lg-fluid), var(--title-lg-max));
 }
 
 .section-title-sm {
-  font-size: clamp(var(--title-sm-desktop-min), var(--title-sm-desktop-fluid), var(--title-sm-desktop-max));
+  font-size: clamp(var(--title-sm-min), var(--title-sm-fluid), var(--title-sm-max));
 }
 
-@media (max-width: 1024px) {
+@media (--below-large-desktop) {
   :root {
+    --title-home-min: var(--title-home-desktop-min);
+    --title-home-fluid: var(--title-home-desktop-fluid);
+    --title-home-max: var(--title-home-desktop-max);
+    --title-lg-min: var(--title-lg-desktop-min);
+    --title-lg-fluid: var(--title-lg-desktop-fluid);
+    --title-lg-max: var(--title-lg-desktop-max);
+    --title-sm-min: var(--title-sm-desktop-min);
+    --title-sm-fluid: var(--title-sm-desktop-fluid);
+    --title-sm-max: var(--title-sm-desktop-max);
+    --subpage-top-offset: var(--subpage-top-offset-desktop);
+    --layout-max-width: var(--layout-max-width-desktop);
+  }
+}
+
+@media (--below-desktop) {
+  :root {
+    --title-home-min: var(--title-home-laptop-min);
+    --title-home-fluid: var(--title-home-laptop-fluid);
+    --title-home-max: var(--title-home-laptop-max);
+    --title-lg-min: var(--title-lg-laptop-min);
+    --title-lg-fluid: var(--title-lg-laptop-fluid);
+    --title-lg-max: var(--title-lg-laptop-max);
+    --title-sm-min: var(--title-sm-laptop-min);
+    --title-sm-fluid: var(--title-sm-laptop-fluid);
+    --title-sm-max: var(--title-sm-laptop-max);
+    --subpage-top-offset: var(--subpage-top-offset-laptop);
+    --layout-max-width: var(--layout-max-width-laptop);
+  }
+}
+
+@media (--below-laptop) {
+  :root {
+    --title-home-min: var(--title-home-tablet-min);
+    --title-home-fluid: var(--title-home-tablet-fluid);
+    --title-home-max: var(--title-home-tablet-max);
+    --title-lg-min: var(--title-lg-tablet-min);
+    --title-lg-fluid: var(--title-lg-tablet-fluid);
+    --title-lg-max: var(--title-lg-tablet-max);
+    --title-sm-min: var(--title-sm-tablet-min);
+    --title-sm-fluid: var(--title-sm-tablet-fluid);
+    --title-sm-max: var(--title-sm-tablet-max);
     --subpage-top-offset: var(--subpage-top-offset-tablet);
-  }
-
-  .section-title-home {
-    font-size: clamp(var(--title-home-tablet-min), var(--title-home-tablet-fluid), var(--title-home-tablet-max));
-  }
-
-  .section-title-lg {
-    font-size: clamp(var(--title-lg-tablet-min), var(--title-lg-tablet-fluid), var(--title-lg-tablet-max));
-  }
-
-  .section-title-sm {
-    font-size: clamp(var(--title-sm-tablet-min), var(--title-sm-tablet-fluid), var(--title-sm-tablet-max));
+    --layout-max-width: var(--layout-max-width-tablet);
   }
 }
 
-@media (max-width: 768px) {
+@media (--below-tablet) {
   :root {
+    --title-home-min: var(--title-home-mobile-min);
+    --title-home-fluid: var(--title-home-mobile-fluid);
+    --title-home-max: var(--title-home-mobile-max);
+    --title-lg-min: var(--title-lg-mobile-min);
+    --title-lg-fluid: var(--title-lg-mobile-fluid);
+    --title-lg-max: var(--title-lg-mobile-max);
+    --title-sm-min: var(--title-sm-mobile-min);
+    --title-sm-fluid: var(--title-sm-mobile-fluid);
+    --title-sm-max: var(--title-sm-mobile-max);
     --subpage-top-offset: var(--subpage-top-offset-mobile);
+    --layout-max-width: var(--layout-max-width-mobile);
     --scroll-hint-height: 3rem;
   }
+}
 
-  .section-title-home {
-    font-size: clamp(var(--title-home-mobile-min), var(--title-home-mobile-fluid), var(--title-home-mobile-max));
-  }
-
-  .section-title-lg {
-    font-size: clamp(var(--title-lg-mobile-min), var(--title-lg-mobile-fluid), var(--title-lg-mobile-max));
-  }
-
-  .section-title-sm {
-    font-size: clamp(var(--title-sm-mobile-min), var(--title-sm-mobile-fluid), var(--title-sm-mobile-max));
+@media (--below-mobile) {
+  :root {
+    --title-home-min: var(--title-home-small-mobile-min);
+    --title-home-fluid: var(--title-home-small-mobile-fluid);
+    --title-home-max: var(--title-home-small-mobile-max);
+    --title-lg-min: var(--title-lg-small-mobile-min);
+    --title-lg-fluid: var(--title-lg-small-mobile-fluid);
+    --title-lg-max: var(--title-lg-small-mobile-max);
+    --title-sm-min: var(--title-sm-small-mobile-min);
+    --title-sm-fluid: var(--title-sm-small-mobile-fluid);
+    --title-sm-max: var(--title-sm-small-mobile-max);
+    --subpage-top-offset: var(--subpage-top-offset-small-mobile);
+    --layout-max-width: var(--layout-max-width-small-mobile);
   }
 }
 

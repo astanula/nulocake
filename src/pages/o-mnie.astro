@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import portrait from '../assets/magda-portrait.webp';
+import { CUSTOM_MEDIA } from '../config/responsive';
 import Layout from '../layouts/Layout.astro';
 import { withBase } from '../utils/withBase';
 ---
@@ -80,7 +81,7 @@ import { withBase } from '../utils/withBase';
             src={portrait}
             alt="Magda, twórczyni Nulo Cake, trzyma tort ozdobiony figurką misia."
             widths={[320, 440, 644]}
-            sizes="(max-width: 768px) 100vw, (max-width: 1100px) 36vw, 440px"
+            sizes={`${CUSTOM_MEDIA['--below-tablet']} 100vw, ${CUSTOM_MEDIA['--below-desktop']} 36vw, 440px`}
             width={644}
             height={1024}
             loading="eager"
@@ -220,7 +221,7 @@ import { withBase } from '../utils/withBase';
     background: var(--color-surface);
   }
 
-  @media (max-width: 1024px) {
+  @media (--below-laptop) {
     .about-text-col {
       padding: var(--subpage-top-offset) 1.5rem 0 2.5rem;
     }
@@ -234,7 +235,7 @@ import { withBase } from '../utils/withBase';
     }
   }
 
-  @media (max-width: 768px) {
+  @media (--below-tablet) {
     .about-split {
       grid-template-columns: 1fr;
     }

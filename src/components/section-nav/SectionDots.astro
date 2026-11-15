@@ -102,7 +102,7 @@ const { labels, ariaLabel = 'Sekcje', class: className, ...rest } = Astro.props;
     transform: translate(0, -50%);
   }
 
-  @media (max-width: 768px) {
+  @media (--below-tablet) {
     .section-dot {
       width: 1.25rem;
       height: 1.25rem;
