@@ -215,17 +215,32 @@ test.describe('Homepage cleanup on leave', () => {
   });
 
   test('no console errors during navigation cycle', async ({ page }) => {
+    await page.context().route('https://fonts.googleapis.com/**', (route) =>
+      route.fulfill({ status: 200, contentType: 'text/css', body: '' }),
+    );
     const errors: string[] = [];
+    const failedResponses: string[] = [];
     page.on('console', (msg) => {
       if (msg.type() === 'error') {
         errors.push(msg.text());
+      }
+    });
+    page.on('response', (response) => {
+      if (response.status() >= 400) {
+        failedResponses.push(`${response.status()} ${response.url()}`);
       }
     });
 
     // Navigate: Home -> Oferta -> Home -> Galeria -> Home
     await navigateAndHydrate(page, testConfig.routes.landing);
 
-    await page.click(navLinkSelector('oferta'));
+    // Exercise V2's GSAP plugin loading while another page navigates.
+    const otherPage = await page.context().newPage();
+    await Promise.all([
+      page.click(navLinkSelector('oferta')),
+      otherPage.goto(`${testConfig.basePath}/v2`),
+    ]);
+    await otherPage.close();
     await page.waitForURL('**/oferta');
     await waitForHydration(page);
 
@@ -242,6 +257,6 @@ test.describe('Homepage cleanup on leave', () => {
     await waitForHydration(page);
 
     // Verify no errors occurred during the full cycle
-    expect(errors).toHaveLength(0);
+    expect(errors, `Failed responses:\n${failedResponses.join('\n') || '(none)'}`).toHaveLength(0);
   });
 });
