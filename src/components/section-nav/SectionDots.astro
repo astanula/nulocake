@@ -58,7 +58,7 @@ const { labels, ariaLabel = 'Sekcje', class: className, ...rest } = Astro.props;
     border-radius: 50%;
     background: var(--color-outline);
     opacity: 0.6;
-    transform-origin: left center;
+    transform-origin: center;
     transition: background 0.3s, opacity 0.3s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
   }
 
@@ -70,7 +70,7 @@ const { labels, ariaLabel = 'Sekcje', class: className, ...rest } = Astro.props;
   .section-dot[aria-current='true'] .section-dot-mark {
     background: var(--color-primary);
     opacity: 1;
-    transform: scale(1.35);
+    transform: scale(var(--section-dot-active-scale));
     box-shadow: 0 0 10px rgba(255, 170, 248, 0.5);
   }
 

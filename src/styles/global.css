@@ -237,6 +237,7 @@ body {
   --section-dots-offset: var(--lg-section-dots-offset);
   --section-dot-size: 1.5rem;
   --section-dot-mark-size: 8px;
+  --section-dot-active-scale: 1.35;
 
   --sm-scroll-hint-width: 10px;
   --md-scroll-hint-width: 16px;
