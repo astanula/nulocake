@@ -218,7 +218,7 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
 
   .oferta-dots {
     position: fixed;
-    left: max(1.5rem, calc((100% - var(--layout-max-width)) / 2 + 1.5rem));
+    left: var(--section-dots-offset);
     top: 50%;
     transform: translateY(-50%);
     z-index: 5;
@@ -401,10 +401,6 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
     .oferta-section--last {
       padding-bottom: calc(3.5rem + var(--home-footer-h));
     }
-
-    .oferta-dots {
-      left: 1rem;
-    }
   }
 
   @media (--below-tablet) {
@@ -416,10 +412,6 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
 
     .oferta-section--last {
       padding-bottom: calc(3.5rem + var(--home-footer-h));
-    }
-
-    .oferta-dots {
-      left: 0.375rem;
     }
 
     .steps-list li {

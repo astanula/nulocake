@@ -231,6 +231,11 @@ body {
   --layout-max-width-mobile: 1400px;
   --layout-max-width-small-mobile: 1400px;
 
+  --sm-section-dots-offset: 0.3rem;
+  --md-section-dots-offset: 0.5rem;
+  --lg-section-dots-offset: 1rem;
+  --section-dots-offset: var(--lg-section-dots-offset);
+
   --title-home-min: var(--title-home-large-desktop-min);
   --title-home-fluid: var(--title-home-large-desktop-fluid);
   --title-home-max: var(--title-home-large-desktop-max);
@@ -308,6 +313,7 @@ body {
     --title-sm-max: var(--title-sm-tablet-max);
     --subpage-top-offset: var(--subpage-top-offset-tablet);
     --layout-max-width: var(--layout-max-width-tablet);
+    --section-dots-offset: var(--md-section-dots-offset);
   }
 }
 
@@ -324,6 +330,7 @@ body {
     --title-sm-max: var(--title-sm-mobile-max);
     --subpage-top-offset: var(--subpage-top-offset-mobile);
     --layout-max-width: var(--layout-max-width-mobile);
+    --section-dots-offset: var(--sm-section-dots-offset);
     --scroll-hint-height: 3rem;
   }
 }

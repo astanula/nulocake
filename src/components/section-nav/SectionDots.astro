@@ -41,7 +41,7 @@ const { labels, ariaLabel = 'Sekcje', class: className, ...rest } = Astro.props;
     position: relative;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     width: 1.5rem;
     height: 1.5rem;
     padding: 0;
@@ -58,6 +58,7 @@ const { labels, ariaLabel = 'Sekcje', class: className, ...rest } = Astro.props;
     border-radius: 50%;
     background: var(--color-outline);
     opacity: 0.6;
+    transform-origin: left center;
     transition: background 0.3s, opacity 0.3s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
   }
 
