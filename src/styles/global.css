@@ -235,6 +235,17 @@ body {
   --md-section-dots-offset: 0.5rem;
   --lg-section-dots-offset: 1rem;
   --section-dots-offset: var(--lg-section-dots-offset);
+  --section-dot-size: 1.5rem;
+  --section-dot-mark-size: 8px;
+
+  --sm-scroll-hint-width: 10px;
+  --md-scroll-hint-width: 16px;
+  --lg-scroll-hint-width: 16px;
+  --scroll-hint-width: var(--lg-scroll-hint-width);
+  --sm-scroll-hint-gap: 0.5rem;
+  --md-scroll-hint-gap: 1rem;
+  --lg-scroll-hint-gap: 1.5rem;
+  --scroll-hint-gap: var(--lg-scroll-hint-gap);
 
   --title-home-min: var(--title-home-large-desktop-min);
   --title-home-fluid: var(--title-home-large-desktop-fluid);
@@ -247,13 +258,6 @@ body {
   --title-sm-max: var(--title-sm-large-desktop-max);
   --subpage-top-offset: var(--subpage-top-offset-large-desktop);
   --layout-max-width: var(--layout-max-width-large-desktop);
-
-  --scroll-hint-bottom: 1.5rem;
-  --scroll-hint-height: 3.75rem;
-  --scroll-hint-gap: 2rem;
-  --scroll-hint-clearance: calc(
-    var(--scroll-hint-bottom) + var(--scroll-hint-height) + var(--scroll-hint-gap) + env(safe-area-inset-bottom)
-  );
 }
 
 .section-title-home {
@@ -297,6 +301,8 @@ body {
     --title-sm-max: var(--title-sm-laptop-max);
     --subpage-top-offset: var(--subpage-top-offset-laptop);
     --layout-max-width: var(--layout-max-width-laptop);
+    --scroll-hint-width: var(--md-scroll-hint-width);
+    --scroll-hint-gap: var(--md-scroll-hint-gap);
   }
 }
 
@@ -331,7 +337,10 @@ body {
     --subpage-top-offset: var(--subpage-top-offset-mobile);
     --layout-max-width: var(--layout-max-width-mobile);
     --section-dots-offset: var(--sm-section-dots-offset);
-    --scroll-hint-height: 3rem;
+    --section-dot-size: 1.25rem;
+    --section-dot-mark-size: 6px;
+    --scroll-hint-width: var(--sm-scroll-hint-width);
+    --scroll-hint-gap: var(--sm-scroll-hint-gap);
   }
 }
 

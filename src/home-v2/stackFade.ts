@@ -19,7 +19,6 @@ import {
   EDGE_EPSILON_PX,
   KEY_SCROLL_RATIO,
   REDUCED_MOTION_S,
-  SCROLL_HINT_GAP_PX,
 } from './config';
 
 declare global {
@@ -87,25 +86,13 @@ export function mountStackFade(root: HTMLElement): () => void {
 
   // ── Scroll hint ────────────────────────────────────
 
-  /** Content ends above the hint. Layout offsets ignore transforms and inner scroll. */
-  function fitsAboveHint(sec: HTMLElement) {
-    const parent = sec.offsetParent;
-    if (!hint || !parent) return false;
-    const contentBottom = Array.from(sec.children as HTMLCollectionOf<HTMLElement>)
-      .reduce((max, el) => Math.max(max, el.offsetTop + el.offsetHeight), 0);
-    const secTop = parent.getBoundingClientRect().top + sec.offsetTop;
-    return secTop + contentBottom + SCROLL_HINT_GAP_PX <= hint.getBoundingClientRect().top;
-  }
-
-  const hintFits = (index: number) => index !== last && fitsAboveHint(sections[index]);
-
   function setHint(visible: boolean) {
     if (!hint) return;
     hint.classList.toggle('is-hidden', !visible);
     hint.inert = !visible;
   }
 
-  const updateHint = () => { if (!tl) setHint(hintFits(active)); };
+  const updateHint = () => { if (!tl) setHint(active !== last); };
 
   // ── Transition ─────────────────────────────────────
 
@@ -256,13 +243,6 @@ export function mountStackFade(root: HTMLElement): () => void {
     : null;
   if (footerDock) footerObserver?.observe(footerDock);
 
-  // Re-check the hint when sections resize (viewport) or their content does (fonts, images).
-  const hintObserver = hint ? new ResizeObserver(updateHint) : null;
-  sections.forEach((sec) => {
-    hintObserver?.observe(sec);
-    Array.from(sec.children).forEach((el) => hintObserver?.observe(el));
-  });
-
   // ── Initial state ──────────────────────────────────
 
   gsap.set(sections, { clearProps: TRANSIENT_PROPS });
@@ -278,7 +258,6 @@ export function mountStackFade(root: HTMLElement): () => void {
     observer.kill();
     controller.abort();
     footerObserver?.disconnect();
-    hintObserver?.disconnect();
     setHint(false);
     gsap.set(sections, { clearProps: TRANSIENT_PROPS });
     if (footerDock) gsap.set(footerDock, { clearProps: 'all' });

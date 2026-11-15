@@ -1,9 +1,8 @@
 ---
 /**
- * Animated "scroll down" hint for stack-fade pages.
- * Markup and styles only: the stack-fade controller finds `[data-scroll-hint]`
- * inside its root, wires the click and toggles visibility. Rendered hidden so
- * it never shows without the controller. Position it via the `class` prop.
+ * Animated "scroll down" hint for section navigation.
+ * Page controllers wire `[data-scroll-hint]` and toggle its visibility.
+ * The navigation rail supplies the sizing and alignment variables.
  */
 interface Props {
   label?: string;
@@ -29,11 +28,11 @@ const { label = 'Następna sekcja', class: className, ...rest } = Astro.props;
 
 <style>
   .scroll-hint {
-    display: inline-block;
-    width: 1.1em;
-    height: 1.5em;
+    position: relative;
+    display: block;
+    width: 44px;
+    height: var(--hint-target-height);
     padding: 0;
-    font-size: 2.5rem;
     color: var(--color-on-surface);
     background: none;
     border: none;
@@ -59,21 +58,23 @@ const { label = 'Następna sekcja', class: className, ...rest } = Astro.props;
   }
 
   .scroll-hint-track {
-    position: relative;
+    position: absolute;
+    top: 50%;
+    left: 0;
     display: block;
     width: 100%;
-    height: 100%;
+    height: var(--hint-track-height);
+    transform: translateY(-50%);
   }
 
   /* Down chevron: right + bottom borders of a square rotated 45°. */
   .scroll-hint-chevron {
     position: absolute;
-    left: 50%;
+    left: var(--hint-axis);
     top: 50%;
-    width: 0.4em;
-    height: 0.4em;
-    margin: -0.3em 0 0 -0.2em;
-    border: 0.1em solid;
+    width: calc(var(--scroll-hint-width) * 0.707107);
+    height: calc(var(--scroll-hint-width) * 0.707107);
+    border: calc(var(--scroll-hint-width) * 0.176777) solid;
     border-color: transparent currentColor currentColor transparent;
     opacity: 0;
     animation: scroll-hint-slide 2s linear infinite;
@@ -84,23 +85,17 @@ const { label = 'Następna sekcja', class: className, ...rest } = Astro.props;
   }
 
   @keyframes scroll-hint-slide {
-    0%   { opacity: 0; transform: translateY(-0.75em) rotate(45deg); }
-    20%  { opacity: 1; transform: translateY(-0.45em) rotate(45deg); }
-    80%  { opacity: 1; transform: translateY(0.45em) rotate(45deg); }
-    100% { opacity: 0; transform: translateY(0.75em) rotate(45deg); }
-  }
-
-  @media (--below-tablet) {
-    .scroll-hint {
-      font-size: 2rem;
-    }
+    0%   { opacity: 0; transform: translate(-50%, calc(-50% - var(--hint-travel))) rotate(45deg); }
+    20%  { opacity: 1; transform: translate(-50%, calc(-50% - var(--hint-travel) * 0.6)) rotate(45deg); }
+    80%  { opacity: 1; transform: translate(-50%, calc(-50% + var(--hint-travel) * 0.6)) rotate(45deg); }
+    100% { opacity: 0; transform: translate(-50%, calc(-50% + var(--hint-travel))) rotate(45deg); }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .scroll-hint-chevron {
       opacity: 1;
       animation: none;
-      transform: rotate(45deg);
+      transform: translate(-50%, -50%) rotate(45deg);
     }
 
     .scroll-hint-chevron--delayed {

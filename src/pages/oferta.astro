@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
 import SectionDots from '../components/section-nav/SectionDots.astro';
-import ScrollHintArrow from '../components/stack-fade/ScrollHintArrow.astro';
+import SectionNavRail from '../components/section-nav/SectionNavRail.astro';
 import CakeSizeGuide from '../components/offer/CakeSizeGuide.astro';
 import FlavorSelector from '../components/offer/FlavorSelector.astro';
 import { withBase } from '../utils/withBase';
@@ -15,7 +15,9 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
   <Navigation />
 
   <main id="hero-scroll-container" class="oferta-container" tabindex="-1">
-    <SectionDots labels={sectionLabels} class="oferta-dots" />
+    <SectionNavRail class="oferta-nav-rail">
+      <SectionDots labels={sectionLabels} />
+    </SectionNavRail>
 
     <!-- Sekcja 1: Co kryje się w środku? -->
     <section class="oferta-section is-active" aria-label={sectionLabels[0]} tabindex="-1">
@@ -153,8 +155,6 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
       </div>
     </section>
 
-    <ScrollHintArrow class="oferta-hint" />
-
     <div class="home-footer-dock" inert>
       <Footer />
     </div>
@@ -202,10 +202,6 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
       overflow: clip;
     }
 
-    .oferta-section:not(.oferta-section--last) {
-      padding-bottom: var(--scroll-hint-clearance);
-    }
-
     .home-footer-dock {
       position: fixed;
       left: 0;
@@ -216,22 +212,6 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
     }
   }
 
-  .oferta-dots {
-    position: fixed;
-    left: var(--section-dots-offset);
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 5;
-  }
-
-  .oferta-hint {
-    position: absolute;
-    left: 50%;
-    bottom: calc(var(--scroll-hint-bottom) + env(safe-area-inset-bottom));
-    transform: translateX(-50%);
-    z-index: 4;
-  }
-
   @media (prefers-reduced-motion: reduce) {
     .oferta-section {
       display: flex;
@@ -239,8 +219,7 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
       pointer-events: auto;
     }
 
-    .oferta-dots,
-    .oferta-hint {
+    .oferta-nav-rail {
       display: none;
     }
   }

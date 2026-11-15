@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
-import ScrollHintArrow from '../components/stack-fade/ScrollHintArrow.astro';
+import SectionNavRail from '../components/section-nav/SectionNavRail.astro';
 import { withBase } from '../utils/withBase';
 
 const labels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów', 'Kontakt'];
@@ -43,18 +43,20 @@ const starPath = 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L
   <main class="v2-root" id="v2-root" tabindex="-1">
     <div class="v2-frame">
       <div class="v2-left">
-        <nav class="v2-dots" aria-label="Sekcje">
-          <ul>
-            {labels.map((label, i) => (
-              <li>
-                <button type="button" class="v2-dot" data-v2-dot={i} aria-label={label} aria-current={i === 0 ? 'true' : undefined}>
-                  <span class="v2-dot-mark" aria-hidden="true"></span>
-                  <span class="v2-dot-label" aria-hidden="true">{label}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <SectionNavRail>
+          <nav class="v2-dots" aria-label="Sekcje">
+            <ul>
+              {labels.map((label, i) => (
+                <li>
+                  <button type="button" class="v2-dot" data-v2-dot={i} aria-label={label} aria-current={i === 0 ? 'true' : undefined}>
+                    <span class="v2-dot-mark" aria-hidden="true"></span>
+                    <span class="v2-dot-label" aria-hidden="true">{label}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </SectionNavRail>
 
         <div class="v2-stage">
           <section id="v2-section-hero" class="v2-section is-active" aria-label={labels[0]} tabindex="-1">
@@ -164,8 +166,6 @@ const starPath = 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L
             </div>
           </section>
         </div>
-
-        <ScrollHintArrow class="v2-hint" />
       </div>
 
       <div class="v2-media" aria-hidden="true">
@@ -298,14 +298,6 @@ const starPath = 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L
   }
 
   /* ── Dots ────────────────────────────────── */
-  .v2-dots {
-    position: fixed;
-    left: var(--section-dots-offset);
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 5;
-  }
-
   .v2-dots ul {
     list-style: none;
     display: flex;
@@ -318,8 +310,8 @@ const starPath = 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: var(--section-dot-size);
+    height: var(--section-dot-size);
     padding: 0;
     background: none;
     border: none;
@@ -328,8 +320,8 @@ const starPath = 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L
   }
 
   .v2-dot-mark {
-    width: 8px;
-    height: 8px;
+    width: var(--section-dot-mark-size);
+    height: var(--section-dot-mark-size);
     border-radius: 50%;
     background: var(--color-outline);
     opacity: 0.6;
@@ -376,15 +368,6 @@ const starPath = 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L
   .v2-dot:focus-visible .v2-dot-label {
     opacity: 1;
     transform: translate(0, -50%);
-  }
-
-  /* ── Scroll hint ─────────────────────────── */
-  .v2-hint {
-    position: absolute;
-    left: 50%;
-    bottom: calc(1.5rem + env(safe-area-inset-bottom));
-    transform: translateX(-50%);
-    z-index: 4;
   }
 
   /* ── Media (right) ───────────────────────── */
@@ -627,16 +610,6 @@ const starPath = 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L
 
     .v2-section--last {
       padding-bottom: calc(3rem + var(--v2-footer-h));
-    }
-
-    .v2-dot {
-      width: 1.25rem;
-      height: 1.25rem;
-    }
-
-    .v2-dot-mark {
-      width: 6px;
-      height: 6px;
     }
   }
 </style>

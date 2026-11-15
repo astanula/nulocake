@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
 import SectionDots from '../components/section-nav/SectionDots.astro';
-import ScrollHintArrow from '../components/stack-fade/ScrollHintArrow.astro';
+import SectionNavRail from '../components/section-nav/SectionNavRail.astro';
 import { withBase } from '../utils/withBase';
 
 const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów', 'Kontakt'];
@@ -20,7 +20,9 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
     <div class="hero-sticky-wrapper">
       <!-- ── LEFT: Scrolling Text Sections ──────── -->
       <div class="hero-text-col">
-        <SectionDots labels={sectionLabels} class="home-dots" />
+        <SectionNavRail class="home-nav-rail">
+          <SectionDots labels={sectionLabels} />
+        </SectionNavRail>
 
         <!-- Section 1: Hero / Above the Fold -->
         <section id="section-hero" class="hero-section" aria-label="Strona główna" tabindex="-1">
@@ -176,8 +178,6 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
             </div>
           </div>
         </section>
-
-        <ScrollHintArrow class="home-hint" />
       </div>
 
       <!-- ── RIGHT: Pinned Video ────────────────── -->
@@ -280,10 +280,6 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
       overflow: clip;
     }
 
-    .hero-section:not(.hero-section--last) {
-      padding-bottom: var(--scroll-hint-clearance);
-    }
-
     .home-footer-dock {
       position: fixed;
       left: 0;
@@ -294,23 +290,6 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
     }
   }
 
-  /* ── Section dots & scroll hint ──────────── */
-  .home-dots {
-    position: fixed;
-    left: var(--section-dots-offset);
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 5;
-  }
-
-  .home-hint {
-    position: absolute;
-    left: 50%;
-    bottom: calc(var(--scroll-hint-bottom) + env(safe-area-inset-bottom));
-    transform: translateX(-50%);
-    z-index: 4;
-  }
-
   @media (prefers-reduced-motion: reduce) {
     .hero-section {
       display: flex;
@@ -318,8 +297,7 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
       pointer-events: auto;
     }
 
-    .home-dots,
-    .home-hint {
+    .home-nav-rail {
       display: none;
     }
 

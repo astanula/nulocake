@@ -1,0 +1,52 @@
+---
+import ScrollHintArrow from '../stack-fade/ScrollHintArrow.astro';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<div class:list={['section-nav-rail', className]} {...rest}>
+  <div class="section-nav-dots"><slot /></div>
+  <ScrollHintArrow class="section-nav-hint" />
+</div>
+
+<style>
+  .section-nav-rail {
+    /* Leave room below the centered dots; on short screens the upper track shrinks first. */
+    --hint-start-gap: calc(
+      var(--scroll-hint-gap) - (var(--section-dot-size) - var(--section-dot-mark-size) * 1.35) / 2
+    );
+    --hint-travel: calc(var(--scroll-hint-width) * 1.325825);
+    --hint-track-height: calc(var(--scroll-hint-width) + 2 * var(--hint-travel));
+    --hint-target-height: max(44px, var(--hint-track-height));
+    --hint-rail-space: calc(var(--hint-start-gap) + var(--hint-target-height));
+    --hint-axis: calc(var(--section-dots-offset) + var(--section-dot-mark-size) / 2);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100dvh;
+    width: max(44px, var(--section-dots-offset) + var(--section-dot-size));
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto minmax(var(--hint-rail-space), 1fr);
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  .section-nav-dots {
+    grid-row: 2;
+    justify-self: start;
+    margin-left: var(--section-dots-offset);
+    pointer-events: auto;
+  }
+
+  .section-nav-hint {
+    grid-row: 3;
+    align-self: start;
+    justify-self: start;
+    margin-top: var(--hint-start-gap);
+    pointer-events: auto;
+  }
+</style>
