@@ -26,7 +26,6 @@ export default defineConfig({
       // Astro's client scripts and transition virtual modules are missed by Vite's initial scan.
       include: [
         'gsap',
-        'gsap/Observer',
         'gsap/ScrollTrigger',
         'astro/virtual-modules/transitions-router.js',
         'astro/virtual-modules/transitions-types.js',

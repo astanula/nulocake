@@ -156,7 +156,7 @@ body {
    large-desktop · desktop · laptop · tablet · mobile · small-mobile
    ────────────────────────────────────────────── */
 :root {
-  /* Home (v1 + v2) */
+  /* Home */
   --title-home-large-desktop-min: 2.5rem;
   --title-home-large-desktop-fluid: 5vw;
   --title-home-large-desktop-max: 4rem;

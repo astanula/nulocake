@@ -234,12 +234,13 @@ test.describe('Homepage cleanup on leave', () => {
     // Navigate: Home -> Oferta -> Home -> Galeria -> Home
     await navigateAndHydrate(page, testConfig.routes.landing);
 
-    // Exercise V2's GSAP plugin loading while another page navigates.
+    // Exercise another GSAP page loading while the homepage navigates.
     const otherPage = await page.context().newPage();
     await Promise.all([
       page.click(navLinkSelector('oferta')),
-      otherPage.goto(`${testConfig.basePath}/v2`),
+      otherPage.goto(testConfig.routes.galeria),
     ]);
+    await waitForHydration(otherPage);
     await otherPage.close();
     await page.waitForURL('**/oferta');
     await waitForHydration(page);

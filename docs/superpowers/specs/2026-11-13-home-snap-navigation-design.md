@@ -3,9 +3,7 @@
 **Date:** 2026-11-13
 **Status:** Draft, awaiting user review; implementation pending
 **Related:** `DESIGN.md`, `src/pages/index.astro`, `src/config/animation.ts`,
-`docs/architecture/word-based-scroll-animation-system.md`,
-`docs/superpowers/specs/2026-11-12-home-v2-stack-fade-design.md` (v2 input
-and footer dock)
+`docs/architecture/word-based-scroll-animation-system.md`
 
 ## 1. Purpose and Decision
 

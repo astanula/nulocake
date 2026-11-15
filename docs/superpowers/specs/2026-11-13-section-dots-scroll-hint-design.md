@@ -3,8 +3,7 @@
 **Date:** 2026-11-13
 **Status:** Implemented
 **Depends on:** `docs/superpowers/specs/2026-11-13-home-snap-navigation-design.md`
-**Related:** `DESIGN.md`, `src/pages/v2.astro` (dots and hint look),
-`docs/superpowers/specs/2026-11-12-home-v2-stack-fade-design.md` §8, §13
+**Related:** `DESIGN.md`
 
 ## 1. Purpose
 

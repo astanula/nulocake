@@ -552,7 +552,7 @@ const totalColorTokens = COLOR_TOKEN_GROUPS.reduce((sum, group) => sum + group.t
     );
 
     // Isolate scroll/touch/navigation-key events inside the open sheet so
-    // home snapNavigator and v2 stackFade never fire underneath.
+    // snap navigation never fires underneath.
     const stopBubble = (e: Event) => {
       if (isOpen()) e.stopPropagation();
     };
