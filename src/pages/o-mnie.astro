@@ -11,109 +11,121 @@ import { withBase } from '../utils/withBase';
   isSubpage={true}
 >
   <main id="hero-scroll-container" class="about-page" tabindex="-1">
-    <section class="about-intro" aria-labelledby="about-heading">
-      <div class="intro-copy">
-        <h1 id="about-heading" class="display-lg section-title-lg intro-heading">
-          Cześć!<br />Jestem <span class="accent">Magda.</span>
-        </h1>
-        <p class="intro-lead">Piekę torty, które cieszą oczy i podniebienia.</p>
-        <p class="body-lg">
-          W Nulo Cake piekę tak, jak lubię najbardziej — z dbałością o smak, jakość i każdy detal.
-        </p>
-        <p class="greeting">Miło Cię widzieć!</p>
+    <div class="about-split">
+      <div class="about-text-col">
+        <section class="about-intro" aria-labelledby="about-heading">
+          <div class="intro-copy">
+            <h1 id="about-heading" class="display-lg section-title-lg intro-heading">
+              Cześć!<br />Jestem <span class="accent">Magda.</span>
+            </h1>
+            <p class="display-sm section-title-sm greeting">Miło Cię widzieć!</p>
+            <p class="body-lg intro-lead">Piekę torty, które cieszą oczy i podniebienia.</p>
+            <p class="body-lg">
+              W Nulo Cake piekę tak, jak lubię najbardziej — z dbałością o smak, jakość i każdy detal.
+            </p>
+          </div>
+        </section>
+
+        <section class="about-story" aria-labelledby="story-heading">
+          <div class="story-block">
+            <p class="label-md section-label">Moja historia</p>
+            <h2 id="story-heading" class="display-sm section-title-sm section-heading">
+              Zaczęło się <span class="accent">niewinnie.</span>
+            </h2>
+            <p class="body-lg">
+              Ciasto tu, ciasto tam… Potem tort dla siostry, znajomej, sąsiadki.
+              I zanim się obejrzałam, powstało Nulo Cake.
+            </p>
+            <p class="body-lg">
+              Miejsce, w którym piekę tak, jak lubię najbardziej — z dbałością o smak, jakość i każdy detal.
+            </p>
+          </div>
+
+          <div class="workshop-block">
+            <p class="label-md section-label">Moja pracownia</p>
+            <h2 id="workshop-heading" class="title-lg section-title-sm workshop-heading">
+              Smak, detale i <span class="accent">bezpieczeństwo</span>.
+            </h2>
+            <p class="body-lg">
+              Moja pracownia spełnia wymogi sanepidu i podlega jego kontroli.
+            </p>
+          </div>
+        </section>
+
+        <section class="about-contact" aria-labelledby="contact-heading">
+          <p class="label-md section-label">Stwórzmy coś razem</p>
+          <h2 id="contact-heading" class="display-lg section-title-lg section-heading">
+            Tort dopasowany<br /><span class="accent">do Ciebie.</span>
+          </h2>
+          <div class="contact-copy">
+            <p class="body-lg">
+              Masz ochotę na tort idealnie dopasowany do Ciebie?
+              Napisz do mnie i stwórzmy razem coś wyjątkowego!
+            </p>
+            <p class="body-lg">
+              Zamówienie możesz złożyć w wiadomości prywatnej lub mailowo.
+            </p>
+          </div>
+          <div class="contact-actions">
+            <a href="mailto:nulo.cake@gmail.com" class="btn-primary">Napisz do mnie</a>
+            <a href={withBase('galeria')} class="btn-secondary">Zobacz moje torty</a>
+          </div>
+          <p class="farewell">Do zobaczenia!</p>
+        </section>
       </div>
 
-      <figure class="portrait">
-        <Image
-          src={portrait}
-          alt="Magda, twórczyni Nulo Cake, trzyma tort ozdobiony figurką misia."
-          widths={[320, 440, 644]}
-          sizes="(max-width: 768px) calc(100vw - 3rem), (max-width: 1100px) 40vw, 440px"
-          width={644}
-          height={1024}
-          loading="eager"
-          fetchpriority="high"
-          class="portrait-image"
-        />
-        <figcaption class="label-md portrait-caption">Magda / Nulo Cake</figcaption>
-      </figure>
-    </section>
-
-    <section class="editorial-row story" aria-labelledby="story-heading">
-      <p class="label-md section-label row-label">Moja historia</p>
-      <div class="row-content">
-        <h2 id="story-heading" class="display-sm section-title-sm section-heading">
-          Zaczęło się<br /><span class="accent">niewinnie.</span>
-        </h2>
-        <p class="body-lg">
-          Ciasto tu, ciasto tam… Potem tort dla siostry, znajomej, sąsiadki.
-          I zanim się obejrzałam, powstało Nulo Cake.
-        </p>
-        <p class="body-lg">
-          Miejsce, w którym piekę tak, jak lubię najbardziej — z dbałością o smak, jakość i każdy detal.
-        </p>
+      <div class="about-media-col">
+        <div class="about-media-wrapper">
+          <Image
+            src={portrait}
+            alt="Magda, twórczyni Nulo Cake, trzyma tort ozdobiony figurką misia."
+            widths={[320, 440, 644]}
+            sizes="(max-width: 768px) 100vw, (max-width: 1100px) 36vw, 440px"
+            width={644}
+            height={1024}
+            loading="eager"
+            fetchpriority="high"
+            class="portrait-image"
+          />
+        </div>
       </div>
-    </section>
-
-    <section class="editorial-row workshop" aria-labelledby="workshop-heading">
-      <p class="label-md section-label row-label">Moja pracownia</p>
-      <div class="row-content">
-        <h2 id="workshop-heading" class="title-lg section-title-sm workshop-heading">
-          Smak, detale i bezpieczeństwo.
-        </h2>
-        <p class="body-lg">
-          Moja pracownia spełnia wymogi sanepidu i podlega jego kontroli.
-        </p>
-      </div>
-    </section>
-
-    <section class="about-contact" aria-labelledby="contact-heading">
-      <p class="label-md section-label">Stwórzmy coś razem</p>
-      <h2 id="contact-heading" class="display-lg section-title-lg section-heading">
-        Tort dopasowany<br /><span class="accent">do Ciebie.</span>
-      </h2>
-      <div class="contact-copy">
-        <p class="body-lg">
-          Masz ochotę na tort idealnie dopasowany do Ciebie?
-          Napisz do mnie i stwórzmy razem coś wyjątkowego!
-        </p>
-        <p class="body-lg">
-          Zamówienie możesz złożyć w wiadomości prywatnej lub mailowo.
-        </p>
-      </div>
-      <div class="contact-actions">
-        <a href="mailto:nulo.cake@gmail.com" class="btn-primary">Napisz do mnie</a>
-        <a href={withBase('galeria')} class="btn-secondary">Zobacz moje torty</a>
-      </div>
-      <p class="farewell">Do zobaczenia!</p>
-    </section>
+    </div>
   </main>
 </Layout>
 
 <style>
   .about-page {
+    position: relative;
     width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: var(--subpage-top-offset) clamp(1.5rem, 5vw, 4rem) 0;
     flex-shrink: 0;
   }
 
-  .about-intro {
+  .about-split {
+    min-height: calc(100dvh - 4.5rem);
     display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-    align-items: start;
-    gap: clamp(2rem, 5vw, 5rem);
-    padding-bottom: clamp(3.5rem, 8vw, 7rem);
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    max-width: var(--layout-max-width);
+    margin: 0 auto;
   }
 
-  .intro-copy {
+  .about-text-col {
+    position: relative;
+    min-width: 0;
+    z-index: 2;
+    padding: var(--subpage-top-offset) 2rem 0 4rem;
+  }
+
+  .about-intro {
+    padding-bottom: 3rem;
+  }
+
+  .intro-copy .body-lg {
     max-width: 34rem;
   }
 
   .section-label,
   .accent,
-  .greeting {
+  .farewell {
     color: var(--color-primary);
   }
 
@@ -122,75 +134,38 @@ import { withBase } from '../utils/withBase';
   }
 
   .intro-heading {
-    margin-bottom: 2rem;
+    margin-bottom: 0.5rem;
   }
 
   .intro-lead {
-    max-width: 26ch;
-    font-size: clamp(1.25rem, 2vw, 1.625rem);
-    line-height: 1.5;
     margin-bottom: 1.25rem;
   }
 
   .greeting {
-    margin-top: 2rem;
-    font-weight: 600;
+    margin-bottom: 2rem;
   }
 
-  .portrait {
-    width: 100%;
-    max-width: 440px;
-    justify-self: end;
+  .about-story {
+    padding: 0 0 clamp(3rem, 6vw, 5.5rem);
   }
 
-  .portrait-image {
-    display: block;
-    width: 100%;
-    height: auto;
-    background: var(--color-surface);
-  }
-
-  .portrait-caption {
-    margin-top: 1rem;
-    color: var(--color-outline);
-    font-size: 0.625rem;
-    letter-spacing: 0.16em;
-  }
-
-  .editorial-row {
-    display: grid;
-    grid-template-columns: minmax(0, 0.42fr) minmax(0, 1fr);
-    gap: clamp(2rem, 5vw, 5rem);
-    border-top: 1px solid var(--color-outline-variant);
-  }
-
-  .row-label {
-    margin-bottom: 0;
-    padding-top: 0.25rem;
-    color: var(--color-outline);
-  }
-
-  .row-content {
+  .story-block,
+  .workshop-block {
     max-width: 42rem;
   }
 
-  .story {
-    padding: clamp(3rem, 6vw, 5.5rem) 0;
+  .workshop-block {
+    margin-top: 3rem;
   }
 
   .section-heading {
     margin-bottom: 1.75rem;
   }
 
-  .row-content .body-lg + .body-lg,
+  .story-block .body-lg + .body-lg,
   .contact-copy .body-lg + .body-lg {
     margin-bottom: 1rem;
     margin-top: 1rem;
-  }
-
-  .workshop {
-    padding: 2rem 0;
-    border-bottom: 1px solid var(--color-outline-variant);
   }
 
   .workshop-heading {
@@ -213,23 +188,85 @@ import { withBase } from '../utils/withBase';
   }
 
   .farewell {
-    color: var(--color-on-surface-variant);
     margin-top: 2rem;
   }
 
+  .about-media-col {
+    position: sticky;
+    top: 0;
+    min-width: 0;
+    height: calc(100dvh - 4.5rem);
+    align-self: start;
+  }
+
+  .about-media-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: var(--subpage-top-offset) 2rem 2rem;
+    overflow: hidden;
+  }
+
+  .portrait-image {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: min(100%, 440px);
+    max-height: calc(100dvh - 6.5rem - var(--subpage-top-offset));
+    object-fit: contain;
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+  }
+
+  @media (max-width: 1024px) {
+    .about-text-col {
+      padding: var(--subpage-top-offset) 1.5rem 0 2.5rem;
+    }
+
+    .about-media-wrapper {
+      padding-inline: 1.5rem;
+    }
+
+    .portrait-image {
+      max-width: min(100%, 400px);
+    }
+  }
+
   @media (max-width: 768px) {
-    .about-intro,
-    .editorial-row {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 2rem;
+    .about-split {
+      grid-template-columns: 1fr;
     }
 
-    .portrait {
-      justify-self: start;
+    .about-media-col {
+      grid-column: 1;
+      grid-row: 1;
+      width: 100%;
+      z-index: 1;
+      opacity: 0.16;
+      pointer-events: none;
     }
 
-    .row-label {
-      padding-top: 0;
+    .about-media-wrapper {
+      display: block;
+      padding: 0;
+    }
+
+    .portrait-image {
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      max-height: none;
+      object-fit: cover;
+      object-position: center top;
+      border-radius: 0;
+    }
+
+    .about-text-col {
+      grid-column: 1;
+      grid-row: 1;
+      padding: var(--subpage-top-offset) 1.5rem 0;
     }
 
     .contact-actions a {
