@@ -133,6 +133,10 @@ export function buildSectionTimeline({ sectionData, sectionStarts, totalDuration
     const secStart = sectionStarts[i];
 
     if (i > 0) {
+      const prevDisplay = data.section.style.display;
+      if (getComputedStyle(data.section).display === 'none') {
+        data.section.style.display = 'flex';
+      }
       elements.forEach((elem) => {
         if (elem.type === 'word') {
           gsap.set(elem.el, {
@@ -143,6 +147,7 @@ export function buildSectionTimeline({ sectionData, sectionStarts, totalDuration
           gsap.set(elem.el, { opacity: 0, filter: `blur(${BLUR_MAX_PX}px)`, y: LIFT_PX });
         }
       });
+      data.section.style.display = prevDisplay;
 
       elements.forEach((elem, idx) => {
         const dur = elem.duration;
