@@ -11,7 +11,7 @@ import { testConfig } from './test-config';
 
 const isCI = !!process.env.CI;
 const mode = (process.env.TEST_MODE ?? 'dev') as 'dev' | 'preview';
-const port = 4322;
+const port = 4350;
 
 const webServerByMode = {
   dev: {

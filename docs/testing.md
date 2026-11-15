@@ -21,8 +21,8 @@ terminal session; it does not change the project or system configuration.
 
 ## Running tests
 
-Playwright starts its own server on port 4322, separate from the usual
-development server on port 4321. Stop any process already using port 4322
+Playwright starts its own server on port 4350, separate from the usual
+development server on port 4321. Stop any process already using port 4350
 before running the suite; tests do not reuse an existing server.
 
 ### Run single test by exact name
