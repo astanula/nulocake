@@ -28,6 +28,31 @@ const viewportBoundaryCases: ReadonlyArray<{
   { width: TIER_MIN_WIDTH_PX.largeDesktop, tier: 'large-desktop' },
 ];
 
+test('uses the navigation logo width for each viewport tier', async ({ page }) => {
+  await page.goto(testConfig.routes.kontakt);
+  await waitForHydration(page);
+
+  const logo = page.locator('.nav-logo-img');
+  for (const { width } of viewportBoundaryCases) {
+    await page.setViewportSize({ width, height: VIEWPORT_HEIGHT });
+    await expect(logo).toHaveCSS('width', width < TIER_MIN_WIDTH_PX.tablet ? '32px' : '40px');
+  }
+
+  await page.evaluate(() => {
+    document.documentElement.style.setProperty('--sm-nav-logo-width', '41px');
+    document.documentElement.style.setProperty('--md-nav-logo-width', '42px');
+    document.documentElement.style.setProperty('--lg-nav-logo-width', '43px');
+  });
+
+  for (const { width } of viewportBoundaryCases) {
+    await page.setViewportSize({ width, height: VIEWPORT_HEIGHT });
+    const expectedWidth = width < TIER_MIN_WIDTH_PX.tablet
+      ? '43px'
+      : width < TIER_MIN_WIDTH_PX.desktop ? '42px' : '41px';
+    await expect(logo).toHaveCSS('width', expectedWidth);
+  }
+});
+
 test('hydrates Design System clamp formulas and reports every viewport tier boundary', async ({
   page,
 }) => {

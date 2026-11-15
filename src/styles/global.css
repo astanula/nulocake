@@ -231,6 +231,10 @@ body {
   --layout-max-width-mobile: 1400px;
   --layout-max-width-small-mobile: 1400px;
 
+  --sm-nav-logo-width: 40px;
+  --md-nav-logo-width: 40px;
+  --lg-nav-logo-width: 32px;
+
   --sm-section-dots-offset: 0.3rem;
   --md-section-dots-offset: 0.5rem;
   --lg-section-dots-offset: 1rem;
@@ -256,6 +260,7 @@ body {
   --title-sm-max: var(--title-sm-large-desktop-max);
   --subpage-top-offset: var(--subpage-top-offset-large-desktop);
   --layout-max-width: var(--layout-max-width-large-desktop);
+  --nav-logo-width: var(--sm-nav-logo-width);
 }
 
 .section-title-home {
@@ -299,6 +304,7 @@ body {
     --title-sm-max: var(--title-sm-laptop-max);
     --subpage-top-offset: var(--subpage-top-offset-laptop);
     --layout-max-width: var(--layout-max-width-laptop);
+    --nav-logo-width: var(--md-nav-logo-width);
     --scroll-hint-width: var(--md-scroll-hint-width);
   }
 }
@@ -333,6 +339,7 @@ body {
     --title-sm-max: var(--title-sm-mobile-max);
     --subpage-top-offset: var(--subpage-top-offset-mobile);
     --layout-max-width: var(--layout-max-width-mobile);
+    --nav-logo-width: var(--lg-nav-logo-width);
     --section-dots-offset: var(--sm-section-dots-offset);
     --section-dot-size: 1.25rem;
     --section-dot-mark-size: 6px;
