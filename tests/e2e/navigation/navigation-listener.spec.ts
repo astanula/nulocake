@@ -129,17 +129,24 @@ test.describe('Navigation', () => {
 
   test('mobile menu opens and closes correctly', async ({ page }) => {
     // Set mobile viewport
-    await page.setViewportSize({ width: 375, height: 667 });
+    const viewport = { width: 375, height: 667 };
+    await page.setViewportSize(viewport);
     await navigateAndHydrate(page, testConfig.routes.landing);
 
     // Open mobile menu
-    await page.click('#nav-toggle');
+    const toggle = page.locator('#nav-toggle');
     const navLinks = page.locator('#nav-links');
+    const backdrop = page.locator('#nav-backdrop');
+    await toggle.click();
     await expect(navLinks).toHaveClass(/open/);
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(navLinks).toHaveCSS('right', '0px');
 
-    // Close via backdrop
-    await page.click('#nav-backdrop');
+    // The drawer covers the backdrop's center; click its exposed left edge.
+    await backdrop.click({ position: { x: 10, y: viewport.height / 2 } });
     await expect(navLinks).not.toHaveClass(/open/);
+    await expect(backdrop).not.toHaveClass(/open/);
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('mobile menu uses a single close toggle with keyboard access', async ({ page }) => {
