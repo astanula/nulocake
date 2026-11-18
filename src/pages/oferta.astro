@@ -19,7 +19,7 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
     <ScrollHintArrow class="oferta-hint" />
 
     <!-- Sekcja 1: Co kryje się w środku? -->
-    <section class="oferta-section is-active" aria-label={sectionLabels[0]} tabindex="-1">
+    <section id="smaki" class="oferta-section is-active" aria-label={sectionLabels[0]} tabindex="-1">
       <div class="content-section-inner">
         <h2 class="display-lg section-title-lg section-heading">
           <span class="word">Co</span> <span class="word">kryje</span> <span class="word">się</span> <span class="section-heading-accent"><span class="word">w</span> <span class="word">środku<span class="section-heading-punct">?</span></span></span>
@@ -114,20 +114,27 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
         <h2 class="display-lg section-title-lg section-heading">
           <span class="word section-heading-accent">Jak</span> <span class="word section-heading-accent">zamówić</span> <span class="word">wymarzony</span> <span class="word">tort?</span>
         </h2>
-        <ol class="steps-list blur-in">
+        <ol class="steps-list blur-in" role="list">
           <li>
-            <h3 class="body-lg section-body">Podaj szczegóły (Zapytanie)</h3>
-            <ul class="section-body body-lg">
-              <li><strong>Datę uroczystości</strong> (sprawdzę dostępność terminu)</li>
-              <li><strong>Liczbę gości</strong> (dobierzemy odpowiednią wielkość/liczbę pięter)</li>
-              <li><strong>Okazję oraz motyw przewodni</strong> (np. „urodziny w stylu leśnym”, „wesele boho”)</li>
-            </ul>
+            <div class="step-panel">
+              <h3>Napisz do mnie i podaj szczegóły</h3>
+              <ul class="body-lg">
+                <li><strong>Datę uroczystości</strong> - sprawdzę dostępność terminu</li>
+                <li><strong>Liczbę gości</strong> - dobierzemy odpowiednią wielkość/liczbę pięter</li>
+                <li><strong>Smak tortu</strong> - wybierz smak z <a href="#smaki" data-flavor-link>listy dostępnych smaków</a></li>
+                <li><strong>Okazję oraz motyw przewodni</strong> - np. „urodziny w stylu leśnym”, „wesele boho”</li>
+              </ul>
+            </div>
           </li>
           <li>
-            <h3 class="body-lg section-body">Ustalimy smaki i design</h3>
+            <div class="step-panel">
+              <h3>Ustalimy smaki i design</h3>
+            </div>
           </li>
           <li>
-            <h3 class="body-lg section-body">Zamów i zarezerwuj termin</h3>
+            <div class="step-panel">
+              <h3>Zamów i zarezerwuj termin</h3>
+            </div>
           </li>
         </ol>
         <div class="section-cta-group blur-in">
@@ -335,26 +342,35 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
   }
 
   .steps-list {
+    --step-marker-size: calc(var(--type-body-lg-size) * 1.7);
+    --step-panel-padding: 1rem;
+    --step-marker-offset: calc(var(--step-panel-padding) + 0.7875rem - var(--step-marker-size) / 2);
+    --step-gap: 1rem;
     counter-reset: step;
     list-style: none;
+    max-width: 42rem;
     padding-left: 0;
     margin: 1.5rem 0 2rem 0;
   }
 
   .steps-list > li {
     counter-increment: step;
-    margin-bottom: 1.5rem;
-    padding-left: calc(var(--type-body-lg-size) + 0.5rem);
+    padding-left: calc(var(--step-marker-size) + 0.75rem);
     position: relative;
+  }
+
+  .steps-list > li:not(:last-child) {
+    margin-bottom: var(--step-gap);
   }
 
   .steps-list > li::before {
     content: counter(step);
     position: absolute;
+    z-index: 1;
     left: 0;
-    top: calc(var(--type-body-lg-size) * 0.35);
-    width: var(--type-body-lg-size);
-    height: var(--type-body-lg-size);
+    top: var(--step-marker-offset);
+    width: var(--step-marker-size);
+    height: var(--step-marker-size);
     background: var(--color-primary);
     color: var(--color-on-primary);
     border-radius: 50%;
@@ -362,16 +378,53 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 1.33rem;
     line-height: 1;
+  }
+
+  .steps-list > li:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: calc(var(--step-marker-size) / 2 - 0.5px);
+    top: calc(var(--step-marker-offset) + var(--step-marker-size) / 2);
+    bottom: calc(0px - var(--step-gap) - var(--step-marker-offset) - var(--step-marker-size) / 2);
+    width: 1px;
+    background: color-mix(in srgb, var(--color-primary) 45%, var(--color-outline-variant));
+  }
+
+  .step-panel {
+    min-width: 0;
+    padding: var(--step-panel-padding);
+    border: 0.5px solid var(--color-outline-variant);
+    background: var(--color-surface);
+  }
+
+  .step-panel h3 {
+    color: var(--color-on-surface);
+    font-family: var(--font-family-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.02em;
+  }
+
+  .step-panel strong {
+    color: var(--color-primary);
+  }
+
+  .step-panel a {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
   }
 
   .steps-list ul {
     list-style: disc;
     padding-left: 1.25rem;
+    margin-top: 0.75rem;
   }
 
-  .steps-list h3 {
+  .steps-list ul li:not(:last-child) {
     margin-bottom: 0.5rem;
   }
 
@@ -407,6 +460,10 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
   }
 
   @media (--below-tablet) {
+    .steps-list {
+      --step-panel-padding: 0.75rem;
+    }
+
     .oferta-section {
       padding: calc(4.5rem + var(--subpage-top-offset)) 1.5rem 3.5rem 2.25rem;
       justify-content: flex-start;
@@ -471,7 +528,19 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
       gsap.set(elem.el, { clearProps: 'all' });
     });
 
-    teardownSnap = mountSnapNavigator(root, buildSectionTimeline(layout));
+    const unmountSnap = mountSnapNavigator(root, buildSectionTimeline(layout));
+    const flavorLink = root.querySelector<HTMLAnchorElement>('[data-flavor-link]');
+    const firstDot = root.querySelector<HTMLButtonElement>('[data-section-dot="0"]');
+    const onFlavorLinkClick = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || !firstDot) return;
+      event.preventDefault();
+      firstDot.click();
+    };
+    flavorLink?.addEventListener('click', onFlavorLinkClick);
+    teardownSnap = () => {
+      flavorLink?.removeEventListener('click', onFlavorLinkClick);
+      unmountSnap();
+    };
   }
 
   if (!window.ofertaPageLoadListenerAdded) {
