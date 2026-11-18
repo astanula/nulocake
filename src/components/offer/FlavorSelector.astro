@@ -141,7 +141,7 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM } from '../../config/ca
     gap: 0.625rem;
     align-items: center;
     padding: 0.40625rem 0.625rem;
-    border-top: 1px solid var(--color-outline-variant);
+    border-top: 0.5px solid var(--color-outline-variant);
     list-style: none;
     cursor: pointer;
   }
@@ -151,7 +151,7 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM } from '../../config/ca
   }
 
   .flavor-pick:last-child {
-    border-bottom: 1px solid var(--color-outline-variant);
+    border-bottom: 0.5px solid var(--color-outline-variant);
   }
 
   .flavor-pick input {
@@ -177,7 +177,6 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM } from '../../config/ca
   .flavor-pick:has(input:checked),
   [open] > .flavor-pick {
     background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface-container-low));
-    box-shadow: inset 2px 0 var(--color-primary);
   }
 
   .flavor-thumb {
@@ -227,7 +226,7 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM } from '../../config/ca
     width: var(--flavor-card-width);
     max-width: 100%;
     padding: 1.75rem;
-    border: 1px solid var(--color-outline-variant);
+    border: 0.5px solid var(--color-outline-variant);
     background: var(--color-surface);
   }
 
@@ -254,12 +253,12 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM } from '../../config/ca
   }
 
   .flavor-accordion-item:last-child {
-    border-bottom: 1px solid var(--color-outline-variant);
+    border-bottom: 0.5px solid var(--color-outline-variant);
   }
 
   .flavor-accordion-panel {
     padding: var(--flavor-eyebrow-gap) 1.75rem;
-    border: 1px solid var(--color-outline-variant);
+    border: 0.5px solid var(--color-outline-variant);
     border-bottom: 0;
     background: var(--color-surface);
   }

@@ -112,7 +112,7 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
     <section class="oferta-section" aria-label={sectionLabels[3]} tabindex="-1">
       <div class="content-section-inner">
         <h2 class="display-lg section-title-lg section-heading">
-          <span class="word">Jak</span> <span class="word">zamówić</span> <span class="word">wymarzony</span> <span class="word">tort?</span>
+          <span class="word section-heading-accent">Jak</span> <span class="word section-heading-accent">zamówić</span> <span class="word">wymarzony</span> <span class="word">tort?</span>
         </h2>
         <ol class="steps-list blur-in">
           <li>
@@ -341,20 +341,20 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
     margin: 1.5rem 0 2rem 0;
   }
 
-  .steps-list li {
+  .steps-list > li {
     counter-increment: step;
     margin-bottom: 1.5rem;
-    padding-left: 3rem;
+    padding-left: calc(var(--type-body-lg-size) + 0.5rem);
     position: relative;
   }
 
-  .steps-list li::before {
+  .steps-list > li::before {
     content: counter(step);
     position: absolute;
     left: 0;
-    top: 0;
-    width: 2rem;
-    height: 2rem;
+    top: calc(var(--type-body-lg-size) * 0.35);
+    width: var(--type-body-lg-size);
+    height: var(--type-body-lg-size);
     background: var(--color-primary);
     color: var(--color-on-primary);
     border-radius: 50%;
@@ -363,6 +363,12 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
     justify-content: center;
     font-weight: 600;
     font-size: 0.875rem;
+    line-height: 1;
+  }
+
+  .steps-list ul {
+    list-style: disc;
+    padding-left: 1.25rem;
   }
 
   .steps-list h3 {
@@ -409,10 +415,6 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
 
     .oferta-section--last {
       padding-bottom: calc(3.5rem + var(--home-footer-h));
-    }
-
-    .steps-list li {
-      padding-left: 2.5rem;
     }
   }
 </style>
