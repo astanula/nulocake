@@ -144,7 +144,7 @@ const styleVars = [
     flex: 1 1 auto;
     min-height: 0;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
     /* Fallbacks until the ResizeObserver writes real frame geometry. */
     --gp-frame-left: 0px;
@@ -159,6 +159,8 @@ const styleVars = [
     display: flex;
     flex-direction: column;
     align-items: center;
+    /* Balance the counter below the image so the image itself is centered. */
+    padding-top: calc(var(--gp-counter-gap) + var(--gp-counter-block-size));
     max-width: 100%;
     min-width: 0;
     max-height: 100%;
@@ -177,8 +179,7 @@ const styleVars = [
       100dvh
       - var(--gp-top-inset)
       - var(--gp-bottom-inset)
-      - var(--gp-counter-gap)
-      - var(--gp-counter-block-size)
+      - 2 * (var(--gp-counter-gap) + var(--gp-counter-block-size))
     );
     width: auto;
     height: auto;
