@@ -38,7 +38,7 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
     <section class="oferta-section" aria-label={sectionLabels[1]} tabindex="-1">
       <div class="content-section-inner">
         <h2 class="display-lg section-title-lg section-heading">
-          <span class="word">Jak</span> <span class="word">dekoruję?</span>
+          <span class="word">Jak</span> <span class="word section-heading-accent">dekoruję<span class="section-heading-punct">?</span></span>
         </h2>
         <p class="body-lg section-body blur-in">W moich projektach najczęściej wykorzystuję:</p>
         <ul class="decor-list blur-in">
@@ -90,7 +90,7 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
     <section class="oferta-section" aria-label={sectionLabels[2]} tabindex="-1">
       <div class="content-section-inner">
         <h2 class="display-lg section-title-lg section-heading">
-          <span class="word">Przewodnik</span> <span class="word">po</span> <span class="word">porcjach</span> <span class="word">i</span> <span class="word">cennik</span>
+          <span class="word">Przewodnik</span> <span class="word">po</span> <span class="word">porcjach</span> <span class="word">i</span> <span class="word section-heading-accent">cennik</span>
         </h2>
         <div class="portion-pricing blur-in">
           <p class="portion-price">
@@ -117,18 +117,18 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
         <ol class="steps-list blur-in" role="list">
           <li>
             <div class="step-panel panel">
-              <h3>Napisz do mnie i podaj szczegóły</h3>
+              <h3>Napisz do mnie i podaj</h3>
               <ul class="body-lg">
-                <li><strong>Datę uroczystości</strong> - sprawdzę dostępność terminu</li>
-                <li><strong>Liczbę gości</strong> - dobierzemy odpowiednią wielkość/liczbę pięter</li>
-                <li><strong>Smak tortu</strong> - wybierz smak z <a href="#smaki" data-flavor-link>listy dostępnych smaków</a></li>
-                <li><strong>Okazję oraz motyw przewodni</strong> - np. „urodziny w stylu leśnym”, „wesele boho”</li>
+                <li><span class="step-highlight">datę uroczystości</span> - sprawdzę dostępność terminu</li>
+                <li><span class="step-highlight">liczbę gości</span> - dobierzemy odpowiednią wielkość/liczbę pięter</li>
+                <li><span class="step-highlight">smak tortu</span> - wybierz smak z <a href="#smaki" data-flavor-link>listy dostępnych smaków <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 12 12 4M4 4h8v8" /></svg></a></li>
+                <li><span class="step-highlight">okazję oraz motyw przewodni</span> - np. „urodziny w stylu leśnym”, „wesele boho”</li>
               </ul>
             </div>
           </li>
           <li>
             <div class="step-panel panel">
-              <h3>Ustalimy smaki i design</h3>
+              <h3>Ustalimy dekoracje i szczegóły tortu</h3>
             </div>
           </li>
           <li>
@@ -147,7 +147,7 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
     <section class="oferta-section oferta-section--last" aria-label={sectionLabels[4]} tabindex="-1">
       <div class="content-section-inner">
         <h2 class="display-lg section-title-lg section-heading">
-          <span class="word">Coś</span> <span class="word">więcej</span> <span class="word">niż</span> <span class="word">torty?</span>
+          <span class="word">Coś</span> <span class="word section-heading-accent">więcej</span> <span class="word">niż</span> <span class="word">torty?</span>
         </h2>
         <p class="body-lg section-body blur-in">Opis co oprócz tortów jest w ofercie</p>
         <ul class="section-body body-lg blur-in">
@@ -378,7 +378,7 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    font-size: 1.33rem;
+    font-size: 1.064rem;
     line-height: 1;
   }
 
@@ -401,19 +401,34 @@ const sectionLabels = ['Smaki', 'Dekoracje', 'Porcje i cennik', 'Jak zamówić',
     color: var(--color-on-surface);
     font-family: var(--font-family-display);
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 400;
     line-height: 1.4;
     letter-spacing: -0.02em;
   }
 
-  .step-panel strong {
+  .step-panel .step-highlight {
     color: var(--color-primary);
   }
 
   .step-panel a {
     color: var(--color-primary);
+    text-decoration: none;
+  }
+
+  .step-panel a:hover {
     text-decoration: underline;
-    text-underline-offset: 0.15em;
+    text-underline-offset: 0.25em;
+  }
+
+  .step-panel a svg {
+    display: inline-block;
+    width: 0.75rem;
+    height: 0.75rem;
+    margin-left: 0.125rem;
+    vertical-align: middle;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
   }
 
   .steps-list ul {
