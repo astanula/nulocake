@@ -29,7 +29,7 @@ test('uses the pink accent and keeps the details panel within its content area',
   await waitForHydration(page);
 
   await expect(page.locator('#flavor-hint')).toHaveCSS('color', 'rgb(255, 170, 248)');
-  await expect(page.locator('.section-heading-accent')).toHaveCSS('color', 'rgb(255, 170, 248)');
+  await expect(page.locator('#smaki .section-heading-accent')).toHaveCSS('color', 'rgb(255, 170, 248)');
 
   const layout = page.locator('.flavor-layout');
   const card = page.locator('#flavor-card');

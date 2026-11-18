@@ -4,6 +4,10 @@ import { waitForHydration } from '../helpers/hydration';
 
 test.describe('Home gallery controls', () => {
   test('navigate the gallery and work after returning to Home', async ({ page }) => {
+    // This test exercises carousel navigation, not the first-visit intro.
+    await page.addInitScript(() => {
+      (window as Window & { hasSeenIntro?: boolean }).hasSeenIntro = true;
+    });
     await page.goto(testConfig.routes.landing);
     await waitForHydration(page);
     await expect(page.locator('html')).toHaveClass(/home-snap-active/);
@@ -15,6 +19,18 @@ test.describe('Home gallery controls', () => {
     const track = page.locator('#gallery-track');
     const prev = page.getByRole('button', { name: 'Poprzednie zdjęcia' });
     const next = page.getByRole('button', { name: 'Następne zdjęcia' });
+    const navigateAndWait = async (route: 'oferta' | 'landing') => {
+      // Astro updates the URL before page-load runs the destination's initialization.
+      await page.evaluate(() => {
+        (window as Window & { galleryTestPageLoad?: Promise<void> }).galleryTestPageLoad =
+          new Promise<void>((resolve) => {
+            document.addEventListener('astro:page-load', () => resolve(), { once: true });
+          });
+      });
+      await page.locator(navLinkSelector(route)).click();
+      await page.waitForURL(`**${testConfig.routes[route]}`);
+      await page.evaluate(() => (window as Window & { galleryTestPageLoad?: Promise<void> }).galleryTestPageLoad);
+    };
 
     await openGallery();
     await expect(prev).toHaveAttribute('aria-disabled', 'true');
@@ -29,11 +45,8 @@ test.describe('Home gallery controls', () => {
     await page.keyboard.press('ArrowLeft');
     await expect(next).toHaveAttribute('aria-disabled', 'false');
 
-    await page.locator(navLinkSelector('oferta')).click();
-    await page.waitForURL('**/oferta');
-    await page.locator(navLinkSelector('landing')).click();
-    await page.waitForURL(`**${testConfig.routes.landing}`);
-    await waitForHydration(page);
+    await navigateAndWait('oferta');
+    await navigateAndWait('landing');
     await expect(page.locator('html')).toHaveClass(/home-snap-active/);
     await openGallery();
     await expect(next).toHaveAttribute('aria-disabled', 'false');
