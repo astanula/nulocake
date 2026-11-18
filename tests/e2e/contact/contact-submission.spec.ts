@@ -2,7 +2,8 @@ import type { Page } from '@playwright/test';
 import { test, expect } from '../fixtures/base-fixture';
 import { testConfig, navLinkSelector } from '../test-config';
 import { waitForHydration } from '../helpers/hydration';
-import { CONTACT_IMAGES, CONTACT_SUBMISSION, CREAM_FLAVORS, MAX_CREAM_FLAVORS, MESSAGE_FALLBACK } from '../../../src/config/contact';
+import { CAKE_FLAVORS } from '../../../src/config/cakeFlavors';
+import { CONTACT_IMAGES, CONTACT_SUBMISSION, MESSAGE_FALLBACK } from '../../../src/config/contact';
 
 const uploadUrl = `https://api.cloudinary.com/v1_1/${CONTACT_SUBMISSION.cloudinaryCloudName}/image/upload`;
 const uploadedImageUrl = 'https://res.cloudinary.com/gaywqckp/image/upload/inspiration.png';
@@ -59,7 +60,7 @@ async function captureUploads(page: Page) {
 
 async function sendEnquiry(page: Page) {
   await page.getByLabel('E-mail', { exact: true }).fill('anna@example.com');
-  await page.getByRole('button', { name: 'Wyślij e-mailem' }).click();
+  await page.getByRole('button', { name: 'Wyślij wiadomość' }).click();
 }
 
 async function holdProviderFetch(page: Page, url: string) {
@@ -111,7 +112,7 @@ test.describe('Contact provider submission', () => {
     await expect(page.getByLabel('E-mail', { exact: true })).toHaveValue('');
     await expect(page.locator('[data-email-label]')).toHaveText('');
     await expect(page.locator('[data-contact-form]')).not.toHaveAttribute('aria-busy');
-    await expect(page.getByRole('button', { name: 'Wyślij e-mailem' })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Wyślij wiadomość' })).toBeEnabled();
   });
 
   test('blank and invalid emails do not upload or submit', async ({ page }) => {
@@ -119,10 +120,10 @@ test.describe('Contact provider submission', () => {
     const uploads = await captureUploads(page);
     await openContactPage(page);
     await selectImages(page, [image()]);
-    await page.getByRole('button', { name: 'Wyślij e-mailem' }).click();
+    await page.getByRole('button', { name: 'Wyślij wiadomość' }).click();
     await expect(page.getByLabel('E-mail', { exact: true })).toBeFocused();
     await page.getByLabel('E-mail', { exact: true }).fill('anna@');
-    await page.getByRole('button', { name: 'Wyślij e-mailem' }).click();
+    await page.getByRole('button', { name: 'Wyślij wiadomość' }).click();
     await expect(page.getByLabel('E-mail', { exact: true })).toHaveAttribute('aria-invalid', 'true');
     expect(payloads).toEqual([]);
     expect(uploads).toEqual([]);
@@ -136,9 +137,7 @@ test.describe('Contact provider submission', () => {
     await page.locator('#contact-date').fill('2030/05/20');
     await page.locator('#contact-people').fill('25');
     await page.locator('.flavor-summary').click();
-    for (const flavor of CREAM_FLAVORS.slice(0, MAX_CREAM_FLAVORS)) {
-      await page.getByLabel(flavor).check();
-    }
+    await page.getByRole('radio', { name: CAKE_FLAVORS[1].name }).click();
     await selectImages(page, [image()]);
     expect(uploads).toHaveLength(0);
     await page.locator('a[data-channel="instagram"]').click();
@@ -159,7 +158,7 @@ test.describe('Contact provider submission', () => {
       'Wiadomość': 'Tort z motywem lasu\nBez orzechów',
       Termin: '2030/05/20',
       'Liczba osób': '25',
-      Smaki: CREAM_FLAVORS.slice(0, MAX_CREAM_FLAVORS),
+      'Smak tortu': CAKE_FLAVORS[1].name,
       Inspiracje: [uploadedImageUrl],
       _language: 'pl',
       _email: { subject: 'Zapytanie o tort - Nulo Cake' },
@@ -169,10 +168,12 @@ test.describe('Contact provider submission', () => {
     await expect(page.locator('#contact-people')).toHaveValue('');
     await expect(page.locator('[data-image-list] li')).toHaveCount(0);
     await expect(page.locator('[data-images-note]')).toBeHidden();
-    await expect(page.locator('[data-flavors-count]')).toHaveText(`(0 z ${MAX_CREAM_FLAVORS})`);
+    await expect(page.locator('.flavor-summary')).toHaveText('Smak tortu — opcjonalnie', { useInnerText: true });
+    await expect(page.getByRole('button', { name: 'Wyczyść wybrany smak' })).toBeHidden();
     await expect(page.locator('[data-handoff]')).toBeHidden();
     await expect(page.locator('[data-handoff-preview]')).toHaveValue('');
-    await expect(page.locator('input[name="flavors"]:disabled')).toHaveCount(0);
+    await expect(page.locator('input[name="flavor"]:checked')).toHaveCount(0);
+    await expect(page.locator('input[name="flavor"]:disabled')).toHaveCount(0);
   });
 
   test('invalid optional email details are omitted and whitespace uses the fallback', async ({ page }) => {
@@ -199,7 +200,7 @@ test.describe('Contact provider submission', () => {
     await expect(page.locator('[data-contact-form]')).toHaveAttribute('aria-busy', 'true');
     await expect(page.getByLabel('E-mail', { exact: true })).toHaveValue('anna@example.com');
     await expect(page.getByLabel('E-mail', { exact: true })).toBeDisabled();
-    await expect(page.getByRole('button', { name: 'Wyślij e-mailem' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Wyślij wiadomość' })).toBeDisabled();
     await expect(page.locator('a[data-channel="whatsapp"]')).toBeEnabled();
     await page.locator('[data-contact-form]').evaluate((form) => {
       form.dispatchEvent(new Event('submit', { cancelable: true }));
@@ -227,6 +228,55 @@ test.describe('Contact provider submission', () => {
     await page.getByRole('button', { name: 'Usuń inspiration.png' }).click();
     await expect(page.locator('[data-image-error]')).toHaveText('');
   });
+
+  for (const width of [375, 1280]) {
+    test(`image panel scrolls above the actions only after three files at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await openContactPage(page);
+      const list = page.locator('[data-image-list]');
+      const trigger = page.getByRole('button', { name: 'Dodaj zdjęcie inspiracji' });
+
+      await expect(list).toBeHidden();
+      await selectImages(page, [image('1.png'), image('2.png'), image('3.png')]);
+      await expect(list.locator('li')).toHaveCount(3);
+      await expect(list.locator('li').first()).toHaveCSS('height', '36px');
+      await expect(list).not.toHaveAttribute('tabindex');
+      expect(await list.evaluate((element) => element.scrollHeight - element.clientHeight)).toBe(0);
+      const listBox = await list.boundingBox();
+      const triggerBox = await trigger.boundingBox();
+      const panelBox = await page.locator('.image-panel').boundingBox();
+      const actionsBox = await page.locator('.contact-actions').boundingBox();
+      const formGap = await page.locator('[data-contact-form]').evaluate((form) => parseFloat(getComputedStyle(form).rowGap));
+      expect(listBox).not.toBeNull();
+      expect(triggerBox).not.toBeNull();
+      expect(panelBox).not.toBeNull();
+      expect(actionsBox).not.toBeNull();
+      expect(listBox!.y + listBox!.height).toBeLessThanOrEqual(triggerBox!.y);
+      expect(Math.abs(actionsBox!.y - (panelBox!.y + panelBox!.height) - formGap)).toBeLessThan(1);
+
+      await selectImages(page, [image('4.png'), image('5.png')]);
+      await expect(list.locator('li')).toHaveCount(5);
+      await expect(list).toHaveAttribute('tabindex', '0');
+      await expect(list).toHaveCSS('overflow-y', 'auto');
+      expect(await list.evaluate((element) => element.scrollHeight)).toBeGreaterThan(
+        await list.evaluate((element) => element.clientHeight),
+      );
+      await list.focus();
+      await page.keyboard.press('End');
+      await expect.poll(() => list.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+
+      await page.getByRole('button', { name: 'Usuń 5.png' }).click();
+      await expect(list.locator('li')).toHaveCount(4);
+      await expect(list).toHaveAttribute('tabindex', '0');
+      expect(await list.evaluate((element) => element.scrollHeight)).toBeGreaterThan(
+        await list.evaluate((element) => element.clientHeight),
+      );
+      await page.getByRole('button', { name: 'Usuń 4.png' }).click();
+      await expect(list.locator('li')).toHaveCount(3);
+      await expect(list).not.toHaveAttribute('tabindex');
+      expect(await list.evaluate((element) => element.scrollHeight - element.clientHeight)).toBe(0);
+    });
+  }
 
   test('selection count and duplicate detection apply across file picker uses', async ({ page }) => {
     await openContactPage(page);
@@ -292,7 +342,7 @@ test.describe('Contact provider submission', () => {
     expect(payloads).toHaveLength(1);
     await page.getByRole('button', { name: 'Usuń remove.png' }).click();
     const retryPayloads = await captureFormspark(page);
-    await page.getByRole('button', { name: 'Wyślij e-mailem' }).click();
+    await page.getByRole('button', { name: 'Wyślij wiadomość' }).click();
     await expect(page.locator('[data-form-status]')).toHaveAttribute('data-state', 'success');
     expect(uploads).toHaveLength(2);
     expect(retryPayloads[0].Inspiracje).toEqual([uploadedImageUrl]);
@@ -314,7 +364,7 @@ test.describe('Contact provider submission', () => {
     await expect(page.locator('[data-form-status]')).toHaveAttribute('data-state', 'error');
     expect(attempts).toBe(2);
     expect(payloads).toEqual([]);
-    await page.getByRole('button', { name: 'Wyślij e-mailem' }).click();
+    await page.getByRole('button', { name: 'Wyślij wiadomość' }).click();
     await expect(page.locator('[data-form-status]')).toHaveAttribute('data-state', 'success');
     expect(attempts).toBe(3);
     expect(payloads[0].Inspiracje).toEqual([`${uploadedImageUrl}?attempt=1`, `${uploadedImageUrl}?attempt=3`]);
@@ -330,7 +380,7 @@ test.describe('Contact provider submission', () => {
       await sendEnquiry(page);
       await expect(page.locator('[data-form-status]')).toHaveAttribute('data-state', 'error');
       await expect(page.getByLabel('E-mail', { exact: true })).toHaveValue('anna@example.com');
-      await expect(page.getByRole('button', { name: 'Wyślij e-mailem' })).toBeEnabled();
+      await expect(page.getByRole('button', { name: 'Wyślij wiadomość' })).toBeEnabled();
       expect(payloads).toEqual([]);
     });
 

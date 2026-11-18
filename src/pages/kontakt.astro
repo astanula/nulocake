@@ -8,77 +8,64 @@ import { CONTACT_DETAILS, CONTACT_LINKS } from '../config/contact';
 
 <Layout title="Kontakt — Nulo Cake" description="Skontaktuj się z Nulo Cake. Zamów artystyczny tort na swoją wyjątkową okazję." isSubpage={true}>
   <main class="contact-page" data-contact-page>
-    <section class="contact-intro" aria-labelledby="contact-heading">
-      <h1 id="contact-heading" class="display-lg section-title-lg contact-heading">
-        Porozmawiajmy<br /><span class="accent-italic">o Twoim torcie.</span>
-      </h1>
-      <p class="body-lg">
-        Nie musisz znać wszystkich szczegółów. Napisz, czego szukasz — chętnie doradzę.
-      </p>
-    </section>
+    <div class="contact-column">
+      <section class="contact-intro" aria-labelledby="contact-heading">
+        <h1 id="contact-heading" class="display-lg section-title-lg contact-heading">
+          Porozmawiajmy<br /><span class="accent-italic">o Twoim torcie.</span>
+        </h1>
+        <p class="body-lg">
+          Nie musisz znać wszystkich szczegółów. Napisz, czego szukasz — chętnie doradzę.
+        </p>
+      </section>
 
-    <section class="contact-channels-section" aria-labelledby="contact-channels-heading">
-      <ContactChannels />
-    </section>
+      <section class="contact-channels-section" aria-labelledby="contact-channels-heading">
+        <ContactChannels />
+      </section>
 
-    <section class="contact-details" aria-labelledby="contact-details-heading">
-      <h2 class="label-md contact-details-heading" id="contact-details-heading">Bezpośrednio</h2>
-      <dl class="contact-facts">
-        <div>
-          <dt>
-            <span class="sr-only">Telefon</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.2 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.96.35 1.91.69 2.81a2 2 0 0 1-.45 2.11L8.08 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.69A2 2 0 0 1 22 16.92Z" />
-            </svg>
-          </dt>
-          <dd><a href={CONTACT_LINKS.phone}>{CONTACT_DETAILS.phone}</a></dd>
-        </div>
-        <div>
-          <dt>
-            <span class="sr-only">E-mail</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <rect x="3" y="5" width="18" height="14" rx="2" />
-              <path d="m3 7 9 6 9-6" />
-            </svg>
-          </dt>
-          <dd><a href={CONTACT_LINKS.email}>{CONTACT_DETAILS.email}</a></dd>
-        </div>
-        <div>
-          <dt>
-            <span class="sr-only">Adres</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z" />
-              <circle cx="12" cy="10" r="2.5" />
-            </svg>
-          </dt>
-          <dd>{CONTACT_DETAILS.address}</dd>
-        </div>
-      </dl>
-    </section>
+      <section class="contact-details" aria-labelledby="contact-details-heading">
+        <h2 class="label-md contact-details-heading" id="contact-details-heading">Dane kontaktowe</h2>
+        <dl class="contact-facts">
+          <div>
+            <dt>
+              <span class="sr-only">Telefon</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.2 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.96.35 1.91.69 2.81a2 2 0 0 1-.45 2.11L8.08 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.69A2 2 0 0 1 22 16.92Z" />
+              </svg>
+            </dt>
+            <dd><a href={CONTACT_LINKS.phone}>{CONTACT_DETAILS.phone}</a></dd>
+          </div>
+          <div>
+            <dt>
+              <span class="sr-only">E-mail</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <path d="m3 7 9 6 9-6" />
+              </svg>
+            </dt>
+            <dd><a href={CONTACT_LINKS.email}>{CONTACT_DETAILS.email}</a></dd>
+          </div>
+        </dl>
+      </section>
 
-    <section class="contact-form-section" aria-labelledby="contact-email-heading">
-      <h2 class="label-md contact-email-heading" id="contact-email-heading">Wolisz e-mail?</h2>
-      <p class="contact-email-intro">Zostaw adres i napisz tyle, ile już wiesz.</p>
-      <ContactForm />
-    </section>
+      <section class="contact-map-section" aria-label="Lokalizacja">
+        <ContactMap />
+      </section>
+    </div>
 
-    <section class="contact-map-section" aria-label="Lokalizacja">
-      <ContactMap />
-    </section>
+    <div class="contact-column">
+      <section class="contact-form-section" aria-labelledby="contact-email-heading">
+        <h2 class="label-md contact-email-heading" id="contact-email-heading">Wyślij wiadomość przez formularz</h2>
+        <p class="contact-email-intro">Zostaw adres i napisz tyle, ile już wiesz.</p>
+        <ContactForm />
+      </section>
+    </div>
   </main>
 </Layout>
 
 <style>
   .contact-page {
     display: grid;
-    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-    grid-template-areas:
-      'intro channels'
-      'intro email'
-      'details email'
-      'map email';
-    /* Keep the first row sized by the channels rather than the introduction. */
-    grid-template-rows: max-content auto auto 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
     gap: 1.5rem clamp(2.5rem, 6vw, 6rem);
     width: 100%;
@@ -88,8 +75,13 @@ import { CONTACT_DETAILS, CONTACT_LINKS } from '../config/contact';
     flex-shrink: 0;
   }
 
+  .contact-column {
+    display: grid;
+    gap: 1.5rem;
+    min-width: 0;
+  }
+
   .contact-intro {
-    grid-area: intro;
     min-width: 0;
     max-width: 30rem;
     padding-bottom: 1.25rem;
@@ -106,12 +98,7 @@ import { CONTACT_DETAILS, CONTACT_LINKS } from '../config/contact';
     max-width: 44rem;
   }
 
-  .contact-channels-section {
-    grid-area: channels;
-  }
-
   .contact-details {
-    grid-area: details;
     min-width: 0;
   }
 
@@ -121,7 +108,9 @@ import { CONTACT_DETAILS, CONTACT_LINKS } from '../config/contact';
   }
 
   .contact-facts {
-    display: grid;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
   }
 
   .contact-facts > div {
@@ -129,6 +118,7 @@ import { CONTACT_DETAILS, CONTACT_LINKS } from '../config/contact';
     grid-template-columns: 1.5rem minmax(0, 1fr);
     align-items: center;
     gap: 1rem;
+    max-width: 100%;
     min-height: 44px;
   }
 
@@ -170,10 +160,6 @@ import { CONTACT_DETAILS, CONTACT_LINKS } from '../config/contact';
     text-underline-offset: 0.25em;
   }
 
-  .contact-form-section {
-    grid-area: email;
-  }
-
   .contact-email-heading {
     margin-bottom: 0.5rem;
     color: var(--color-primary);
@@ -187,20 +173,12 @@ import { CONTACT_DETAILS, CONTACT_LINKS } from '../config/contact';
   }
 
   .contact-map-section {
-    grid-area: map;
     min-width: 0;
   }
 
   @media (--below-laptop) {
     .contact-page {
       grid-template-columns: minmax(0, 1fr);
-      grid-template-areas:
-        'intro'
-        'channels'
-        'details'
-        'email'
-        'map';
-      grid-template-rows: auto;
     }
   }
 </style>

@@ -4,7 +4,7 @@ export interface EnquiryContent {
   message: string;
   date: string;
   people: string;
-  flavors: readonly string[];
+  flavor: string;
 }
 
 export interface EnquiryDraft extends EnquiryContent {
@@ -42,11 +42,13 @@ const formatPeople = (people: string) => {
   return people.trim() && Number.isInteger(count) && count > 0 ? String(count) : '';
 };
 
-const enquiryDetails = ({ date, people, flavors }: EnquiryContent) =>
+const formatFlavor = (flavor: string) => flavor.trim();
+
+const enquiryDetails = ({ date, people, flavor }: EnquiryContent) =>
   [
     ['Termin', formatDate(date)],
     ['Liczba osób', formatPeople(people)],
-    ['Smaki kremów', flavors.join(', ')],
+    ['Smak tortu', formatFlavor(flavor)],
   ]
     .filter(([, value]) => value)
     .map(([label, value]) => `${label}: ${value}`);
@@ -60,11 +62,12 @@ export function formatEnquiryText(content: EnquiryContent): string {
 export function formatEnquiryFields(content: EnquiryContent) {
   const date = formatDate(content.date);
   const people = formatPeople(content.people);
+  const flavor = formatFlavor(content.flavor);
   return {
     'Wiadomość': effectiveMessage(content.message),
     ...(date ? { Termin: date } : {}),
     ...(people ? { 'Liczba osób': people } : {}),
-    ...(content.flavors.length ? { Smaki: content.flavors } : {}),
+    ...(flavor ? { 'Smak tortu': flavor } : {}),
   };
 }
 

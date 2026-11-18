@@ -15,8 +15,6 @@ export const CONTACT_LINKS = {
   directions: `https://www.google.com/maps/dir/?api=1&destination=${mapDestination}`,
 } as const;
 
-export const MAX_CREAM_FLAVORS = 3;
-
 export const CONTACT_SUBMISSION = {
   formsparkUrl: 'https://submit-form.com/Lu7wXKqqg',
   cloudinaryCloudName: 'gaywqckp',
@@ -29,17 +27,6 @@ export const CONTACT_IMAGES = {
   maxFileBytes: 10 * 1024 * 1024,
   mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
 } as const;
-
-export const CREAM_FLAVORS = [
-  'Wanilia z mascarpone',
-  'Belgijska czekolada',
-  'Słony karmel',
-  'Malina',
-  'Pistacja',
-  'Owoce leśne',
-  'Kawa',
-  'Cytryna',
-] as const;
 
 export type ContactChannelId = 'messenger' | 'whatsapp' | 'instagram' | 'telegram';
 

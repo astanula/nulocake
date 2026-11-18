@@ -21,7 +21,7 @@ import { CONTACT_DETAILS, CONTACT_LINKS } from '../../config/contact';
   <div class="map-caption">
     <p id="contact-map-note">Mapa &#322;&#261;czy si&#281; z Google po klikni&#281;ciu.</p>
     <a href={CONTACT_LINKS.directions} target="_blank" rel="noopener noreferrer">
-      Wyznacz tras&#281;
+      <span>Wyznacz tras&#281;</span>
       <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
         <path d="M4 12 12 4M4 4h8v8" />
       </svg>
@@ -137,7 +137,7 @@ import { CONTACT_DETAILS, CONTACT_LINKS } from '../../config/contact';
     align-items: baseline;
     justify-content: space-between;
     gap: 0.5rem 1rem;
-    margin-top: 0.625rem;
+    margin-top: 0.3125rem;
     font-size: 0.6875rem;
     line-height: 1.7;
     color: var(--color-on-surface-variant);
@@ -145,7 +145,7 @@ import { CONTACT_DETAILS, CONTACT_LINKS } from '../../config/contact';
 
   .map-caption a {
     display: inline-flex;
-    align-items: center;
+    align-items: baseline;
     gap: 0.375rem;
     min-height: 44px;
     color: var(--color-primary);
