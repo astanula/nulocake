@@ -14,7 +14,7 @@ const multiTierSizes = [
 ---
 
 <div class="cake-size-guide">
-  <section class="cake-size-guide__group" aria-labelledby="single-tier-cakes-title">
+  <section class="cake-size-guide__group panel" aria-labelledby="single-tier-cakes-title">
     <h3 id="single-tier-cakes-title" class="cake-size-guide__title">Torty jednopiętrowe</h3>
 
     <table class="cake-size-guide__table" aria-labelledby="single-tier-cakes-title">
@@ -34,7 +34,7 @@ const multiTierSizes = [
               </span>
             </th>
             <td>
-              <span class="cake-size-guide__diameter"><strong>Ø {size.diameter}</strong> cm</span>
+              <span class="cake-size-guide__diameter panel"><strong>Ø {size.diameter}</strong> cm</span>
             </td>
           </tr>
         ))}
@@ -42,12 +42,12 @@ const multiTierSizes = [
     </table>
   </section>
 
-  <section class="cake-size-guide__group" aria-labelledby="multi-tier-cakes-title">
+  <section class="cake-size-guide__group panel" aria-labelledby="multi-tier-cakes-title">
     <h3 id="multi-tier-cakes-title" class="cake-size-guide__title">Torty piętrowe</h3>
 
     <div class="cake-size-guide__tiers">
       {multiTierSizes.map((size) => (
-        <div class="cake-size-guide__tier">
+        <div class="cake-size-guide__tier panel">
           <div class="cake-size-guide__cake" role="img" aria-label={size.label}>
             {size.layers.map((layer) => (
               <span class:list={['cake-size-guide__layer', `cake-size-guide__layer--${layer}`]} aria-hidden="true"></span>
@@ -80,8 +80,6 @@ const multiTierSizes = [
     max-width: 100%;
     min-width: 0;
     padding: 1.5rem;
-    border: 0.5px solid var(--color-outline-variant);
-    background: var(--color-surface);
   }
 
   .cake-size-guide__title {
@@ -128,7 +126,7 @@ const multiTierSizes = [
     height: calc(31px + 0.8125rem + 1px);
     padding-block: 0;
     vertical-align: middle;
-    border-top: 1px solid var(--color-outline-variant);
+    border-top: var(--divider-border);
   }
 
   .cake-size-guide__table th:first-child {
@@ -165,8 +163,6 @@ const multiTierSizes = [
   .cake-size-guide__diameter {
     display: inline-block;
     padding: 4px 6px;
-    border: 1px solid var(--color-outline);
-    background: var(--color-surface-container-low);
     font-size: 0.875rem;
     line-height: 1;
     white-space: nowrap;
@@ -189,7 +185,6 @@ const multiTierSizes = [
     flex-direction: column;
     align-items: center;
     padding: 1.25rem;
-    border: 0.5px solid var(--color-outline-variant);
     background: var(--color-surface-container-low);
   }
 

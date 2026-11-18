@@ -96,6 +96,11 @@ body {
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-pill: 9999px;
+  --panel-radius: 3px;
+  --panel-border: 0.5px solid color-mix(in srgb, var(--color-outline-variant) 40%, var(--color-surface));
+  --divider-color: #2b2a2a;
+  --divider-width: 0.5px;
+  --divider-border: var(--divider-width) solid var(--divider-color);
   --glass-bg: rgba(19, 19, 19, 0.6);
   --glass-blur: 24px;
   --ghost-border: rgba(68, 66, 65, 0.15);
@@ -369,6 +374,16 @@ body {
 .accent-italic {
   font-style: italic;
   color: var(--color-primary);
+}
+
+/* ──────────────────────────────────────────────
+   PANELS
+   ────────────────────────────────────────────── */
+.panel {
+  border: var(--panel-border);
+  border-radius: var(--panel-radius);
+  background: var(--color-surface);
+  box-shadow: 0 8px 20px rgb(0 0 0 / 45%);
 }
 
 /* ──────────────────────────────────────────────

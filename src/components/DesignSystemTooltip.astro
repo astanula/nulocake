@@ -33,7 +33,7 @@ const totalColorTokens = COLOR_TOKEN_GROUPS.reduce((sum, group) => sum + group.t
 
   <div class="ds-bento">
     <!-- LEFT COLUMN: 01 COLOR PALETTE -->
-    <section class="ds-card ds-card--colors" aria-labelledby="ds-heading-colors">
+    <section class="ds-card ds-card--colors panel" aria-labelledby="ds-heading-colors">
       <div class="ds-section-head">
         <h3 id="ds-heading-colors" class="ds-section-title">
           01 · Color Palette &amp; Semantic Tokens ({totalColorTokens})
@@ -76,7 +76,7 @@ const totalColorTokens = COLOR_TOKEN_GROUPS.reduce((sum, group) => sum + group.t
     <!-- RIGHT COLUMN: 02 BUTTONS + 03 TYPOGRAPHY + 04 MATERIALITY + 05 RESPONSIVE -->
     <div class="ds-right-stack">
       <!-- 02 BUTTON VARIANTS -->
-      <section class="ds-card" aria-labelledby="ds-heading-buttons">
+      <section class="ds-card panel" aria-labelledby="ds-heading-buttons">
         <div class="ds-section-head">
           <h3 id="ds-heading-buttons" class="ds-section-title">
             02 · Button Variants ({BUTTON_VARIANTS.length} Live Specimens)
@@ -148,7 +148,7 @@ const totalColorTokens = COLOR_TOKEN_GROUPS.reduce((sum, group) => sum + group.t
       </section>
 
       <!-- 03 TYPOGRAPHY & FLUID TYPE SCALE -->
-      <section class="ds-card" aria-labelledby="ds-heading-type">
+      <section class="ds-card panel" aria-labelledby="ds-heading-type">
         <div class="ds-section-head">
           <h3 id="ds-heading-type" class="ds-section-title">03 · Typography &amp; Fluid Type Scale</h3>
           <code class="ds-source-tag" data-ds-font-families />
@@ -210,7 +210,7 @@ const totalColorTokens = COLOR_TOKEN_GROUPS.reduce((sum, group) => sum + group.t
       </section>
 
       <!-- 04 MATERIALITY, ELEVATION & MOTION -->
-      <section class="ds-card" aria-labelledby="ds-heading-materiality">
+      <section class="ds-card panel" aria-labelledby="ds-heading-materiality">
         <div class="ds-section-head">
           <h3 id="ds-heading-materiality" class="ds-section-title">
             04 · Materiality, Elevation &amp; Motion Standards
@@ -244,7 +244,7 @@ const totalColorTokens = COLOR_TOKEN_GROUPS.reduce((sum, group) => sum + group.t
       </section>
 
       <!-- 05 RESPONSIVE DESIGN & VIEWPORT ARCHITECTURE -->
-      <section class="ds-card" aria-labelledby="ds-heading-responsive">
+      <section class="ds-card panel" aria-labelledby="ds-heading-responsive">
         <div class="ds-section-head">
           <h3 id="ds-heading-responsive" class="ds-section-title">
             05 · Responsive Design &amp; Viewport Architecture
@@ -717,9 +717,6 @@ const totalColorTokens = COLOR_TOKEN_GROUPS.reduce((sum, group) => sum + group.t
   }
 
   .ds-card {
-    background: var(--color-surface);
-    border: 1px solid color-mix(in srgb, var(--color-outline-variant) 50%, transparent);
-    border-radius: var(--radius-xs);
     padding: 0.875rem 1rem;
     min-width: 0;
   }

@@ -103,7 +103,7 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
             </h2>
             <div class="testimonials-carousel blur-in" id="testimonials-carousel" aria-live="polite">
               <div class="carousel-track">
-                <blockquote class="testimonial-card carousel-slide">
+                <blockquote class="testimonial-card carousel-slide panel">
                   <div class="testimonial-stars" role="img" aria-label="5 z 5 gwiazdek">
                     <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                     <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -118,7 +118,7 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
                   </footer>
                 </blockquote>
 
-                <blockquote class="testimonial-card carousel-slide">
+                <blockquote class="testimonial-card carousel-slide panel">
                   <div class="testimonial-stars" role="img" aria-label="5 z 5 gwiazdek">
                     <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                     <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -133,7 +133,7 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
                   </footer>
                 </blockquote>
 
-                <blockquote class="testimonial-card carousel-slide">
+                <blockquote class="testimonial-card carousel-slide panel">
                   <div class="testimonial-stars" role="img" aria-label="5 z 5 gwiazdek">
                     <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                     <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -464,7 +464,7 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
     position: relative;
     overflow: hidden;
     margin-top: 1.5rem;
-    padding: 0 10%;
+    padding: 1rem 10% 1.5rem;
   }
 
   .carousel-track {
@@ -474,7 +474,7 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
   }
 
   .carousel-slide {
-    flex: 0 0 80%;
+    flex: 0 0 calc(80% - 1rem);
     padding: 0 0.5rem;
     box-sizing: border-box;
   }
@@ -482,14 +482,7 @@ const sectionLabels = ['Strona główna', 'O nas', 'Galeria', 'Opinie klientów'
   .testimonial-card {
     padding: 1.5rem;
     background: var(--color-surface-container-low);
-    border-radius: 0.25rem;
-    border: none;
-    margin: 0;
-  }
-
-  .carousel-slide .testimonial-card {
-    height: 100%;
-    margin: 0;
+    margin: 0 1rem 0 0;
   }
 
   .carousel-btn {

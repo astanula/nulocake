@@ -13,6 +13,7 @@ A dark-mode-first aesthetic with vibrant, high-contrast pink accents.
 - **Text (Primary):** `#e5e2e1` (Soft white)
 - **Text (Secondary):** `#c4c0bf` (Muted gray)
 - **Outline:** `#8e8b8a` 
+- **Dividers:** `#373635` with a `0.5px` width, independently configurable from panel borders.
 
 ## Typography
 Clean, modern sans-serif fonts that balance editorial elegance with readability.
@@ -23,6 +24,7 @@ Clean, modern sans-serif fonts that balance editorial elegance with readability.
 - **Editorial Split-Screen:** Favor asymmetrical and split-screen layouts (e.g., text sections scrolling on one side, imagery/video pinned on the other).
 - **Whitespace:** Generous use of padding and whitespace to let content breathe and feel premium.
 - **Dark Canvas:** Elements should blend seamlessly into the dark background, with glowing accents used sparingly for emphasis (e.g., radial gradients behind media).
+- **Panels:** Use the shared `.panel` class for content panels. It provides a dark outline, subtle `3px` corners, and a soft raised shadow; component-specific layout and surface colors can remain local.
 - **Viewport Tiers:** Use the six canonical, non-overlapping tiers: `small-mobile` `<420px`, `mobile` `420–767px`, `tablet` `768–1023px`, `laptop` `1024–1279px`, `desktop` `1280–1535px`, and `large-desktop` `≥1536px`.
 
 ## Interactions & Animation

@@ -24,7 +24,7 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM } from '../../config/ca
       </div>
     </fieldset>
 
-    <div class="flavor-card" id="flavor-card">
+    <div class="flavor-card panel" id="flavor-card">
       {CAKE_FLAVORS.map((flavor, index) => (
         <article class="flavor-panel" data-flavor-panel={flavor.id} data-flavor-name={flavor.name} aria-labelledby={`flavor-${flavor.id}-title`} hidden={index !== 0}>
           <h3 class="flavor-card-title" id={`flavor-${flavor.id}-title`}>{flavor.name}</h3>
@@ -44,7 +44,7 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM } from '../../config/ca
             <path d="M3 5.5l5 5 5-5" />
           </svg>
         </summary>
-        <div class="flavor-accordion-panel">
+        <div class="flavor-accordion-panel panel">
           <FlavorLayerMap flavor={flavor} />
         </div>
       </details>
@@ -141,7 +141,7 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM } from '../../config/ca
     gap: 0.625rem;
     align-items: center;
     padding: 0.40625rem 0.625rem;
-    border-top: 0.5px solid var(--color-outline-variant);
+    border-top: var(--divider-border);
     list-style: none;
     cursor: pointer;
   }
@@ -151,7 +151,7 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM } from '../../config/ca
   }
 
   .flavor-pick:last-child {
-    border-bottom: 0.5px solid var(--color-outline-variant);
+    border-bottom: var(--divider-border);
   }
 
   .flavor-pick input {
@@ -226,8 +226,6 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM } from '../../config/ca
     width: var(--flavor-card-width);
     max-width: 100%;
     padding: 1.75rem;
-    border: 0.5px solid var(--color-outline-variant);
-    background: var(--color-surface);
   }
 
   .flavor-panel[hidden] {
@@ -253,14 +251,13 @@ import { CAKE_FLAVORS, CREAM_HEIGHT_CM, SPONGE_HEIGHT_CM } from '../../config/ca
   }
 
   .flavor-accordion-item:last-child {
-    border-bottom: 0.5px solid var(--color-outline-variant);
+    border-bottom: var(--divider-border);
   }
 
   .flavor-accordion-panel {
     padding: var(--flavor-eyebrow-gap) 1.75rem;
-    border: 0.5px solid var(--color-outline-variant);
+    border-radius: 0 0 var(--panel-radius) var(--panel-radius);
     border-bottom: 0;
-    background: var(--color-surface);
   }
 
   @container flavor-accordion (width < 34rem) {
