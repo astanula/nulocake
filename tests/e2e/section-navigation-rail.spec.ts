@@ -7,6 +7,7 @@ import { Section0Simulation } from './landing-page/section-0-simulation';
 const pages = [
   { name: 'home', route: testConfig.routes.landing, section: '.hero-section' },
   { name: 'oferta', route: testConfig.routes.oferta, section: '.oferta-section' },
+  { name: 'about', route: testConfig.routes.oMnie, section: '.about-section' },
 ];
 
 const tiers = [

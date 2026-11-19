@@ -2,7 +2,7 @@
 
 Section animations where each element's animation duration and start time are derived from a single unit: the **Word Unit (WU)**. All sections live on one **master timeline** measured in px (`PX_PER_WU` per WU). The master timeline is not scroll-driven: it is paused and played by time through **snap navigation** (see [Time-Driven Playback](#time-driven-playback-snap-navigation)).
 
-Code: `src/home/sectionTimeline.ts` (timeline construction), `src/home/snapNavigator.ts` (edge-gated input and playback), `src/pages/index.astro` (Phase 1 intro, Home mount/teardown), `src/pages/oferta.astro` (immediate Section 0, Oferta mount/teardown). Constants: `src/config/animation.ts`. Specs: `docs/superpowers/specs/2026-11-13-home-snap-navigation-design.md`, `docs/superpowers/specs/2026-11-14-oferta-snap-navigation-design.md`, `docs/superpowers/specs/2026-11-14-scroll-hint-tall-sections-design.md`.
+Code: `src/home/sectionTimeline.ts` (timeline construction), `src/home/snapNavigator.ts` (edge-gated input and playback), `src/pages/index.astro` (Phase 1 intro, Home mount/teardown), `src/pages/oferta.astro` and `src/pages/o-mnie.astro` (immediate Section 0, page-specific mount/teardown). O mnie keeps its portrait outside the animated sections so it remains visible across transitions. Constants: `src/config/animation.ts`. Specs: `docs/superpowers/specs/2026-11-13-home-snap-navigation-design.md`, `docs/superpowers/specs/2026-11-14-oferta-snap-navigation-design.md`, `docs/superpowers/specs/2026-11-14-scroll-hint-tall-sections-design.md`.
 
 ## Constants
 
@@ -198,7 +198,7 @@ activeIndex = index of the section whose range
 Section 0 is the only section that does **not** have an intro or hold on the master timeline:
 
 - **Home (`/`, `src/pages/index.astro`):** On first visit per session (`window.hasSeenIntro` unset), section 0 plays a standalone time-based entrance animation (`gsap.to()`) using the same WU weights, cascade logic, and `DURGAP`, with durations in milliseconds (`element.duration = element.WU × MS_PER_WU`) while blocking input. Subsequent visits skip Phase 1 and mount snap navigation immediately.
-- **Oferta (`/oferta`, `src/pages/oferta.astro`):** Section 0 carries `.is-active` in server-rendered HTML with no load-time hiding animation, so content is immediately visible and interactive on load (including without JavaScript); snap navigation mounts directly at position `0`.
+- **Oferta (`/oferta`, `src/pages/oferta.astro`) and O mnie (`/o-mnie`, `src/pages/o-mnie.astro`):** Section 0 carries `.is-active` in server-rendered HTML with no load-time hiding animation, so content is immediately visible and interactive on load (including without JavaScript); snap navigation mounts directly at position `0`.
 
 ### Timeline Budget
 
