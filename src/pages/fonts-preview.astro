@@ -1,0 +1,709 @@
+---
+import { Image } from 'astro:assets';
+import Layout from '../layouts/Layout.astro';
+import { BODY_FONTS, DISPLAY_FONTS, getGlobalFontFamilies, googleFontsUrl } from '../config/fonts';
+import { homeGalleryImages } from '../config/homeGallery';
+import globalCss from '../styles/global.css?raw';
+import { withBase } from '../utils/withBase';
+
+const fontGroups = [
+  {
+    role: 'display',
+    label: 'Nagłówki',
+    familyVar: '--font-family-display',
+    weightVar: '--type-display-lg-weight',
+    fonts: DISPLAY_FONTS,
+  },
+  {
+    role: 'body',
+    label: 'Tekst',
+    familyVar: '--font-family-body',
+    weightVar: '--type-body-lg-weight',
+    fonts: BODY_FONTS,
+  },
+];
+const globalFamilies = new Set(getGlobalFontFamilies(globalCss).map((name) => name.toLowerCase()));
+const previewFontsUrl = googleFontsUrl(
+  [...DISPLAY_FONTS, ...BODY_FONTS]
+    .map((font) => font.name)
+    .filter((name) => !globalFamilies.has(name.toLowerCase())),
+);
+const testimonials = [
+  {
+    text: '"Tort był absolutnym dziełem sztuki. Nikt nie chciał go kroić, dopóki nie spróbowaliśmy pierwszego kawałka!"',
+    name: 'Anna Kowalska',
+    role: 'Wesele, czerwiec 2025',
+  },
+  {
+    text: '"Szukałem czegoś unikalnego na 30-ste urodziny żony. Nulo Cake przerosiło moje oczekiwania."',
+    name: 'Marek Wiśniewski',
+    role: 'Urodziny, marzec 2025',
+  },
+  {
+    text: '"Perfekcyjne wykonanie i niesamowity smak. Goście do dziś pytają, skąd mieliśmy ten tort!"',
+    name: 'Katarzyna Nowicka',
+    role: 'Komunia, maj 2025',
+  },
+];
+---
+
+<Layout title="Podgląd czcionek | Nulo Cake" isSubpage={true}>
+  <Fragment slot="head">
+    {previewFontsUrl && <link rel="stylesheet" href={previewFontsUrl} />}
+  </Fragment>
+  <main id="hero-scroll-container" class="font-workbench" data-font-preview-page tabindex="-1">
+    <h1 class="visually-hidden">Podgląd czcionek</h1>
+    <div class="font-toolbar">
+      <div class="preview-switch" role="group" aria-label="Wybierz zestaw czcionek">
+        {[1, 2].map((column) => (
+          <button type="button" data-preview-switch={column} aria-controls={`preview-column-${column} font-controls-${column}`} aria-pressed={column === 1}>
+            Zestaw {column}
+          </button>
+        ))}
+      </div>
+      <div class="comparison">
+        {[1, 2].map((column) => (
+          <div id={`font-controls-${column}`} class:list={['font-controls', { 'is-selected': column === 1 }]} data-controls-column={column}>
+            {fontGroups.map((group) => (
+              <div
+                class="font-group"
+                role="group"
+                aria-labelledby={`${group.role}-font-label-${column}`}
+                data-font-variable={group.familyVar}
+                data-weight-variable={group.weightVar}
+                data-font-role={group.role}
+              >
+                <label id={`${group.role}-font-label-${column}`} class="label-md" for={`${group.role}-font-${column}`}>{group.label}</label>
+                <div class="font-picker">
+                  <button type="button" class="font-arrow" data-font-step="-1" aria-label={`Poprzednia czcionka: ${group.label}, zestaw ${column}`}>
+                    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M13 8H3m4-4L3 8l4 4" />
+                    </svg>
+                  </button>
+                  <select id={`${group.role}-font-${column}`} class="font-select" data-font-select>
+                    {group.fonts.map((font) => (
+                      <option value={font.name} data-min-weight={font.min} data-max-weight={font.max} data-weights={font.weights?.join(',')} style={`font-family: '${font.name}', sans-serif`}>
+                        {font.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button type="button" class="font-arrow" data-font-step="1" aria-label={`Następna czcionka: ${group.label}, zestaw ${column}`}>
+                    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 8h10M9 4l4 4-4 4" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="font-adjustments">
+                  <div class="font-stepper" role="group" aria-label={`Rozmiar: ${group.label}, zestaw ${column}`} title="Rozmiar">
+                    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M8 2v12M5 5l3-3 3 3M5 11l3 3 3-3" />
+                    </svg>
+                    <button type="button" data-adjust="size" data-step="-1" aria-label={`Zmniejsz rozmiar: ${group.label}, zestaw ${column}`}>-</button>
+                    <output data-output="size" aria-live="polite">—</output>
+                    <button type="button" data-adjust="size" data-step="1" aria-label={`Zwiększ rozmiar: ${group.label}, zestaw ${column}`}>+</button>
+                  </div>
+                  <div class="font-stepper" role="group" aria-label={`Grubość: ${group.label}, zestaw ${column}`} title="Grubość">
+                    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M2 8h12M5 5L2 8l3 3M11 5l3 3-3 3" />
+                    </svg>
+                    <button type="button" data-adjust="weight" data-step="-1" aria-label={`Zmniejsz grubość: ${group.label}, zestaw ${column}`}>-</button>
+                    <output data-output="weight" aria-live="polite">—</output>
+                    <button type="button" data-adjust="weight" data-step="1" aria-label={`Zwiększ grubość: ${group.label}, zestaw ${column}`}>+</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+    <div class="comparison">
+      {[1, 2].map((column) => (
+        <article id={`preview-column-${column}`} class:list={['preview-column', { 'is-selected': column === 1 }]} data-preview-column={column} aria-label={`Zestaw czcionek ${column}`}>
+          <div class="home-preview" data-home-preview>
+            <section class="preview-text" aria-label="Strona główna">
+              <div class="preview-content">
+                <h2 class="display-lg section-title-home preview-title">
+                  <span class="preview-word">Wymarzony</span> <span class="preview-word">tort</span><br />
+                  <span class="preview-word">na</span> <span class="preview-word">Twoją</span> <span class="preview-word accent-italic">wyjątkową</span> <span class="preview-word">okazję.</span>
+                </h2>
+                <p class="body-lg preview-body">
+                  Artystyczne torty na zamówienie tworzone z pasją. Jesteś w odpowiednim miejscu, aby to słodkie marzenie spełnić!
+                </p>
+                <div class="preview-actions">
+                  <a href={withBase('oferta')} class="btn-primary">Sprawdź ofertę</a>
+                  <a href={withBase('galeria')} class="btn-secondary">Zobacz galerię</a>
+                </div>
+              </div>
+            </section>
+
+            <section class="preview-text" aria-label="O nas">
+              <div class="preview-content">
+                <h2 class="display-lg section-title-home preview-title">
+                  <span class="preview-word">Sztuka,</span> <span class="preview-word">która</span><br />
+                  <span class="preview-word accent-italic">zachwyca</span> <span class="preview-word">smakiem.</span>
+                </h2>
+                <p class="body-lg preview-body">
+                  Wierzę, że każdy tort to osobna historia. W moją pracę wkładam całe serce, traktując każde zamówienie jako w 100% indywidualny projekt. Zależy mi na tym, aby efekt końcowy nie tylko zapierał dech w piersiach unikalną dekoracją dopracowaną w każdym detalu, ale również zniewalał smakiem od pierwszego kęsa.
+                </p>
+                <div class="preview-actions">
+                  <a href={withBase('o-mnie')} class="btn-secondary">
+                    Poznaj moją historię
+                    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 8h10M9 4l4 4-4 4" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </section>
+
+            <section class="preview-text" aria-label="Galeria">
+              <div class="preview-content">
+                <h2 class="display-lg section-title-home preview-title">
+                  <span class="preview-word">Moje</span> <span class="preview-word">słodkie</span><br />
+                  <span class="preview-word accent-italic">dzieła</span> <span class="preview-word">sztuki</span>
+                </h2>
+                <div class="preview-gallery">
+                  {homeGalleryImages.map((img) => (
+                    <Image src={img.src} alt={img.alt} width={400} loading="lazy" />
+                  ))}
+                </div>
+                <div class="preview-actions">
+                  <a href={withBase('galeria')} class="btn-secondary">Pełna Galeria</a>
+                </div>
+              </div>
+            </section>
+
+            <section class="preview-text" aria-label="Opinie klientów">
+              <div class="preview-content">
+                <h2 class="display-lg section-title-home preview-title">
+                  <span class="preview-word">Co</span> <span class="preview-word">mówią</span> <span class="preview-word">moi</span><br />
+                  <span class="preview-word accent-italic">klienci?</span>
+                </h2>
+                <div class="preview-testimonials">
+                  {testimonials.map((testimonial) => (
+                    <blockquote class="preview-testimonial panel">
+                      <div class="preview-stars" role="img" aria-label="5 z 5 gwiazdek">
+                        {[1, 2, 3, 4, 5].map(() => (
+                          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-primary)">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                          </svg>
+                        ))}
+                      </div>
+                      <p class="testimonial-text">{testimonial.text}</p>
+                      <footer class="testimonial-author">
+                        <span class="testimonial-name">{testimonial.name}</span>
+                        <span class="testimonial-role">{testimonial.role}</span>
+                      </footer>
+                    </blockquote>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            <section class="preview-text" aria-label="Kontakt">
+              <div class="preview-content">
+                <h2 class="display-lg section-title-home preview-title">
+                  <span class="preview-word">Gotowy</span> <span class="preview-word">na</span> <span class="preview-word">swój</span><br />
+                  <span class="preview-word accent-italic">wymarzony</span> <span class="preview-word">tort?</span>
+                </h2>
+                <p class="body-lg preview-body">
+                  Napisz do mnie — opowiedz o swojej okazji, a ja zajmę się resztą.
+                </p>
+                <div class="preview-actions">
+                  <a href={withBase('kontakt')} class="btn-primary">Skontaktuj się i zarezerwuj termin</a>
+                </div>
+              </div>
+            </section>
+          </div>
+        </article>
+      ))}
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .font-workbench {
+    padding: 0 0 5rem;
+  }
+
+  .font-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    max-height: 60dvh;
+    overflow: hidden;
+    padding-top: 0.5rem;
+    border-bottom: 1px solid var(--color-outline-variant);
+    background: var(--color-background);
+    box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 0.2);
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .comparison {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: var(--layout-max-width);
+    margin-inline: auto;
+  }
+
+  .font-toolbar .comparison {
+    width: 100%;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .preview-switch {
+    display: none;
+    flex-shrink: 0;
+  }
+
+  .preview-switch button {
+    min-height: 36px;
+    padding: 0.4rem 0.85rem;
+    border: 1px solid var(--color-outline-variant);
+    border-radius: var(--radius-xs);
+    background: var(--color-surface-container-low);
+    color: var(--color-on-surface);
+    font-family: var(--font-family-body);
+    font-size: 0.8125rem;
+    cursor: pointer;
+  }
+
+  .preview-switch button:hover {
+    border-color: var(--color-primary);
+  }
+
+  .preview-switch button[aria-pressed='true'] {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+
+  .preview-column {
+    min-width: 0;
+  }
+
+  .preview-column + .preview-column,
+  .font-controls + .font-controls {
+    border-left: 1px solid var(--color-outline-variant);
+  }
+
+  .font-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0 1.5rem 1rem;
+  }
+
+  .font-group {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+    overflow-x: auto;
+    padding-block: 3px;
+  }
+
+  .font-group .label-md {
+    flex: 0 0 auto;
+    font-size: 0.65rem;
+  }
+
+  .font-picker {
+    display: inline-flex;
+    align-items: center;
+    flex: 1 0 120px;
+    gap: 0.3rem;
+    min-width: 120px;
+  }
+
+  .font-select,
+  .font-arrow {
+    min-height: 32px;
+    border: 1px solid var(--color-outline-variant);
+    border-radius: var(--radius-xs);
+    background: var(--color-surface-container-low);
+    color: var(--color-on-surface);
+  }
+
+  .font-select {
+    flex: 1 1 0;
+    width: 0;
+    min-width: 0;
+    max-width: 100%;
+    padding: 0.25rem 0.5rem;
+    font-family: var(--font-family-body);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    color-scheme: dark;
+  }
+
+  .font-arrow {
+    display: inline-flex;
+    flex: 0 0 32px;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .font-select:hover,
+  .font-arrow:hover:not(:disabled) {
+    border-color: var(--color-primary);
+  }
+
+  .font-arrow:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .font-adjustments {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 0.4rem;
+  }
+
+  .font-stepper {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.25rem;
+    padding-left: 0.4rem;
+    border-left: 1px solid var(--color-outline-variant);
+    color: var(--color-on-surface-variant);
+    font-size: 0.75rem;
+  }
+
+  .font-stepper button {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--color-outline-variant);
+    border-radius: var(--radius-xs);
+    background: transparent;
+    color: var(--color-on-surface);
+    cursor: pointer;
+  }
+
+  .font-stepper button:hover:not(:disabled) {
+    border-color: var(--color-primary);
+  }
+
+  .font-stepper button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .font-stepper output {
+    min-width: 3rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .home-preview {
+    background: var(--color-background);
+  }
+
+  .preview-text {
+    min-width: 0;
+    padding: 1.5rem;
+    border-top: 1px solid var(--color-outline-variant);
+  }
+
+  .preview-content {
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .preview-word {
+    display: inline-block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .preview-title {
+    margin-bottom: 1.5rem;
+    font-size: calc(clamp(var(--title-home-min), var(--title-home-fluid), var(--title-home-max)) * var(--preview-display-scale, 1));
+    font-weight: var(--preview-display-weight, var(--type-display-lg-weight));
+  }
+
+  .preview-body {
+    margin-bottom: 2rem;
+    font-size: calc(var(--type-body-lg-size) * var(--preview-body-scale, 1));
+    font-weight: var(--preview-body-weight, var(--type-body-lg-weight));
+  }
+
+  .preview-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .preview-actions .btn-primary,
+  .preview-actions .btn-secondary {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font-size: calc(var(--btn-font-size) * var(--preview-body-scale, 1));
+    font-weight: clamp(1, calc(var(--preview-body-weight, var(--type-body-lg-weight)) - var(--type-body-lg-weight) + var(--btn-font-weight)), 1000);
+  }
+
+  .preview-gallery {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .preview-gallery :global(img) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 0.25rem;
+  }
+
+  .preview-testimonials {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .preview-testimonial {
+    padding: 1.5rem;
+    background: var(--color-surface-container-low);
+    font-family: var(--font-family-body);
+  }
+
+  .preview-stars {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .testimonial-text {
+    margin-bottom: 1rem;
+    color: var(--color-on-surface);
+    font-size: calc(1rem * var(--preview-body-scale, 1));
+    font-style: italic;
+    font-weight: var(--preview-body-weight, var(--type-body-lg-weight));
+    line-height: 1.6;
+  }
+
+  .testimonial-author {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .testimonial-name {
+    color: var(--color-on-surface);
+    font-size: calc(1rem * var(--preview-body-scale, 1));
+    font-weight: clamp(1, calc(var(--preview-body-weight, var(--type-body-lg-weight)) - var(--type-body-lg-weight) + 700), 1000);
+  }
+
+  .testimonial-role {
+    color: var(--color-on-surface-variant);
+    font-size: calc(0.875rem * var(--preview-body-scale, 1));
+    font-weight: var(--preview-body-weight, var(--type-body-lg-weight));
+  }
+
+  @media (--below-tablet) {
+    .preview-switch {
+      display: flex;
+      gap: 0.4rem;
+      padding: 0 1.5rem 1rem;
+    }
+
+    .comparison {
+      grid-template-columns: 1fr;
+    }
+
+    .preview-column:not(.is-selected),
+    .font-controls:not(.is-selected) {
+      display: none;
+    }
+
+    .preview-column + .preview-column,
+    .font-controls + .font-controls {
+      border-left: 0;
+    }
+
+    .font-group {
+      flex-wrap: wrap;
+    }
+
+    .font-adjustments {
+      flex: 0 1 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      padding-block: 3px;
+    }
+
+    .font-stepper {
+      gap: 0.15rem;
+    }
+
+    .font-stepper:first-child {
+      padding-left: 0;
+      border-left: 0;
+    }
+
+    .font-stepper output {
+      min-width: 2.5rem;
+    }
+  }
+</style>
+
+<script>
+  let fontPreviewController: AbortController | undefined;
+
+  function initFontPreview() {
+    fontPreviewController?.abort();
+    const page = document.querySelector<HTMLElement>('[data-font-preview-page]');
+    if (!page) return;
+
+    fontPreviewController = new AbortController();
+    const signal = fontPreviewController.signal;
+
+    const columns = page.querySelectorAll<HTMLElement>('[data-preview-column]');
+    const controlsColumns = page.querySelectorAll<HTMLElement>('[data-controls-column]');
+    const switchButtons = page.querySelectorAll<HTMLButtonElement>('[data-preview-switch]');
+    const refreshSizes: (() => void)[] = [];
+    switchButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        columns.forEach((column) => {
+          column.classList.toggle('is-selected', column.dataset.previewColumn === button.dataset.previewSwitch);
+        });
+        controlsColumns.forEach((column) => {
+          column.classList.toggle('is-selected', column.dataset.controlsColumn === button.dataset.previewSwitch);
+        });
+        switchButtons.forEach((option) => {
+          option.setAttribute('aria-pressed', String(option === button));
+        });
+        refreshSizes.forEach((refresh) => refresh());
+      }, { signal });
+    });
+
+    page.querySelectorAll<HTMLElement>('[data-font-variable]').forEach((group) => {
+      const variable = group.dataset.fontVariable;
+      const weightVariable = group.dataset.weightVariable;
+      const role = group.dataset.fontRole;
+      const columnId = group.closest<HTMLElement>('[data-controls-column]')?.dataset.controlsColumn;
+      const preview = Array.from(columns).find((column) => column.dataset.previewColumn === columnId)
+        ?.querySelector<HTMLElement>('[data-home-preview]');
+      if (!variable || !weightVariable || !role || !preview) return;
+
+      const select = group.querySelector<HTMLSelectElement>('[data-font-select]');
+      const arrows = group.querySelectorAll<HTMLButtonElement>('[data-font-step]');
+      const adjustments = group.querySelectorAll<HTMLButtonElement>('[data-adjust]');
+      const sizeOutput = group.querySelector<HTMLOutputElement>('[data-output="size"]');
+      const weightOutput = group.querySelector<HTMLOutputElement>('[data-output="weight"]');
+      const sizeSample = preview.querySelector<HTMLElement>(role === 'display' ? '.preview-title' : '.preview-body');
+      if (!select || !sizeOutput || !weightOutput || !sizeSample) return;
+
+      const styles = getComputedStyle(preview);
+      const currentFont = styles.getPropertyValue(variable)
+        .split(',')[0].trim().replace(/^['"]|['"]$/g, '');
+      let size = 100;
+      let weight = Number(styles.getPropertyValue(weightVariable)) || 400;
+      let minWeight = 100;
+      let maxWeight = 900;
+      let availableWeights: number[] | undefined;
+
+      function setFontRange(option: HTMLOptionElement) {
+        minWeight = Number(option.dataset.minWeight);
+        maxWeight = Number(option.dataset.maxWeight);
+        availableWeights = option.dataset.weights?.split(',').map(Number);
+        weight = Math.min(maxWeight, Math.max(minWeight, weight));
+        if (availableWeights?.length) {
+          weight = availableWeights.reduce((closest, current) =>
+            Math.abs(current - weight) < Math.abs(closest - weight) ? current : closest,
+          );
+        }
+      }
+
+      const updateSizeOutput = () => {
+        const pixels = parseFloat(getComputedStyle(sizeSample).fontSize);
+        sizeOutput.value = Number.isFinite(pixels) ? `${Number(pixels.toFixed(1))}px` : '—';
+      };
+      refreshSizes.push(updateSizeOutput);
+
+      const render = () => {
+        preview.style.setProperty(`--preview-${role}-scale`, String(size / 100));
+        preview.style.setProperty(`--preview-${role}-weight`, String(weight));
+        updateSizeOutput();
+        weightOutput.value = String(weight);
+        adjustments.forEach((button) => {
+          const down = button.dataset.step === '-1';
+          button.disabled = button.dataset.adjust === 'size'
+            ? (down ? size <= 50 : size >= 200)
+            : (down ? weight <= minWeight : weight >= maxWeight);
+        });
+      };
+
+      select.selectedIndex = Array.from(select.options).findIndex((option) => option.value === currentFont);
+      const initialOption = select.selectedOptions[0];
+      if (initialOption) setFontRange(initialOption);
+      arrows.forEach((button) => { button.disabled = select.options.length < 2; });
+      render();
+      window.addEventListener('resize', updateSizeOutput, { signal });
+
+      const applySelectedFont = () => {
+        const option = select.selectedOptions[0];
+        if (!option) return;
+        preview.style.setProperty(variable, `"${option.value}", sans-serif`);
+        setFontRange(option);
+        render();
+      };
+
+      select.addEventListener('change', applySelectedFont, { signal });
+
+      group.addEventListener('click', (event) => {
+        if (!(event.target instanceof Element)) return;
+        const button = event.target.closest<HTMLButtonElement>('button');
+        if (!button || !group.contains(button)) return;
+
+        if (button.dataset.fontStep) {
+          const step = Number(button.dataset.fontStep);
+          const count = select.options.length;
+          select.selectedIndex = select.selectedIndex < 0
+            ? (step > 0 ? 0 : count - 1)
+            : (select.selectedIndex + step + count) % count;
+          applySelectedFont();
+          return;
+        } else {
+          const step = Number(button.dataset.step);
+          if (button.dataset.adjust === 'size') {
+            size = Math.min(200, Math.max(50, size + step * 5));
+          } else if (button.dataset.adjust === 'weight') {
+            if (availableWeights?.length) {
+              const options = step > 0 ? availableWeights : [...availableWeights].reverse();
+              weight = options.find((value) => step > 0 ? value > weight : value < weight) ?? weight;
+            } else {
+              weight = Math.min(maxWeight, Math.max(minWeight, weight + step * 100));
+            }
+          } else {
+            return;
+          }
+        }
+        render();
+      }, { signal });
+    });
+  }
+
+  document.addEventListener('astro:page-load', initFontPreview);
+  document.addEventListener('astro:before-swap', () => fontPreviewController?.abort());
+</script>

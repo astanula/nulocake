@@ -8,6 +8,7 @@ import {
   SECTION_TITLE_SCALES,
   TYPOGRAPHY_SCALE,
 } from '../config/designSystem';
+import { withBase } from '../utils/withBase';
 
 const totalColorTokens = COLOR_TOKEN_GROUPS.reduce((sum, group) => sum + group.tokens.length, 0);
 ---
@@ -26,6 +27,7 @@ const totalColorTokens = COLOR_TOKEN_GROUPS.reduce((sum, group) => sum + group.t
       <h2 class="ds-title">Noir Patisserie — UI Architecture &amp; Tokens</h2>
     </div>
     <div class="ds-header-meta">
+      <a href={withBase('fonts-preview')} class="ds-preview-link">Fonts preview</a>
       <span class="ds-viewport-pill" data-ds-viewport aria-live="polite"></span>
       <span class="ds-dismiss-hint">Click token value to copy · Click outside or press Esc to dismiss</span>
     </div>
@@ -684,6 +686,24 @@ const totalColorTokens = COLOR_TOKEN_GROUPS.reduce((sum, group) => sum + group.t
     align-items: center;
     flex-wrap: wrap;
     gap: 0.625rem 0.875rem;
+  }
+
+  .ds-preview-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0.25rem 0.625rem;
+    border: 1px solid var(--color-outline-variant);
+    border-radius: var(--radius-xs);
+    color: var(--color-primary);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .ds-preview-link:hover {
+    border-color: var(--color-primary);
+    background: var(--color-surface-container);
   }
 
   .ds-viewport-pill {

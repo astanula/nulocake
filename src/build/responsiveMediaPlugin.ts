@@ -18,6 +18,8 @@ export function responsiveMediaPlugin(): Plugin {
     enforce: 'pre',
     transform(code, id) {
       const normId = id.replaceAll('\\', '/');
+      // Raw imports are JavaScript strings, not stylesheets to transform.
+      if (new URLSearchParams(normId.split('?')[1]).has('raw')) return null;
       const cleanPath = normId.split('?')[0];
       const isAuthoredCss =
         !normId.includes('/node_modules/') &&
