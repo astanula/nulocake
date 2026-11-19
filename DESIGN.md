@@ -34,6 +34,7 @@ Clean, modern sans-serif fonts that balance editorial elegance with readability.
 
 ## Implementation Rules
 - Core design tokens are maintained in `src/styles/global.css`.
+- The shared maximum width for page layouts, navigation, and the footer is `--layout-max-width` in `src/styles/global.css`.
 - `src/config/responsive.ts` is the responsive single source of truth: use `TIER_MIN_WIDTH_PX`, `CUSTOM_MEDIA`, `VIEWPORT_TIERS`, `getViewportTier()`, and `LAYOUT_METRICS`. Its six-tier CSS custom properties are maintained alongside the global design tokens in `src/styles/global.css`.
 - Write responsive CSS with `@media (--...)` tokens only. `src/build/responsiveMediaPlugin.ts` expands these custom-media tokens and enforces the rule at build time.
 - GSAP is the standard for complex scroll animations and staggering elements.

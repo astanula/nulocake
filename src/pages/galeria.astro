@@ -139,7 +139,7 @@ const galleryManifest: ManifestEntry[] = (await Promise.all(manifestPromises)).s
   .gallery-container {
     display: flex;
     width: 100%;
-    max-width: 1400px;
+    max-width: var(--layout-max-width);
     margin: 0 auto;
     --gallery-current-padding: var(--gallery-padding-large-desktop);
     padding: 0 var(--gallery-current-padding);

@@ -229,12 +229,7 @@ body {
   --subpage-top-offset-mobile: 2rem;
   --subpage-top-offset-small-mobile: 2rem;
 
-  --layout-max-width-large-desktop: 1400px;
-  --layout-max-width-desktop: 1400px;
-  --layout-max-width-laptop: 1400px;
-  --layout-max-width-tablet: 1400px;
-  --layout-max-width-mobile: 1400px;
-  --layout-max-width-small-mobile: 1400px;
+  --layout-max-width: 1400px;
 
   --sm-nav-logo-width: 40px;
   --md-nav-logo-width: 40px;
@@ -264,7 +259,6 @@ body {
   --title-sm-fluid: var(--title-sm-large-desktop-fluid);
   --title-sm-max: var(--title-sm-large-desktop-max);
   --subpage-top-offset: var(--subpage-top-offset-large-desktop);
-  --layout-max-width: var(--layout-max-width-large-desktop);
   --nav-logo-width: var(--sm-nav-logo-width);
 }
 
@@ -292,7 +286,6 @@ body {
     --title-sm-fluid: var(--title-sm-desktop-fluid);
     --title-sm-max: var(--title-sm-desktop-max);
     --subpage-top-offset: var(--subpage-top-offset-desktop);
-    --layout-max-width: var(--layout-max-width-desktop);
   }
 }
 
@@ -308,7 +301,6 @@ body {
     --title-sm-fluid: var(--title-sm-laptop-fluid);
     --title-sm-max: var(--title-sm-laptop-max);
     --subpage-top-offset: var(--subpage-top-offset-laptop);
-    --layout-max-width: var(--layout-max-width-laptop);
     --nav-logo-width: var(--md-nav-logo-width);
     --scroll-hint-width: var(--md-scroll-hint-width);
   }
@@ -326,7 +318,6 @@ body {
     --title-sm-fluid: var(--title-sm-tablet-fluid);
     --title-sm-max: var(--title-sm-tablet-max);
     --subpage-top-offset: var(--subpage-top-offset-tablet);
-    --layout-max-width: var(--layout-max-width-tablet);
     --section-dots-offset: var(--md-section-dots-offset);
   }
 }
@@ -343,7 +334,6 @@ body {
     --title-sm-fluid: var(--title-sm-mobile-fluid);
     --title-sm-max: var(--title-sm-mobile-max);
     --subpage-top-offset: var(--subpage-top-offset-mobile);
-    --layout-max-width: var(--layout-max-width-mobile);
     --nav-logo-width: var(--lg-nav-logo-width);
     --section-dots-offset: var(--sm-section-dots-offset);
     --section-dot-size: 1.25rem;
@@ -364,7 +354,6 @@ body {
     --title-sm-fluid: var(--title-sm-small-mobile-fluid);
     --title-sm-max: var(--title-sm-small-mobile-max);
     --subpage-top-offset: var(--subpage-top-offset-small-mobile);
-    --layout-max-width: var(--layout-max-width-small-mobile);
   }
 }
 
